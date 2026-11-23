@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="26" height="26" viewBox="40 64 26 26" fill="none"><circle cx="53" cy="77" r="12" fill="#55A43B" />
+<use xlink:href="#stroke22_2_2" fill="#1C212A" />
+<mask id="stroke23_2_2" maskUnits="userSpaceOnUse" x="46.0699" y="70" width="13" height="14" fill="black">
+<rect fill="white" x="46.0699" y="70" width="13" height="14" />
+<use xlink:href="#stroke22_2_2" />
+</mask>
+<path d="M58.8986 83H55.9767L55.13 80.3521H50.8966L50.0582 83H47.153L51.486 71.0967H54.6652L58.8986 83ZM54.5157 78.2935L53.2374 74.2925C53.1434 73.9937 53.0769 73.6367 53.0382 73.2217H52.9718C52.9441 73.5703 52.875 73.9162 52.7643 74.2593L51.4694 78.2935H54.5157Z" stroke-width="0.2" stroke="#1C212A" mask="url(#stroke23_2_2)" />
+<defs><path id="stroke22_2_2" d="M58.8986 83H55.9767L55.13 80.3521H50.8966L50.0582 83H47.153L51.486 71.0967H54.6652L58.8986 83ZM54.5157 78.2935L53.2374 74.2925C53.1434 73.9937 53.0769 73.6367 53.0382 73.2217H52.9718C52.9441 73.5703 52.875 73.9162 52.7643 74.2593L51.4694 78.2935H54.5157Z" />
+</defs></svg>

@@ -1,0 +1,93 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version tag to publish (e.g. v0.1.0)"
+        required: true
+        default: "v0.1.0"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Resolve version
+        id: version
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            TAG="${{ github.event.inputs.version }}"
+          else
+            TAG="${GITHUB_REF_NAME}"
+          fi
+          VERSION="${TAG#v}"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          node -e "
+            const fs=require('fs');
+            const pkg=JSON.parse(fs.readFileSync('package.json','utf8'));
+            pkg.version='${VERSION}';
+            fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
+          "
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Backend tests
+        run: python3 -m unittest discover -s tests -v
+
+      - name: Build plugin ZIP
+        env:
+          CI: true
+        run: bash scripts/ci-build-zip.sh
+
+      - name: Prepare release notes
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          cat > release-notes.md <<EOF
+          ## Button Glyphs v${VERSION}
+
+          Decky Loader plugin that swaps in-game button prompts to PlayStation or Xbox style, with backup and automatic re-apply after game updates.
+
+          ### Install
+
+          1. Download \`button-glyphs-v${VERSION}.zip\` below.
+          2. On Steam Deck: Quick Access → Decky → Settings → Developer Mode ON.
+          3. **Install Plugin from ZIP** and select the file.
+
+          ### Requirements
+
+          - [Decky Loader](https://github.com/SteamDeckHomebrew/decky-loader)
+          - A supported game (see README)
+
+          See [README](https://github.com/${{ github.repository }}#installation) for usage.
+          EOF
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: Button Glyphs ${{ steps.version.outputs.tag }}
+          body_path: release-notes.md
+          files: |
+            out/button-glyphs-v${{ steps.version.outputs.version }}.zip
+            out/Button Glyphs.zip
+          draft: false
+          prerelease: ${{ contains(steps.version.outputs.version, '-') }}
+          generate_release_notes: true

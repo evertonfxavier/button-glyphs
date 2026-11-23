@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="26" height="26" viewBox="184 64 26 26" fill="none"><circle cx="197" cy="77" r="12" fill="#F1D514" />
+<use xlink:href="#stroke16_2_2" fill="#1C212A" />
+<mask id="stroke17_2_2" maskUnits="userSpaceOnUse" x="190.75" y="70.5" width="12" height="14" fill="black">
+<rect fill="white" x="190.75" y="70.5" width="12" height="14" />
+<use xlink:href="#stroke16_2_2" />
+</mask>
+<path d="M202.084 71.5967L198.208 79.2666V83.5H195.527V79.3164L191.75 71.5967H194.813L196.73 76.0376C196.764 76.1206 196.855 76.4443 197.004 77.0088H197.038C197.11 76.6104 197.195 76.2977 197.295 76.0708L199.246 71.5967H202.084Z" stroke-width="0.2" stroke="#1C212A" mask="url(#stroke17_2_2)" />
+<defs><path id="stroke16_2_2" d="M202.084 71.5967L198.208 79.2666V83.5H195.527V79.3164L191.75 71.5967H194.813L196.73 76.0376C196.764 76.1206 196.855 76.4443 197.004 77.0088H197.038C197.11 76.6104 197.195 76.2977 197.295 76.0708L199.246 71.5967H202.084Z" />
+</defs></svg>
