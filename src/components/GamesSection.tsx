@@ -46,7 +46,7 @@ function SupportedGame({ game, model }: { game: Game; model: ButtonGlyphsModel }
         />
       </PanelSectionRow>
       <PanelSectionRow>
-        <GlyphPreview style={style} roles={game.roles ?? []} />
+        <GlyphPreview style={style} roles={game.roles ?? []} originalHint={game.original_hint} />
       </PanelSectionRow>
       {game.last_event ? (
         <PanelSectionRow>

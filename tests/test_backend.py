@@ -1,5 +1,6 @@
 import json
 import os
+import re
 import shutil
 import sys
 import tempfile
@@ -255,6 +256,111 @@ class EngineTest(unittest.TestCase):
         self.assertEqual(engine.sha256_file(self.game), self.original)
 
 
+def read_bytes(path):
+    with open(path, "rb") as f:
+        return f.read()
+
+
+def fake_charlie_exe(path, tail=b"", with_pattern=True, variant=0):
+    """A stand-in for CharlieMurder.exe: filler, the IL of UpdateInput's pad-type store, filler."""
+    il = (b"\x6f\x11\x22\x33\x44\x2c\x0a"            # callvirt Equals ; brfalse.s
+          b"\x7e\xaa\xbb\xcc\x04\x06\x17\x9e\x2b\x54"   # ldsfld T ; ldloc.0 ; ldc.i4.1 ; stelem.i4 ; br.s
+          b"\x7e\xaa\xbb\xcc\x04\x06\x16\x9e\x2b\x4a")  # ldsfld T ; ldloc.0 ; ldc.i4.0 ; stelem.i4 ; br.s
+    guids = "4c05c405".encode("utf-16le") + b"\0\0" + "4c05cc09".encode("utf-16le")
+    with open(path, "wb") as f:
+        f.write(b"MZ" + bytes((i * 13 + variant) & 255 for i in range(3000)))
+        f.write(guids + (il if with_pattern else b"") + bytes(range(200)) + tail)
+
+
+class CharlieMurderTest(unittest.TestCase):
+    def setUp(self):
+        self.home = tempfile.mkdtemp()
+        common = make_library(self.home, [("405290", "Charlie Murder", "Charlie Murder", "4")])
+        self.game = os.path.join(common, "Charlie Murder", "CharlieMurder.exe")
+        fake_charlie_exe(self.game)
+        self.original = engine.sha256_file(self.game)
+        self.proc = os.path.join(self.home, "proc")
+        os.makedirs(self.proc)
+        self.eng = engine.Engine(
+            home=self.home,
+            settings_dir=os.path.join(self.home, "settings"),
+            runtime_dir=os.path.join(self.home, "runtime"),
+            glyph_dir=GLYPH_DIR,
+            profiles={"405290": PROFILES["405290"]},
+            proc_root=self.proc,
+        )
+
+    def tearDown(self):
+        shutil.rmtree(self.home)
+
+    def status(self):
+        return next(g for g in self.eng.list_games() if g["appid"] == "405290")
+
+    def stores(self):
+        """(value stored for a DualShock, value stored for any other pad)."""
+        data = read_bytes(self.game)
+        m = re.search(rb"\x6f....\x2c.\x7e(....)\x06[\x16\x17]\x9e\x2b.\x7e\1\x06[\x16\x17]\x9e",
+                      data, re.DOTALL)
+        return data[m.start() + 13], data[m.start() + 23]
+
+    def test_original_is_automatic(self):
+        self.assertEqual(self.stores(), (0x17, 0x16))
+        self.assertIn("DualShock", self.status()["original_hint"])
+
+    def test_ps_forces_playstation_for_every_pad(self):
+        self.assertTrue(self.eng.set_style("405290", "ps")["ok"])
+        self.assertEqual(self.stores(), (0x17, 0x17))
+        self.assertEqual(self.status()["state"], "ok")
+        self.assertEqual(engine.read_trailer(self.game)["style"], "ps")
+
+    def test_xbox_forces_xbox_for_every_pad(self):
+        self.eng.set_style("405290", "xbox")
+        self.assertEqual(self.stores(), (0x16, 0x16))
+
+    def test_switch_never_stacks_and_restore_is_exact(self):
+        self.eng.set_style("405290", "ps")
+        self.eng.set_style("405290", "xbox")
+        self.assertEqual(self.stores(), (0x16, 0x16))
+        self.eng.set_style("405290", "original")
+        self.assertEqual(engine.sha256_file(self.game), self.original)
+
+    def test_only_one_byte_changes(self):
+        before = read_bytes(self.game)
+        self.eng.set_style("405290", "ps")
+        after = read_bytes(self.game)
+        body = after[:len(before)]
+        self.assertEqual(sum(a != b for a, b in zip(before, body)), 1)
+
+    def test_reapply_after_update(self):
+        self.eng.set_style("405290", "ps")
+        fake_charlie_exe(self.game, variant=5)  # Steam restores/updates the original
+        make_library(self.home, [("405290", "Charlie Murder", "Charlie Murder", "4")], buildid="200")
+        self.assertEqual(self.status()["state"], "pending")
+        self.assertTrue(self.eng.sync_all("watch")[0]["changed"])
+        self.assertEqual(self.stores(), (0x17, 0x17))
+        self.assertFalse(self.eng.sync_all("watch")[0]["changed"])
+
+    def test_refuses_build_without_the_expected_code(self):
+        fake_charlie_exe(self.game, with_pattern=False)
+        result = self.eng.set_style("405290", "ps")
+        self.assertFalse(result["ok"])
+        self.assertIn("not supported", result["errors"][0])
+        self.assertIsNone(engine.read_trailer(self.game))
+
+    def test_refuses_ambiguous_match(self):
+        fake_charlie_exe(self.game)
+        data = read_bytes(self.game)
+        m = PROFILES["405290"].pattern.search(data)
+        with open(self.game, "ab") as f:
+            f.write(data[m.start():m.end()])
+        self.assertFalse(self.eng.set_style("405290", "ps")["ok"])
+
+    def test_real_pattern_ignores_unrelated_code(self):
+        # same shape but storing 0/1 the other way round is a different method: no match
+        data = bytes.fromhex("6f11223344 2c0a 7eaabbcc04 06 16 9e 2b54 7eaabbcc04 06 17 9e")
+        self.assertIsNone(PROFILES["405290"].pattern.search(data))
+
+
 class AdjustTest(unittest.TestCase):
     def test_flip_and_tint(self):
         # 1x2 icon: top red opaque, bottom transparent
@@ -294,7 +400,7 @@ class ProfilesTest(unittest.TestCase):
                 self.assertEqual(set(icons), roles, (profile.appid, style))
                 for name in icons.values():
                     self.assertTrue(os.path.exists(os.path.join(GLYPH_DIR, name + ".png")), name)
-            for tex in profile.textures:
+            for tex in getattr(profile, "textures", []):
                 self.assertTrue(set(tex["boxes"]) <= roles)
 
 

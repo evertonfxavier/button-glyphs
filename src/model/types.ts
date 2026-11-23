@@ -15,6 +15,7 @@ export type Game = {
   last_event?: string;
   has_backup?: boolean;
   roles?: string[];
+  original_hint?: string;
 };
 
 export type GamesResult = {

@@ -10,11 +10,18 @@ Per-texture options:
   tint       (r, g, b) - recolour icons, e.g. white for a monochrome font
   icons      {style: {role: icon}} overriding the profile-wide icons for this texture
   clear_all  wipe the whole texture before drawing (single-glyph HUD textures)
+  name       expected resource name, checked before patching
+  verify     "glyphs" (default): coloured glyphs must be present in the boxes;
+             "name": only the resource name and format are checked
+
+A profile with `extra_targets` (more forge files, each {"file", "entry", "textures"}) is
+handled by the engine one entry at a time (see entries.py), so big archives are never
+copied whole. Without them the profile keeps the single-file behaviour.
 """
 import struct
 
 from .. import image
-from ..forge import Forge, ForgeError, append_entry_payload
+from ..forge import DataFile, Forge, ForgeError, append_entry_payload
 
 TEX_DATA_MARK = bytes.fromhex("e97f2313")
 FORMATS = {1: "DXT1", 2: "DXT1", 3: "DXT1", 4: "DXT3", 5: "DXT5"}
@@ -25,7 +32,7 @@ class ForgeGlyphProfile:
     kind = "forge-glyphs"
 
     def __init__(self, appid, name, file, datafile, textures, roles, styles, notes="",
-                 revision=1):
+                 revision=1, original_hint="", extra_targets=None):
         self.appid = appid
         self.revision = revision    # bump when the output changes, so applied files get redone
         self.name = name
@@ -35,6 +42,9 @@ class ForgeGlyphProfile:
         self.roles = roles          # [(role, label)]
         self.styles = styles        # {style: {role: icon path "set/name"}}
         self.notes = notes
+        self.original_hint = original_hint  # what "Original" looks like, shown in the UI
+        self.extra_targets = list(extra_targets or [])
+        self.entry_level = bool(self.extra_targets)
 
     # ------------------------------------------------------------------ helpers
 
@@ -49,6 +59,11 @@ class ForgeGlyphProfile:
         size = struct.unpack_from("<I", res, mark + 4)[0]
         return w, h, fmt, mark + 8, size
 
+    @staticmethod
+    def _resource_name(res):
+        nl = struct.unpack_from("<I", res, 8)[0]
+        return res[12:12 + nl].decode("latin-1")
+
     def _texture(self, df, spec):
         res = df.read_resource(spec["id"])
         w, h, fmt, off, size = self._layout(res)
@@ -56,6 +71,8 @@ class ForgeGlyphProfile:
         if (w, h) != (spec["width"], spec["height"]) or name != spec["format"]:
             raise ForgeError("%s: expected %dx%d %s, found %dx%d fmt %d" % (
                 spec["label"], spec["width"], spec["height"], spec["format"], w, h, fmt))
+        if spec.get("name") and self._resource_name(res) != spec["name"]:
+            raise ForgeError("%s: resource is named %r" % (spec["label"], self._resource_name(res)))
         bpb = 8 if name == "DXT1" else 16
         top = (w // 4) * (h // 4) * bpb
         if size < top:
@@ -64,18 +81,29 @@ class ForgeGlyphProfile:
 
     # ------------------------------------------------------------------ API
 
+    def primary_target(self):
+        return {"file": self.file, "entry": self.datafile, "textures": self.textures}
+
+    def targets(self):
+        return [self.primary_target()] + self.extra_targets
+
     def check(self, path):
         """Problems that make `path` unsafe to patch (empty list = OK). Expects an original file."""
+        return self.check_target(path, self.primary_target())
+
+    def check_target(self, path, target):
         problems = []
         try:
-            df = Forge(path).load(self.datafile)
+            df = Forge(path).load(target["entry"])
         except (ForgeError, OSError, struct.error) as exc:
-            return ["cannot read %s: %s" % (self.file, exc)]
-        for spec in self.textures:
+            return ["cannot read %s: %s" % (target["file"], exc)]
+        for spec in target["textures"]:
             try:
                 res, off, top, fmt = self._texture(df, spec)
-            except (ForgeError, struct.error) as exc:
-                problems.append(str(exc))
+            except (ForgeError, KeyError, struct.error) as exc:
+                problems.append("%s: %s" % (target["file"], exc))
+                continue
+            if spec.get("verify") == "name":
                 continue
             rgba = image.decode(res[off:off + top], spec["width"], spec["height"], fmt)
             w = spec["width"]
@@ -88,20 +116,28 @@ class ForgeGlyphProfile:
                         if a > 100 and (spec.get("tint") or max(r, g, b) - min(r, g, b) > 50):
                             coloured += 1
                 if coloured < MIN_GLYPH_PIXELS:
-                    problems.append("%s: no %s glyph where expected" % (spec["label"], role))
+                    problems.append("%s: %s: no %s glyph where expected" % (
+                        target["file"], spec["label"], role))
         return problems
+
+    def icons_for(self, spec, style):
+        return spec.get("icons", {}).get(style) or self.styles[style]
+
+    def patch_payload(self, payload, target, style, load_icon):
+        """Return the entry payload with `style` glyphs drawn into the target's textures."""
+        if style not in self.styles:
+            raise ValueError("unknown style %r" % style)
+        df = DataFile(payload)
+        for spec in target["textures"]:
+            self._patch_texture(df, spec, self.icons_for(spec, style), load_icon)
+        return df.tobytes()
 
     def patch(self, path, style, load_icon):
         """Draw `style` glyphs into the original file at `path` (modified in place)."""
-        if style not in self.styles:
-            raise ValueError("unknown style %r" % style)
         fg = Forge(path)
         entry = fg.find(self.datafile)
-        df = fg.load(self.datafile)
-        for spec in self.textures:
-            icons = spec.get("icons", {}).get(style, self.styles[style])
-            self._patch_texture(df, spec, icons, load_icon)
-        append_entry_payload(path, entry, df.tobytes())
+        payload = self.patch_payload(fg.read_payload(entry), self.primary_target(), style, load_icon)
+        append_entry_payload(path, entry, payload)
 
     @staticmethod
     def _adjust(icon, iw, ih, spec):

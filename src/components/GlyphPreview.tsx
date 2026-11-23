@@ -2,12 +2,20 @@ import { GLYPH_PREVIEW } from "../generated/glyphs";
 import { MUTED } from "../theme";
 import type { Style } from "../model";
 
-export function GlyphPreview({ style, roles }: { style: Style; roles: string[] }) {
+export function GlyphPreview({
+  style,
+  roles,
+  originalHint,
+}: {
+  style: Style;
+  roles: string[];
+  originalHint?: string;
+}) {
   const icons = GLYPH_PREVIEW[style];
   if (!icons) {
     return (
       <div style={{ fontSize: "0.78em", color: MUTED }}>
-        The game's own icons (body-part glyphs in Xbox 360 colours).
+        {originalHint || "The game's own icons."}
       </div>
     );
   }

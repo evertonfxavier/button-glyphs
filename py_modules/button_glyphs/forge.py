@@ -262,7 +262,7 @@ class DataFile:
 
 
 class Entry:
-    __slots__ = ("index", "offset", "file_id", "size", "name", "slot_off", "name_off")
+    __slots__ = ("index", "offset", "file_id", "size", "name", "slot_off", "name_off", "name_size")
 
 
 class Forge:
@@ -297,6 +297,7 @@ class Forge:
                     e.offset, e.file_id, e.size = o, fid, sz
                     e.slot_off = idx + 16 * i
                     e.name_off = noff + NAME_ENTRY_SIZE * i
+                    e.name_size = struct.unpack_from("<I", nb, NAME_ENTRY_SIZE * i)[0]
                     raw = nb[NAME_ENTRY_SIZE * i + 44:NAME_ENTRY_SIZE * i + 172]
                     e.name = raw.split(b"\0")[0].decode("latin-1")
                     self.entries.append(e)
@@ -320,29 +321,50 @@ class Forge:
         return DataFile(self.read_payload(self.find(name)))
 
 
+def read_entry_header(path, entry):
+    with open(path, "rb") as f:
+        f.seek(entry.offset)
+        return f.read(FILEDATA_HEADER)
+
+
+def append_blob(f, header, payload):
+    """Append header+payload at the next ALIGN boundary of the open file; return its offset."""
+    f.seek(0, os.SEEK_END)
+    eof = f.tell()
+    off = (eof + ALIGN - 1) // ALIGN * ALIGN
+    f.write(b"\0" * (off - eof))
+    f.write(header)
+    f.write(payload)
+    f.write(b"\0" * ((-f.tell()) % ALIGN))
+    return off
+
+
+def set_slot(f, entry, offset, size, name_size):
+    """Repoint an entry in the index (and the size kept in its name record)."""
+    f.seek(entry.slot_off)
+    f.write(struct.pack("<qII", offset, entry.file_id, size))
+    f.seek(entry.name_off)
+    f.write(struct.pack("<I", name_size))
+
+
+def with_payload_size(header, size):
+    h = bytearray(header)
+    struct.pack_into("<I", h, FILEDATA_SIZE_FIELD, size)
+    return bytes(h)
+
+
 def append_entry_payload(path, entry, payload):
-    """Write `payload` for `entry` at the (aligned) end of the file and repoint the index.
+    """Write `payload` for `entry` at the end of the file and repoint the index at it.
 
     The original bytes stay where they were, so a crash never leaves a half-written
     entry behind: until the index is rewritten, the old data is still the live one.
     """
+    header = with_payload_size(read_entry_header(path, entry), len(payload))
     with open(path, "r+b") as f:
-        f.seek(entry.offset)
-        header = bytearray(f.read(FILEDATA_HEADER))
-        struct.pack_into("<I", header, FILEDATA_SIZE_FIELD, len(payload))
-        f.seek(0, os.SEEK_END)
-        eof = f.tell()
-        new_off = (eof + ALIGN - 1) // ALIGN * ALIGN
-        f.write(b"\0" * (new_off - eof))
-        f.write(header)
-        f.write(payload)
-        f.write(b"\0" * ((-f.tell()) % ALIGN))
+        new_off = append_blob(f, header, payload)
         f.flush()
         os.fsync(f.fileno())
-        f.seek(entry.slot_off)
-        f.write(struct.pack("<qII", new_off, entry.file_id, len(payload)))
-        f.seek(entry.name_off)
-        f.write(struct.pack("<I", len(payload)))
+        set_slot(f, entry, new_off, len(payload), len(payload))
         f.flush()
         os.fsync(f.fileno())
     return new_off

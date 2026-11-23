@@ -66,4 +66,5 @@ PROFILE = ForgeGlyphProfile(
                  "empty": "xbox/b-filled-red", "legs": "xbox/a-filled-green"},
     },
     notes="Patches DataPC.forge (~200 MB); the original is backed up first.",
+    original_hint="The game's own icons (body-part glyphs in Xbox 360 colours).",
 )

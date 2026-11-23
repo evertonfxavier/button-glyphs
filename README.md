@@ -13,6 +13,7 @@ Decky Loader plugin for **Steam Deck** that changes the button prompts a game sh
 | Game | Steam appid | What changes |
 |------|-------------|--------------|
 | Assassin's Creed (Director's Cut) | 15100 | The four action glyphs (head, weapon hand, empty hand, legs) in the HUD, tutorials and menus: △ □ ○ ✕ or Y X B A |
+| Charlie Murder | 405290 | All button prompts (text, HUD, tutorials, attribute screen). Forces the game's own PlayStation or Xbox set for every controller; *Original* = automatic (PlayStation only for a DualShock 4) |
 
 Every game stores its prompts differently, so each one needs its own profile (see [Adding a game](#adding-a-game)).
 
@@ -44,6 +45,8 @@ Open **Button Glyphs** in the Quick Access menu, pick a style for a game and sta
 - **Safety check**: before patching, the profile verifies that the textures it expects are there, with the expected size, format and glyphs. Unknown layouts are left untouched.
 - **Assassin's Creed**: the glyphs live in two font atlases and one HUD texture inside `DataPC.forge` (Ubisoft Scimitar archive, LZO1X chunks, DXT3 textures). Only the touched 4×4 texture blocks are re-encoded; the rewritten archive entry is appended to the file and the index is repointed, so the original data is never overwritten in place.
 
+- **Charlie Murder**: the Linux port already contains both button sets and picks one from the pad GUID, so the Deck (which looks like an Xbox 360 pad) always got Xbox. The profile finds the IL that stores the pad type in `CharlieMurder.exe` by byte pattern and changes **one byte**; nothing is redrawn. The pattern must match exactly once, otherwise the file is left untouched.
+
 ## Development
 
 Requirements: Node.js 20+, pnpm 9+, Python 3.9+ (backend is stdlib only).
@@ -66,7 +69,7 @@ pnpm run build:zip    # out/button-glyphs-vX.Y.Z.zip
 | `py_modules/button_glyphs/steam.py` | Steam libraries, manifests, running games |
 | `py_modules/button_glyphs/forge.py` | Scimitar `.forge` reader/writer, LZO1X decoder |
 | `py_modules/button_glyphs/image.py` | DXT1/3/5 codecs, PNG I/O, resampling |
-| `py_modules/button_glyphs/profiles/` | One profile per supported game |
+| `py_modules/button_glyphs/profiles/` | One profile per supported game (`forge_glyphs.py`: textures in a forge; `il_patch.py`: one-byte code patch) |
 | `assets/svg/{ps,xbox}/` | Icon sources, one SVG per button |
 | `tests/` | Backend tests with a synthetic forge builder |
 
@@ -74,7 +77,8 @@ pnpm run build:zip    # out/button-glyphs-vX.Y.Z.zip
 
 1. Find where the game draws its prompts (texture, font atlas, config file…).
 2. If it is a Scimitar forge with DXT glyphs, describe it with `ForgeGlyphProfile` (see `profiles/ac1.py`): forge entry, texture ids, size/format and the box of each glyph. Otherwise add a new profile kind with the same `check(path)` / `patch(path, style, load_icon)` interface.
-3. Register it in `profiles/__init__.py`.
+3. If the game already ships both sets and only chooses by controller type, use `IlPatchProfile` (see `profiles/charlie_murder.py`).
+4. Register it in `profiles/__init__.py`.
 
 ## Icons
 

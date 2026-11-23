@@ -169,6 +169,7 @@ class Engine:
             "has_backup": os.path.exists(self.backup_path(app["appid"], profile)),
             "last_event": gcfg.get("last_event", ""),
             "roles": [label for _, label in profile.roles],
+            "original_hint": getattr(profile, "original_hint", ""),
         }
         if not os.path.exists(path):
             out.update(state="error", message="%s not found" % profile.file)
