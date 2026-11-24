@@ -1,6 +1,6 @@
 {
   "name": "button-glyphs",
-  "version": "0.3.6",
+  "version": "0.3.7",
   "description": "Decky plugin that swaps in-game button prompts to PlayStation or Xbox style",
   "homepage": "https://github.com/evertonfxavier/button-glyphs",
   "repository": {"type": "git", "url": "git+https://github.com/evertonfxavier/button-glyphs.git"},
