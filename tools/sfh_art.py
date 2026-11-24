@@ -133,8 +133,8 @@ VARIANT_B = {
     "Menu/xbox/select": {"luma_min": 140},      # the Share icon is light-grey outlines, not near-white
 }
 
-PROVENANCE = ("the user's own redrawn PlayStation pixel art (sheet of 39 icons); "
-              "the origin of the pixels is not stated")
+PROVENANCE = ("the project owner's own PlayStation pixel art (sheet of 39 icons), drawn by the owner, "
+              "who stated this on 2026-11-24; 0 pixels identical to the game's textures (tools/art_overlap.py)")
 
 
 class SheetError(ValueError):

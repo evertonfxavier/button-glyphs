@@ -8,9 +8,9 @@
 | Engine / format | MonoGame (.NET/Mono, `DumaLegend.exe`, Windows build under Proton, XInput only). Loose XNB v5 files under `Content/`, uncompressed RGBA Texture2D |
 | Strategy / profile | **loose files** (new): each small file rewritten whole, state read from SHA-256 because an XNB has no spare byte for a marker; `profiles/songs_for_a_hero.py` on `profiles/xnb_pictures.py` (`XnbPictureProfile`, `files_level`) + `files_patch.py`, revision 1 |
 | Styles | PlayStation, Original (= Xbox, the game is natively Xbox) |
-| Status | profile written, verified on synthetic fixtures only; not applied to any real game folder, not installed |
+| Status | installed on the Deck with plugin v0.3.3; PlayStation applied from the UI and confirmed working in game by the user (2026-11-24) |
 | Summary | The in-game prompts of the tooltips and the menus - A/B/X/Y, the D-pad, LB/RB, LT/RT and START/BACK - become PlayStation pixel art (✕ ○ □ △, L1/R1, L2/R2, OPTIONS/SHARE icons). The HOLD label, the left-stick tooltips, the arrows and the stick caps of the menu are left as they are. Xbox and Original are the same thing here. |
-| Support level | unconfirmed |
+| Support level | confirmed |
 
 ## Where the button art lives
 Every prompt is a tiny loose texture: `Content/Tooltip/*.xnb` (in-game tooltips, 28x23, 2661 bytes; HOLD is 26x11) and
@@ -49,10 +49,13 @@ the length is the same). Transparent pixels stay (0,0,0,0).
 else in `Content/` (8,500+ files) is never opened.
 
 ### Provenance of the art
-The pictures are the user's own redrawn PlayStation art (a sheet of 39 icons). The origin of the pixels is **not stated**.
-`tools/art_overlap.py` found 0 pixels identical to the game's own textures (reported by the orchestrator; not re-run for
-this page). The source sheet is not in the repo (`tools/sfh_art.py` slices it into the 24 native-size PNGs). The PNGs are the
-only art the repo carries for this game; no game art is copied (tools emit hashes and sizes, never pixels).
+The pictures are the project owner's own PlayStation pixel art (a sheet of 39 icons, 24 of them used), **drawn by the
+owner, who stated this on 2026-11-24**. `tools/art_overlap.py`, re-run on the real originals with the final PNGs
+(2026-11-24): 0 of 3,124 opaque pixels identical to the game's textures, 0 of 1,210 identical 2x2 blocks (13 pixels within a
+tolerance of 8, coincidental dark greys). The source sheet is not in the repo (`tools/sfh_art.py` slices it into the 24
+native-size PNGs; keep the original sheet safe to re-derive them). The PNGs are the only art the repo carries for this
+game; no game art is copied (tools emit hashes and sizes, never pixels). The sheet also holds PlayStation-button and
+touchpad icons that are **not** shipped (only the 24 textures above are written).
 
 ## How state is detected without a marker
 State is read per file from SHA-256 (`files_patch.classify`), so it survives a lost `config.json` and Steam restores. Because
@@ -135,17 +138,18 @@ PNGs are checked against the table (exact size, alpha only 0/255, transparent pi
 - Verified: the table of 36 textures against the real build on the Deck (read-only, 37/37 size and SHA-256 match, locate
   phase); `xnb.py` round-trips all 413 Texture2D files of a real copy; the 24 bundled PNGs match their table entries; the
   strategy on synthetic fixtures (see above), including the crash and whole-tree proofs.
-- NOT verified: whether the game shows the new icons (nothing has been applied to the real game or seen in game yet);
-  how the dark Menu discs (A/B/X/Y) look on the menu background, which is probably dark too; whether the START tooltip is
-  still clear with the OPTIONS icon and without the word "START" the original had; whether the small arrow marks of the
-  D-pad art are readable at the tooltip's size; the round trip on a clone of the real files (`tools/clone_validate.py`
-  understands this strategy and is tested on synthetic files, but was not run on the real ones) and the timing on the Deck;
-  the SD card's filesystem and the owner of the game files on the Deck (the Deck was unreachable for the last check, so
-  neither was read), and which path form the game's process really has there.
+- Verified on the real files (Mac copy of the 36 files, real engine, profile and art): whole-tree SHA-256 cycle
+  ps/original/ps/original, 67/67 edge probes, `clone_validate.py` PASS, 0 game pixels in the art (`tools/art_overlap.py`).
+  On the Deck (read-only, before install): SD card is ext4, game files are deck:deck 0755, Steam's library path is
+  `/run/media/deck/LX512` (`/run/media/LX512` is a symlink to it; the running-game guard covers both), 24/24 hashes match.
+- Verified in game: the user applied PlayStation and reported it "funcionou 100%" (2026-11-24). Which screens were looked
+  at was not recorded.
+- NOT verified: the game's real `/proc` command line (no game was running during the checks); the Deck-side timing of
+  the first apply.
 
 ## Deck state
-Not installed. The plugin is not on the Deck with this profile and no file of the game has been changed by it. Support level:
-unconfirmed. Re-read the real state with `/game-status 389170` before trusting this page.
+Plugin v0.3.3 installed (2026-11-24, with the user's approval); PlayStation chosen by the user and confirmed in game.
+Support level: confirmed. Re-read the real state with `/game-status 389170` before trusting this page.
 
 ## Open questions and caveats
 - Where the game runs from: the library path Steam reports and the path in the game's process may be two mount names of the

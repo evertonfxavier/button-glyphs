@@ -7,7 +7,25 @@ Add your line under **Unreleased** in the pull request; maintainers move it into
 
 ## [Unreleased]
 
+### Changed
+- Songs for a Hero: the game page and the generated art table now state the origin of the artwork (drawn by the project
+  owner), with a re-run overlap check against the game's textures (0 identical pixels).
+
 ## [0.3.3] - 2026-11-24
+
+### Added
+- Two more games: *10 Second Ninja X* (the game ships PS4 sprites; the plugin sets the one save value that picks them and
+  restores the original value) and *Songs for a Hero - Definitive Edition* (24 tiny loose XNB textures replaced by bundled
+  pixel art).
+- A new strategy for loose files with no spare byte for a marker: each file is replaced atomically, state is read from
+  SHA-256, and a ledger of what the plugin wrote (fsynced before the first write) decides what is ours.
+- *Quantum Break* now also replaces the Xbox controller picture of the options screen with a DualSense when PlayStation is chosen.
+
+### Changed
+- The running-game guard also recognises the same SD card under its other mount name, the real path and the launcher's
+  `AppId`, so the watcher no longer writes while such a game runs.
+- A status error now outranks "pending" for every strategy, and bundled pictures are validated before the first write.
+- Under Original, files that are not the supported build are reported instead of silently shown as fine.
 
 ## [0.3.2] - 2026-11-24
 

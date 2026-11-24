@@ -6,7 +6,7 @@ whole by a native-size picture. ART maps a texture key (path relative to the gam
 width x height, RGBA straight alpha, transparent pixels (0,0,0,0), the picture already fitted
 inside the footprint of the original art."""
 
-# Provenance: the user's own redrawn PlayStation pixel art (sheet of 39 icons); the origin of the pixels is not stated.
+# Provenance: the project owner's own PlayStation pixel art (sheet of 39 icons), drawn by the owner, who stated this on 2026-11-24; 0 pixels identical to the game's textures (tools/art_overlap.py).
 ART = {
     "Tooltip/A": "sfh/Tooltip_A",
     "Tooltip/B": "sfh/Tooltip_B",

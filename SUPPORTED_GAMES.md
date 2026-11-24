@@ -27,7 +27,7 @@ Whatever the level, the plugin checks the game files before changing anything, a
 | **Charlie Murder** | [405290](https://store.steampowered.com/app/405290) | Original, PlayStation, Xbox | ✅ confirmed | [notes](docs/games/405290-charlie-murder.md) |
 | **Quantum Break** | [474960](https://store.steampowered.com/app/474960) | Original, PlayStation | ✅ confirmed | [notes](docs/games/474960-quantum-break.md) |
 | **Saint Seiya: Soldiers' Soul** | [348710](https://store.steampowered.com/app/348710) | Original, PlayStation | ✅ confirmed | [notes](docs/games/348710-saint-seiya.md) |
-| **Songs for a Hero - Definitive Edition** | [389170](https://store.steampowered.com/app/389170) | Original, PlayStation | ⚪ unconfirmed | [notes](docs/games/389170-songs-for-a-hero.md) |
+| **Songs for a Hero - Definitive Edition** | [389170](https://store.steampowered.com/app/389170) | Original, PlayStation | ✅ confirmed | [notes](docs/games/389170-songs-for-a-hero.md) |
 
 ## Details per game
 
@@ -99,14 +99,14 @@ The controller sheet of menus and tutorials (A/B/X/Y → ✕ ○ □ △, LB/RB 
 </details>
 
 <details>
-<summary><b>Songs for a Hero - Definitive Edition (389170)</b> · ⚪ unconfirmed</summary>
+<summary><b>Songs for a Hero - Definitive Edition (389170)</b> · ✅ confirmed</summary>
 
 The in-game prompts of the tooltips and the menus - A/B/X/Y, the D-pad, LB/RB, LT/RT and START/BACK - become PlayStation pixel art (✕ ○ □ △, L1/R1, L2/R2, OPTIONS/SHARE icons). The HOLD label, the left-stick tooltips, the arrows and the stick caps of the menu are left as they are. Xbox and Original are the same thing here.
 
 - **Styles:** Original, PlayStation (Xbox is the same as Original: the game already shows it)
 - **How it works:** Replaces the game's small button-art files **one by one**, each written safely as a whole. The original of every file is kept, and **Original** gives back the exact bytes Steam installed.
 - **Files it changes:** 24 small texture files under `Content/`
-- **Not confirmed yet:** whether the game shows the new icons (nothing has been applied to the real game or seen in game yet); how the dark Menu discs (A/B/X/Y) look on the menu background, which is probably dark too; whether the START tooltip is still clear with the OPTIONS icon and without the word "START" the original had; whether the small arrow marks of the D-pad art are readable at the tooltip's size; the round trip on a clone of the real files (`tools/clone_validate.py` understands this strategy and is tested on synthetic files, but was not run on the real ones) and the timing on the Deck; the SD card's filesystem and the owner of the game files on the Deck (the Deck was unreachable for the last check, so neither was read), and which path form the game's process really has there.
+- **Not confirmed yet:** the game's real `/proc` command line (no game was running during the checks); the Deck-side timing of the first apply.
 - **Links:** [Steam store](https://store.steampowered.com/app/389170) · [technical notes](docs/games/389170-songs-for-a-hero.md) · [report how it looks in game](https://github.com/evertonfxavier/button-glyphs/issues/new?template=in_game_report.yml&title=%5BIn-game+report%5D+Songs+for+a+Hero+-+Definitive+Edition)
 
 </details>
