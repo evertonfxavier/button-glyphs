@@ -1,6 +1,7 @@
 # <Game name> (<appid>)
 
 ## At a glance
+<!-- Support level is exactly one of: confirmed (the user saw it in game) / partly confirmed / unconfirmed (tests and renders only). -->
 | | |
 |--|--|
 | Steam appid / install dir | |
@@ -9,6 +10,8 @@
 | Strategy / profile | `profiles/<slug>.py` (class ..., revision 1) |
 | Styles | ps / xbox / original |
 | Status | recon / profile written / verified offline / installed / confirmed in game |
+| Summary | One or two sentences for players: what changes on screen and what does not |
+| Support level | unconfirmed |
 
 ## Where the button art lives
 Files, archive structure, texture ids / offsets / sizes / formats, orientation (bottom-up?), mips.

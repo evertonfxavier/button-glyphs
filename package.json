@@ -2,6 +2,10 @@
   "name": "button-glyphs",
   "version": "0.3.1",
   "description": "Decky plugin that swaps in-game button prompts to PlayStation or Xbox style",
+  "homepage": "https://github.com/evertonfxavier/button-glyphs",
+  "repository": {"type": "git", "url": "git+https://github.com/evertonfxavier/button-glyphs.git"},
+  "bugs": {"url": "https://github.com/evertonfxavier/button-glyphs/issues"},
+  "license": "BSD-3-Clause",
   "type": "module",
   "packageManager": "pnpm@9.15.0",
   "scripts": {
@@ -9,6 +13,7 @@
     "build:zip": "bash scripts/build-zip.sh",
     "build:ci": "bash scripts/ci-build-zip.sh",
     "glyphs": "node scripts/render-glyphs.mjs",
+    "brand": "node scripts/render-brand.mjs",
     "watch": "rollup -c -w",
     "test": "python3 -m unittest discover -s tests"
   },

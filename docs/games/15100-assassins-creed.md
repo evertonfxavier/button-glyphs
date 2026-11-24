@@ -9,6 +9,8 @@
 | Strategy / profile | entry-level, `profiles/ac1.py` (`ForgeGlyphProfile` + `extra_targets`), revision 3 |
 | Styles | PlayStation, Xbox, Original |
 | Status | font glyphs confirmed in game; menu `Conrtols_*` redraw verified offline only |
+| Summary | The four action glyphs (head, weapon hand, empty hand, legs) in the HUD, tutorials and menus become △ □ ○ ✕ (PlayStation) or Y X B A (Xbox). PlayStation also redraws the Xbox 360 button art of the menus and the Animus room: A/B/X/Y → ✕ ○ □ △, LT/RT → L2/R2 and the L/R sticks. |
+| Support level | partly confirmed |
 
 ## Where the button art lives
 The game has no letter prompts for the action buttons: it draws **four body-part glyphs** in

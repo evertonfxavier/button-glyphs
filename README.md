@@ -1,109 +1,148 @@
-# Button Glyphs
+<p align="center">
+  <img src="assets/logo.png" width="140" alt="Button Glyphs logo: four face buttons around two swap arrows">
+</p>
 
-Decky Loader plugin for **Steam Deck** that changes the button prompts a game shows to **PlayStation** or **Xbox** style:
+<h1 align="center">Button Glyphs</h1>
 
-- lists the games installed in every Steam library and marks the supported ones
-- one dropdown per game: **Original**, **PlayStation** or **Xbox**
-- the original game file is **backed up** (checked by SHA-256) before the first change; picking **Original** restores it
-- when Steam **updates** the game (or "Verify integrity" restores the file), the chosen style is **re-applied automatically**
-- never touches a game while it is running or while Steam is updating it
+<p align="center">
+  <b>Choose PlayStation or Xbox button prompts for your games on the Steam Deck.</b><br>
+  A <a href="https://github.com/SteamDeckHomebrew/decky-loader">Decky Loader</a> plugin. Per game. Reversible. Open source.
+</p>
+
+<p align="center">
+  <a href="https://github.com/evertonfxavier/button-glyphs/actions/workflows/build-plugin.yml"><img src="https://github.com/evertonfxavier/button-glyphs/actions/workflows/build-plugin.yml/badge.svg" alt="Build status"></a>
+  <a href="https://github.com/evertonfxavier/button-glyphs/releases/latest"><img src="https://img.shields.io/github/v/release/evertonfxavier/button-glyphs" alt="Latest release"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-BSD--3--Clause-blue" alt="License: BSD-3-Clause"></a>
+  <img src="https://img.shields.io/badge/Steam%20Deck-Decky%20Loader-1a9fff" alt="Steam Deck, Decky Loader">
+</p>
+
+<p align="center"><b>English</b> · <a href="README.pt-BR.md">Português (Brasil)</a></p>
+
+---
+
+## What is this?
+
+Many PC games show **Xbox-style** prompts ("press **A**") or their own symbols, even if you prefer PlayStation's
+✕ ○ □ △. Button Glyphs changes those prompts **inside the game's files**, one game at a time, so you see the style you like.
+
+> **Example.** *Assassin's Creed* (2008) draws a little body-part icon for every action. Choose **PlayStation** in the
+> plugin and ✕ ○ □ △ appear instead; choose **Original** and the game is exactly as Steam installed it.
+
+## Highlights
+
+- **One dropdown per game:** Original, PlayStation or Xbox.
+- **Your originals are safe.** *Original* restores the exact bytes Steam installed (checked by SHA-256 in the tests).
+- **Survives game updates.** When Steam updates a game, or you "Verify integrity of game files", your choice is re-applied automatically.
+- **Careful by design.** It checks the game files before touching them, refuses versions it does not recognise, and never changes a game while it runs.
+- **Nothing to configure, no root, no internet.**
+
+## Quick start
+
+You need a Steam Deck with [Decky Loader](https://github.com/SteamDeckHomebrew/decky-loader) installed.
+
+1. **Download** `button-glyphs-vX.Y.Z.zip` from the [latest release](https://github.com/evertonfxavier/button-glyphs/releases/latest) and get it onto the Deck
+   (download it in Desktop Mode, or copy it over from your PC). A `.sha256` file sits next to it if you want to check the download.
+2. **Turn on Decky's Developer Mode.** In Game Mode press the **Quick Access** button (**···**), open **Decky**, then the
+   **⚙ Settings** page, and switch **Developer Mode** on. It only unlocks installing a plugin from a file.
+3. **Install the plugin.** In Decky's settings open the **Developer** section and choose **Install Plugin from ZIP**, then pick the file.
+4. **Use it.** Open **Button Glyphs** from Decky's plugin list, pick a game in the first dropdown, then pick a style.
+
+That is all. Start the game and look at the prompts.
 
 ## Supported games
 
-| Game | Steam appid | What changes |
-|------|-------------|--------------|
-| Assassin's Creed (Director's Cut) | 15100 | The four action glyphs (head, weapon hand, empty hand, legs) in the HUD, tutorials and menus: △ □ ○ ✕ or Y X B A. PlayStation also redraws the Xbox 360 button art of the menus and the Animus room (A/B/X/Y → ✕ ○ □ △, LT/RT → L2/R2, L/R sticks) in 11 area archives |
-| Charlie Murder | 405290 | All button prompts (text, HUD, tutorials, attribute screen). Forces the game's own PlayStation or Xbox set for every controller; *Original* = automatic (PlayStation only for a DualShock 4) |
-| Quantum Break | 474960 | Every Xbox prompt of the HUD, menus and video player: A/B/X/Y → ✕ ○ □ △ in the PlayStation colours, LB/RB → L1/R1, LT/RT → L2/R2 (in all four HUD scales). Sticks, D-pad and View/Menu already match a PlayStation pad; the Xbox controller picture of the options screen is not redrawn. *Xbox* and *Original* are the same thing here |
-| Saint Seiya: Soldiers' Soul | 348710 | The controller sheet of menus and tutorials (A/B/X/Y → ✕ ○ □ △, LB/RB → L1/R1, LT/RT → L2/R2, L3/R3, START/BACK → OPTIONS/SHARE), the X/Y/B shown beside the attack commands in battle, and the big A of the continue screen, in all eight languages. Sticks, D-pad and the numbered pad buttons are left alone; the Xbox controller drawings inside the help/tutorial pictures are not redrawn. *Xbox* and *Original* are the same thing here |
+<!-- GAMES:START -->
+| Game | Steam ID | Support | Details |
+|------|----------|---------|---------|
+| [Assassin's Creed](SUPPORTED_GAMES.md#assassins-creed-15100) | 15100 | 🟡 partly confirmed | [technical notes](docs/games/15100-assassins-creed.md) |
+| [Charlie Murder](SUPPORTED_GAMES.md#charlie-murder-405290) | 405290 | ✅ confirmed | [technical notes](docs/games/405290-charlie-murder.md) |
+| [Quantum Break](SUPPORTED_GAMES.md#quantum-break-474960) | 474960 | ⚪ unconfirmed | [technical notes](docs/games/474960-quantum-break.md) |
+| [Saint Seiya: Soldiers' Soul](SUPPORTED_GAMES.md#saint-seiya-soldiers-soul-348710) | 348710 | ⚪ unconfirmed | [technical notes](docs/games/348710-saint-seiya.md) |
+<!-- GAMES:END -->
 
-Every game stores its prompts differently, so each one needs its own profile (see [Adding a game](#adding-a-game)).
+Full details, what each game changes and how sure we are: **[SUPPORTED_GAMES.md](SUPPORTED_GAMES.md)**.
+Every game stores its prompts differently, so each one needs its own *profile*. Yours is missing?
+[Request it](https://github.com/evertonfxavier/button-glyphs/issues/new?template=game_request.yml) or
+[add it yourself](docs/adding-a-game.md).
 
-## Installation
+## Using it
 
-1. Download `button-glyphs-vX.Y.Z.zip` from the [latest release](https://github.com/evertonfxavier/button-glyphs/releases/latest) (or build it, below). A `.sha256` file sits next to it.
-2. In **Game Mode**: Quick Access (⋯) → **Decky** → **Settings** → enable **Developer Mode**.
-3. **Install Plugin from ZIP** and pick the file.
-4. Open **Button Glyphs** from the Decky plugin list.
+Pick a game, pick a style, start the game. The line under the dropdown tells you what is going on:
 
-The plugin does not need root: game files belong to the `deck` user.
+| What you see | What it means |
+|--------------|---------------|
+| *PlayStation glyphs active* | Done. |
+| *Game is running* | The change is applied as soon as you close the game. |
+| *Steam is updating this game* | It will be applied after the update finishes. |
+| *…will be applied* | Waiting for the next check (every minute, or press **Check for game updates now**). |
+| *this game version is not supported yet* | An update changed the game in a way the plugin does not recognise. **Nothing was modified.** [Tell us](https://github.com/evertonfxavier/button-glyphs/issues/new?template=bug_report.yml). |
 
-## Usage
+## Is it safe?
 
-Open **Button Glyphs** in the Quick Access menu, pick a style for a game and start it. The status line under each game tells you what is happening:
+Short answer: it was built so that you can always go back. The longer answer is in the [FAQ](docs/faq.md#is-it-safe-for-my-games).
 
-| Status | Meaning |
-|--------|---------|
-| *PlayStation glyphs active* | Done |
-| *Game is running* | The change is applied as soon as you close the game |
-| *Steam is updating this game* | Applied after the update finishes |
-| *…will be applied* | Waiting for the next check (every minute, or **Check for game updates now**) |
-| *this game version is not supported yet* | An update changed the files in a way the profile does not recognise; nothing was modified |
+- **What it changes:** only button textures (or, for one game, a single byte of its program) in the game's own folder.
+- **How you go back:** pick **Original**. Or in Steam: *game → Properties → Installed Files → Verify integrity of game files*.
+- **Uninstalling the plugin:** first set every game to **Original**, then remove the plugin from Decky. If you forget, Steam's *Verify integrity* restores the files.
+- **Online games:** the plugin only supports offline-friendly games, because changing files of games with anti-cheat can get an account banned. Check the game's notes in [SUPPORTED_GAMES.md](SUPPORTED_GAMES.md).
+- **No game art is shipped.** The plugin draws its own icons.
+
+## Something went wrong?
+
+1. Read the [FAQ and troubleshooting](docs/faq.md).
+2. Still stuck? [Open a bug report](https://github.com/evertonfxavier/button-glyphs/issues/new?template=bug_report.yml). The form tells you which log to attach (`~/homebrew/logs/Button Glyphs/`).
+3. Played a game with the plugin? [Tell us how it looked](https://github.com/evertonfxavier/button-glyphs/issues/new?template=in_game_report.yml): it is the most valuable thing you can do, because nobody can verify a visual change without seeing the game.
 
 ## How it works
 
-- **Backup**: for single-file games, `homebrew/data/Button Glyphs/backups/<appid>/` keeps the original file (a new copy is taken whenever a new original shows up after a game update). Games that spread their art over many big archives (Assassin's Creed) are patched *per entry*: the new data is appended to the archive and only its index slot is repointed, so the original bytes never leave the file. *Original* puts the slot back and cuts the file to its original size, which gives back exactly the bytes Steam installed (verified by SHA-256 in the tests), without copying gigabytes.
-- **Self-describing files**: every file the plugin writes ends with a small trailer that records the style and the SHA-256 of the original it came from. No trailer means the file is an original, so after an update the plugin knows it has to apply the style again. Styles are always built from the original, never stacked.
-- **Safety check**: before patching, the profile verifies that the textures it expects are there, with the expected size, format and glyphs. Unknown layouts are left untouched.
-- **Assassin's Creed**: the action glyphs live in two font atlases, a white font atlas and one HUD texture inside `DataPC.forge` (Ubisoft Scimitar archive, LZO1X chunks, DXT3 textures); the Xbox 360 button art (`Conrtols_*`) is duplicated in 11 area archives. Only the touched 4×4 texture blocks are re-encoded. Writes are ordered new data → marker → index, so a power cut at any point leaves a file that is either original or recoverable from its marker; a game that fails the layout check is left untouched.
+```mermaid
+flowchart LR
+    A["You pick a style<br/>in Quick Access"] --> B["The plugin checks the game files<br/>ids, sizes, hashes"]
+    B -->|"known version"| C["It redraws only the button textures<br/>and keeps the original safe"]
+    B -->|"unknown version"| D["It touches nothing<br/>and tells you why"]
+    C --> E["Steam updates the game?<br/>The plugin notices and re-applies"]
+```
 
-- **Quantum Break**: the prompts are two raw 32-bit BGRA atlases (`prompts.tex`, `videoplayer_controls.tex`, four HUD scales = 8 textures, ~37 MB) stored uncompressed at fixed offsets inside `data/ep999-000.rmdp` (56 GB). The profile rewrites those byte ranges **in place with the same size**: the archive never grows and its index is untouched. Each shape (disc, trapezoid) is wiped to its own fill colour and the new ✕ ○ □ △ / L1 R1 L2 R2 is drawn on top, so every colour variant of the atlas is kept. Only the 8 regions are backed up (`backups/<appid>/regions/`), not the whole archive. State is a marker in the zeroed reserved fields of each texture's DDS header, written marker → body → header so a power cut is recoverable; before touching anything the SHA-256 of every region must match the supported build.
-- **Saint Seiya: Soldiers' Soul**: the UI lives in `resource/ui/<language>/*.emb` bundles (Dimps) inside `localize.cpk` (5 GB, CRI CPK, files stored uncompressed). The Xbox art sits in three DXT5 textures per language (controller sheet, battle `X/Y/B`, continue-screen `A`; 34 textures, ~42 MB in total, all eight languages). Same in-place, same-size, marker-in-DDS-header mechanism as Quantum Break, but the textures are block-compressed, so only the 4×4 blocks under each button cell are decoded, redrawn with the bundled PlayStation icons and re-encoded; every other block is byte-identical. Positions, sizes and SHA-256 of the originals come from `profiles/saint_seiya_regions.py`; a build whose textures differ is refused.
-- **Charlie Murder**: the Linux port already contains both button sets and picks one from the pad GUID, so the Deck (which looks like an Xbox 360 pad) always got Xbox. The profile finds the IL that stores the pad type in `CharlieMurder.exe` by byte pattern and changes **one byte**; nothing is redrawn. The pattern must match exactly once, otherwise the file is left untouched.
+- Every game gets a **profile** that knows where *that* game keeps its prompts. There are a few strategies (rewrite textures in an archive, rewrite them in place inside a huge file, flip one switch in the game's code).
+- Every file the plugin writes carries a small **marker**, so after an update it knows whether the file is original or ours, and *Original* is exact.
+- The icons are drawn from our own icon set ([`assets/svg`](assets/svg)).
 
-## Development
+Want the engineering view? Read [docs/architecture.md](docs/architecture.md).
 
-Requirements: Node.js 20+, pnpm 9+, Python 3.9+ (backend is stdlib only).
+## Contributing
+
+**You do not need to be a programmer to help.** The project is young and every game is a new puzzle.
+
+| I want to… | Effort | Start here |
+|------------|--------|------------|
+| Tell whether a game looks right | 5 min | [In-game report](https://github.com/evertonfxavier/button-glyphs/issues/new?template=in_game_report.yml) |
+| Ask for a game | 5 min | [Game request](https://github.com/evertonfxavier/button-glyphs/issues/new?template=game_request.yml) |
+| Fix a typo, improve the docs, translate | 15 min | [CONTRIBUTING.md](CONTRIBUTING.md) |
+| Add or fix icons | 1 h | [CONTRIBUTING.md](CONTRIBUTING.md#add-or-fix-icons) |
+| Add support for a game | a few hours | [docs/adding-a-game.md](docs/adding-a-game.md) |
+| Improve the engine or the UI | varies | [docs/development.md](docs/development.md) |
+
+Everyone is expected to follow the [Code of Conduct](CODE_OF_CONDUCT.md). Found a security problem? See [SECURITY.md](SECURITY.md).
+
+## Build from source
 
 ```bash
 pnpm install
-pnpm run glyphs       # assets/svg -> py_modules/button_glyphs/glyphs/*.png + src/generated/glyphs.ts
-pnpm run build        # frontend -> dist/
-pnpm test             # backend unit tests (synthetic forge, no game data needed)
+pnpm test             # backend tests (they never need game files)
 pnpm run build:zip    # out/button-glyphs-vX.Y.Z.zip
 ```
 
-### Releases (automatic)
-Releases are published by GitHub Actions ([`build-plugin.yml`](.github/workflows/build-plugin.yml)); there is nothing to tag by hand.
+Requirements: Node.js 20+, pnpm 9+, Python 3.9+. More in [docs/development.md](docs/development.md).
+Releases are published automatically when the version in `package.json` changes on `main`.
 
-1. Bump `version` in `package.json` (`X.Y.Z`, or `X.Y.Z-beta.1` for a pre-release) and push to `main`.
-2. CI runs the tests and builds the plugin. If that version has **no release yet**, the zip that was just tested is
-   published as release `vX.Y.Z` (the tag is created at that commit) with `button-glyphs-vX.Y.Z.zip`, its `.sha256` and
-   generated notes. A push that does not change the version publishes nothing.
-3. A failing test or build publishes nothing. Re-run the workflow from the Actions tab (`Run workflow`) to retry.
+## Credits and legal
 
-### Project layout
-
-| Path | Purpose |
-|------|---------|
-| `src/` | React UI (`@decky/ui`) |
-| `main.py` | Decky entry point: callables + background watcher |
-| `py_modules/button_glyphs/engine.py` | Apply/restore, backups, re-apply after updates |
-| `py_modules/button_glyphs/entries.py` | Entry-level patching of big archives (append, repoint, exact undo) |
-| `py_modules/button_glyphs/trailer.py` | The marker left at the end of every file we modify |
-| `py_modules/button_glyphs/region_patch.py` | In-place patching of fixed byte ranges of a huge archive (Quantum Break) |
-| `py_modules/button_glyphs/masks/` | White-on-transparent ✕ ○ □ △ and L1/R1/L2/R2 masks (labels use Montserrat Bold, SIL OFL) |
-| `tools/qb_build.py` | Dev tool (needs Pillow + numpy): finds every button cell in the original Quantum Break atlases and regenerates `profiles/quantum_break_cells.py` and the masks |
-| `py_modules/button_glyphs/profiles/dxt_regions.py` | Region profile for DXT5 textures (redraws only the blocks under each cell) |
-| `tools/ssss_build.py`, `tools/cpk.py` | Dev tools (stdlib): read the game's CPK/EMB and regenerate `profiles/saint_seiya_regions.py` |
-| `py_modules/button_glyphs/steam.py` | Steam libraries, manifests, running games |
-| `py_modules/button_glyphs/forge.py` | Scimitar `.forge` reader/writer, LZO1X decoder |
-| `py_modules/button_glyphs/image.py` | DXT1/3/5 codecs, PNG I/O, resampling |
-| `py_modules/button_glyphs/profiles/` | One profile per supported game (`forge_glyphs.py`: textures in a forge; `il_patch.py`: one-byte code patch) |
-| `assets/svg/{ps,xbox}/` | Icon sources, one SVG per button |
-| `tests/` | Backend tests with a synthetic forge builder |
-
-### Adding a game
-
-1. Find where the game draws its prompts (texture, font atlas, config file…).
-2. If it is a Scimitar forge with DXT glyphs, describe it with `ForgeGlyphProfile` (see `profiles/ac1.py`): forge entry, texture ids, size/format and the box of each glyph. Otherwise add a new profile kind with the same `check(path)` / `patch(path, style, load_icon)` interface.
-3. If the game already ships both sets and only chooses by controller type, use `IlPatchProfile` (see `profiles/charlie_murder.py`).
-4. Register it in `profiles/__init__.py`.
-
-## Icons
-
-PlayStation and Xbox icons come from the Figma community files *PlayStation Controller Icons* and *Xbox Controller Icons Free*. PlayStation and Xbox are trademarks of their respective owners; this project is not affiliated with Sony, Microsoft, Valve or Ubisoft.
+- **Icons:** PlayStation and Xbox style icons come from the Figma community files *PlayStation Controller Icons* and *Xbox Controller Icons Free*. The project logo is original.
+- **Fonts:** relabelled shoulder buttons use Montserrat Bold (SIL Open Font License).
+- **Template:** based on the [decky-plugin-template](https://github.com/SteamDeckHomebrew/decky-plugin-template).
+- **Trademarks:** PlayStation, Xbox, Steam and the game titles belong to their owners. This is an unofficial community project, not affiliated with or endorsed by Sony, Microsoft, Valve, or any game publisher.
+- **Game files:** the plugin ships no game assets; it edits the copy of the game you already own.
 
 ## License
 
-BSD-3-Clause, see [LICENSE](LICENSE). Based on [decky-plugin-template](https://github.com/SteamDeckHomebrew/decky-plugin-template).
+[BSD 3-Clause](LICENSE).

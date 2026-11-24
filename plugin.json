@@ -6,6 +6,6 @@
   "publish": {
     "tags": ["controller", "glyphs", "buttons"],
     "description": "Swap in-game button prompts to PlayStation or Xbox style, keep a backup of the original files and re-apply after game updates.",
-    "image": "https://opengraph.githubassets.com/1/SteamDeckHomebrew/PluginLoader"
+    "image": "https://raw.githubusercontent.com/evertonfxavier/button-glyphs/main/assets/logo.png"
   }
 }

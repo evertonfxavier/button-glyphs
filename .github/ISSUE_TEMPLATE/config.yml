@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Read the FAQ first
+    url: https://github.com/evertonfxavier/button-glyphs/blob/main/docs/faq.md
+    about: Most questions (how to go back to Original, what happens after an update) are answered here.
+  - name: Report a security problem privately
+    url: https://github.com/evertonfxavier/button-glyphs/security/advisories/new
+    about: Anything that could damage a game or harm a user. Please do not open a public issue.

@@ -9,6 +9,8 @@
 | Strategy / profile | in-place regions, `profiles/saint_seiya.py` (`DxtRegionProfile`) + generated `saint_seiya_regions.py`, revision 1 |
 | Styles | PlayStation, Original (= Xbox, the game is natively Xbox) |
 | Status | applied on the Deck by another session (status ok); **not confirmed in game by the user** |
+| Summary | The controller sheet of menus and tutorials (A/B/X/Y → ✕ ○ □ △, LB/RB → L1/R1, LT/RT → L2/R2, L3/R3, START/BACK → OPTIONS/SHARE), the X/Y/B beside the attack commands in battle and the big A of the continue screen, in all eight languages. Sticks, D-pad, the numbered pad buttons and the controller drawings inside help pictures are left alone. Xbox and Original are the same thing here. |
+| Support level | unconfirmed |
 
 ## Where the button art lives
 `resource/ui/<BR|CH|EN|FR|IT|JP|NS|SP>/*.emb` inside `localize.cpk` (absolute offset =

@@ -1,0 +1,60 @@
+name: Bug report
+description: Something does not work as expected (the plugin, a status message, a game that broke)
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time. **If a game crashes or will not start**, first set it back to **Original** in the plugin
+        (or use Steam's *Verify integrity of game files*), then fill this in.
+  - type: input
+    id: version
+    attributes:
+      label: Plugin version
+      description: Shown in Decky's plugin list, or the name of the zip you installed.
+      placeholder: "0.3.1"
+    validations:
+      required: true
+  - type: input
+    id: game
+    attributes:
+      label: Game and Steam build number
+      description: Steam → game → Properties → Updates shows the build. Write "none" if it is not about a game.
+      placeholder: "Assassin's Creed, build 12345678"
+  - type: dropdown
+    id: style
+    attributes:
+      label: Style you chose
+      options: ["Original", "PlayStation", "Xbox", "Not applicable"]
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: And what did you expect instead?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open Button Glyphs
+        2. Pick the game, choose PlayStation
+        3. ...
+  - type: textarea
+    id: log
+    attributes:
+      label: Log
+      description: |
+        In Desktop Mode, open Konsole and run:
+        `tail -n 80 "$(ls -t ~/homebrew/logs/Button\ Glyphs/*.log | head -1)"`
+        and paste the output. It contains no personal data.
+      render: text
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before sending
+      options:
+        - label: I read the [FAQ](https://github.com/evertonfxavier/button-glyphs/blob/main/docs/faq.md)
+        - label: This game does not use anti-cheat or online ranked play

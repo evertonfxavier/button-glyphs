@@ -1,0 +1,53 @@
+name: In-game report
+description: Tell us how a supported game looks with the plugin (the most valuable report)
+title: "[In-game report] "
+labels: ["in-game report"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Nobody can confirm a visual change without looking at the game, so your report decides whether a game moves from
+        *unconfirmed* to *confirmed*. Thank you! A screenshot (Steam + R1 on the Deck) helps a lot.
+  - type: input
+    id: game
+    attributes:
+      label: Game
+    validations:
+      required: true
+  - type: dropdown
+    id: style
+    attributes:
+      label: Style you tried
+      options: ["PlayStation", "Xbox"]
+    validations:
+      required: true
+  - type: dropdown
+    id: result
+    attributes:
+      label: Result
+      options:
+        - "Everything I saw looked right"
+        - "Mostly right, some prompts are wrong"
+        - "Nothing changed"
+        - "The game broke"
+    validations:
+      required: true
+  - type: textarea
+    id: screens
+    attributes:
+      label: Which screens did you check?
+      description: Main menu, in-game HUD, tutorials, other languages... and which looked wrong (if any).
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Plugin version and game build
+      placeholder: "plugin 0.3.1, game build 12345678"
+  - type: markdown
+    attributes:
+      value: "You can drag screenshots into the box below."
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else

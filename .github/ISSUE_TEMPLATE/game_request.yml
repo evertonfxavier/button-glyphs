@@ -1,0 +1,50 @@
+name: Game request
+description: Ask for support for a game (or write down what you found about its files)
+title: "[Game request] "
+labels: ["game request"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Each game stores its prompts differently, so every game needs its own profile. Requests are welcome; the more you tell us, the sooner somebody can pick it up.
+        Check [SUPPORTED_GAMES.md](https://github.com/evertonfxavier/button-glyphs/blob/main/SUPPORTED_GAMES.md) first.
+  - type: input
+    id: game
+    attributes:
+      label: Game name
+    validations:
+      required: true
+  - type: input
+    id: appid
+    attributes:
+      label: Steam app id
+      description: The number in the store URL (store.steampowered.com/app/**12345**).
+    validations:
+      required: true
+  - type: textarea
+    id: prompts
+    attributes:
+      label: How do the prompts look today?
+      description: Xbox, PlayStation, keyboard, something else? Which screens (menus, HUD, tutorials)?
+    validations:
+      required: true
+  - type: dropdown
+    id: online
+    attributes:
+      label: Does the game have anti-cheat or online ranked play?
+      description: Changing files of such games can get accounts banned, so they are out of scope.
+      options: ["No, single-player or co-op only", "Yes", "I do not know"]
+    validations:
+      required: true
+  - type: textarea
+    id: files
+    attributes:
+      label: What you know about its files (optional)
+      description: Engine, archive formats and sizes, anything named button, pad, hud, icon. Existing mods and their licences. Never attach game files.
+  - type: checkboxes
+    id: help
+    attributes:
+      label: Can you help?
+      options:
+        - label: I can test a build on my Steam Deck
+        - label: I can analyse the game's files (see docs/adding-a-game.md)

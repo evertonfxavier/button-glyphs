@@ -9,6 +9,8 @@
 | Strategy / profile | IL patch, `profiles/charlie_murder.py` on `profiles/il_patch.py` (`IlPatchProfile`), revision 1 |
 | Styles | PlayStation, Xbox, Original (= automatic by pad) |
 | Status | confirmed in game by the user (2026-11-23) |
+| Summary | All button prompts (text, HUD, tutorials, attribute screen) use the game's own PlayStation or Xbox set for every controller. Original is automatic: PlayStation only for a DualShock 4, Xbox for anything else (including the Deck). |
+| Support level | confirmed |
 
 ## Where the button art lives
 Nowhere to redraw: the port **already ships both sets** (Xbox, and PlayStation art: cross,

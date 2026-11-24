@@ -9,6 +9,8 @@
 | Strategy / profile | in-place regions, `profiles/quantum_break.py` (`RegionGlyphProfile`) + generated `quantum_break_cells.py`, revision 1 |
 | Styles | PlayStation, Original (the game is natively Xbox) |
 | Status | applied to the real game on the Deck; **not yet seen in game** |
+| Summary | Every Xbox prompt of the HUD, menus and video player: A/B/X/Y become ✕ ○ □ △ in the PlayStation colours, LB/RB → L1/R1, LT/RT → L2/R2, in all four HUD scales. Sticks, D-pad and View/Menu already match a PlayStation pad, and the Xbox controller picture of the options screen is not redrawn. Xbox and Original are the same thing here. |
+| Support level | unconfirmed |
 
 ## Where the button art lives
 `textures/hardcoded/prompts.tex` and `videoplayer_controls.tex`, each in four HUD scales
