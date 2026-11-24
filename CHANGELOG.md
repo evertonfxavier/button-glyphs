@@ -7,6 +7,10 @@ Add your line under **Unreleased** in the pull request; maintainers move it into
 
 ## [Unreleased]
 
+### Changed
+- Quantum Break: the DualSense picture is recorded as the project owner's own art, as stated by the owner (this corrects the
+  wording of 0.3.5, which made no authorship claim).
+
 ## [0.3.5] - 2026-11-24
 
 ### Added

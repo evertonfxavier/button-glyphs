@@ -35,7 +35,7 @@ the whole picture (`replace` entry, no cells): the body is cleared to (130, 125,
 user's DualSense line drawing (`masks/controller_dualsense.png`, 704x450, RGBA, cut out of its
 white background, body interior opaque white) is written centred in the box (160, 262)-(863, 761),
 so the pad is 704 px wide (the Xbox pad was 626) and centred on the same point. Header: untouched
-except the 44-byte marker. The drawing was supplied by the project owner (who made it was not stated, so no authorship claim is made); the unprocessed source
+except the 44-byte marker. The drawing is the project owner's own art (stated by the owner, 2026-11-24); the unprocessed source
 (1672x941 on white) is not in the repo.
 
 ## How it is verified

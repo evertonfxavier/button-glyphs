@@ -578,4 +578,4 @@ A game's own role names are aliases: `empty` = `b` (AC1 empty-hand glyph (B)); `
 - `our-drawing`: drawn by this project: PIL shapes rendered by tools/qb_build.py (render_masks)
 - `montserrat-ofl`: label text set in Montserrat Bold (SIL OFL 1.1, py_modules/button_glyphs/masks/OFL-Montserrat.txt) by tools/qb_build.py
 - `owner-pixel-art`: the project owner's own PlayStation pixel art (stated by the owner, 2026-11-24), sliced and fitted to the texture size by tools/sfh_art.py; some labels use the 3x5 pixel font drawn for that tool
-- `owner-line-art`: a DualSense line drawing supplied by the project owner (authorship not stated), cut out and scaled by tools/qb_controller_art.py
+- `owner-line-art`: the project owner's own DualSense line drawing (stated by the owner, 2026-11-24), cut out and scaled by tools/qb_controller_art.py
