@@ -181,9 +181,25 @@ Stuck on a step? [Open a discussion-style issue](https://github.com/evertonfxavi
 ## A game that already has a Xbox/PS option
 
 Some games let you pick Xbox or PlayStation buttons in their own settings. They need no profile and the plugin never touches them.
-Add ONE entry to [`py_modules/button_glyphs/ingame_games.json`](../py_modules/button_glyphs/ingame_games.json) and nothing else:
-`appid` (digits), `name`, `reported_by`, `reported_on` (ISO date), and optionally `where` (the menu path) and `note`. Then run
-`python3 tools/gen_supported_games.py` (it adds the game to the "Games with a built-in option" section of `SUPPORTED_GAMES.md`).
+Use the maintainer tool: it adds ONE entry to [`py_modules/button_glyphs/ingame_games.json`](../py_modules/button_glyphs/ingame_games.json) and regenerates `SUPPORTED_GAMES.md`:
+
+```bash
+python3 tools/ingame_add.py add <appid> --where "<menu path as the player saw it>" --note "<restart needed? what Auto shows?>"
+python3 tools/ingame_add.py update <appid> --where "..." --note "..."     # fill in what you learn later
+python3 tools/ingame_add.py list                                           # every registered game
+python3 tools/ingame_add.py add <appid> --dry-run                          # prints the entry and the diff, writes nothing
+```
+
+`add` reads the game's name from the Deck's appmanifest (read-only; the Deck must be awake, otherwise pass `--name "<name>"`), stamps today's date and
+`reported_by` ("the project owner" unless you pass `--reported-by`), and **refuses** a game that is already in the list or that already has a plugin
+profile (a game cannot be both). Every write is validated with the plugin's own validator and replaces the file atomically. `remove <appid>` takes a
+game out. Without the tool, an entry is `appid` (digits), `name`, `reported_by`, `reported_on` (ISO date) and optionally `where` and `note`, then run
+`python3 tools/gen_supported_games.py`.
+
+Finding candidates: `python3 tools/triage_game.py --appid <id>` prints a `[possible] in-game option` lead when the folder ships both a PlayStation
+and an Xbox prompt set **and** a config key about prompts exists (host mode also says `Already registered as In game`). It is only a lead: look in
+the game's controller/interface settings by hand, and register it if the option is really there.
+
 The plugin shows these games with a blue "In game" dot. Verify by hand before you add one: start the game, open its settings and check
 the option really switches the prompts; write who saw it in `reported_by`. A game that gets a plugin profile must be removed from this
 file (a test fails if a game is in both).

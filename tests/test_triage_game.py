@@ -512,6 +512,51 @@ class StrategyHintsTest(Tree):
         self.put("a.txt", b"x")
         self.assertEqual(list(self.hints()), ["none yet"])
 
+    # ---- the in-game option lead: both a PlayStation and an Xbox set AND a config key about prompts
+    INI = b'[input]\nvolume=3\nControllerType = 2\n'
+
+    def test_both_sets_and_a_prompt_key_point_to_an_option_in_the_game_itself(self):
+        self.put_all({"Menu/xbox/a.png": 10, "Menu/ps4/a.png": 10, "settings/game.ini": self.INI})
+        h = self.hints()
+        hint = h["in-game option"]
+        self.assertEqual(hint["likelihood"], "possible")                      # a lead, never a conclusion
+        self.assertIn("PlayStation and Xbox prompt sets both ship and a config key about prompts exists", hint["reason"])
+        self.assertIn("the game may offer the choice in its own settings", hint["reason"])
+        self.assertIn("look in the game's controller/interface settings by hand", hint["check_next"])
+        self.assertIn("tools/ingame_add.py", hint["check_next"])
+        self.assertIn("code-switch", h)                                       # the older leads are still there
+        self.assertIn("saved value", h)
+
+    def test_both_sets_and_a_key_with_a_switch_set_too_still_fires(self):
+        self.put_all({"Menu/xbox/a.png": 10, "Menu/ps5/a.png": 10, "Menu/switch/a.png": 10, "o.cfg": self.INI})
+        self.assertIn("in-game option", self.hints())
+
+    def test_both_sets_without_a_config_key_do_not_fire(self):
+        self.put_all({"Menu/xbox/a.png": 10, "Menu/ps4/a.png": 10, "settings/game.ini": b"[a]\nvolume=3\n"})
+        self.assertNotIn("in-game option", self.hints())
+
+    def test_a_config_key_without_both_sets_does_not_fire(self):
+        self.put("settings/game.ini", self.INI)
+        self.assertNotIn("in-game option", self.hints())
+
+    def test_xbox_and_switch_only_do_not_fire(self):
+        self.put_all({"Menu/xbox/a.png": 10, "Menu/switch/a.png": 10, "settings/game.ini": self.INI})
+        self.assertNotIn("in-game option", self.hints())
+
+    def test_a_single_set_does_not_fire(self):
+        for fam in ("xbox", "ps4"):
+            with self.subTest(fam=fam):
+                shutil.rmtree(self.game)
+                os.makedirs(self.game)
+                self.put_all({"Menu/%s/a.png" % fam: 10, "Menu/%s/b.png" % fam: 10, "settings/game.ini": self.INI})
+                self.assertNotIn("in-game option", self.hints())
+
+    def test_the_summary_shows_the_lead_and_stays_within_25_lines(self):
+        self.put_all({"Menu/xbox/a.png": 10, "Menu/ps4/a.png": 10, "settings/game.ini": self.INI})
+        text = tg.summarize(self.run_triage())
+        self.assertIn("Hint [possible] in-game option", text)
+        self.assertLessEqual(len(text.splitlines()), 25)
+
 
 class BoundedAndReadOnlyTest(Tree):
     def test_max_files_truncates_and_says_so(self):
@@ -963,6 +1008,53 @@ class HostModeTest(Tree):
             res.pop("seconds")
             res.pop("generated_at")
         self.assertEqual(remote, direct)
+
+    def registry(self, entries):
+        path = os.path.join(self.root, "ingame.json")
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(entries, f)
+        return path
+
+    def host_run(self, registry_path, *argv):
+        from button_glyphs import ingame
+        self.canned_from(self.direct())
+        with mock.patch.object(ingame, "PATH", registry_path):
+            return self.run_main("--appid", self.APPID, *argv)
+
+    def test_host_mode_says_when_the_appid_is_already_registered_as_in_game(self):
+        reg = self.registry([{"appid": self.APPID, "name": "Songs for a Hero", "reported_by": "the project owner",
+                              "reported_on": "2026-11-24"}])
+        path = os.path.join(self.root, "out.json")
+        code, out, err = self.host_run(reg, "--json", path)
+        self.assertEqual(code, 0, (out, err))
+        lines = out.splitlines()
+        self.assertIn("Already registered as In game", lines[1])
+        self.assertLessEqual(len(lines), 25)
+        with open(path) as f:
+            self.assertEqual(json.load(f)["ingame_registered"]["appid"], self.APPID)
+
+    def test_host_mode_is_silent_when_the_appid_is_not_registered(self):
+        reg = self.registry([{"appid": "1", "name": "Other", "reported_by": "x", "reported_on": "2026-11-24"}])
+        path = os.path.join(self.root, "out.json")
+        code, out, _ = self.host_run(reg, "--json", path)
+        self.assertEqual(code, 0)
+        self.assertNotIn("Already registered", out)
+        with open(path) as f:
+            self.assertIsNone(json.load(f)["ingame_registered"])
+
+    def test_a_broken_registry_does_not_stop_the_triage(self):
+        path = os.path.join(self.root, "broken.json")
+        with open(path, "w") as f:
+            f.write("{not json")
+        code, out, _ = self.host_run(path)
+        self.assertEqual(code, 0)
+        self.assertNotIn("Already registered", out)
+
+    def test_local_mode_does_not_look_at_the_registry(self):
+        self.put("a/b.png", 10)
+        code, out, _ = CliTest.run_main(self, self.game)
+        self.assertEqual(code, 0)
+        self.assertNotIn("Already registered", out)
 
     def test_a_remote_failure_is_still_one_json_object(self):
         script = tg.build_script({"appid": "1"}, steam_source="raise RuntimeError('boom')")

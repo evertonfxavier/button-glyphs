@@ -1010,6 +1010,11 @@ def strategy_hints(rep):
         add("loose files or redraw", "possible",
             "only one variant family by name (%s): the other families are probably not shipped" % list(fam)[0],
             "look for a pad-type switch anyway, then plan to supply the missing set")
+    if "ps" in fam and "xbox" in fam and rep["config_hits"]:
+        add("in-game option (not a glyph profile)", "possible",
+            "PlayStation and Xbox prompt sets both ship and a config key about prompts exists (%s): the game may offer "
+            "the choice in its own settings" % rep["config_hits"][0]["path"],
+            "look in the game's controller/interface settings by hand; if it exists register it with tools/ingame_add.py")
     if rep["config_hits"]:
         add("saved value (ConfigValueProfile)", "possible",
             "%d config file(s) in the install folder carry a button/controller/input key (%s)" % (
@@ -1374,6 +1379,10 @@ def summarize(rep, limit=25):
     if tr["files"] or tr["time"]:
         head += "  [TRUNCATED: %s]" % " + ".join(k for k in ("files", "time") if tr[k])
     L.append(head)
+    reg = rep.get("ingame_registered")
+    if reg:
+        L.append("Already registered as In game (%s, reported by %s on %s): the plugin never changes this game" % (
+            reg["name"], reg["reported_by"], reg["reported_on"]))
     eng = [e for e in rep["engines"] if e["engine"] != "unknown"][:3]
     if eng:
         e0 = eng[0]
@@ -1420,6 +1429,16 @@ def summarize(rep, limit=25):
     return "\n".join(L)
 
 
+def _ingame_entry(appid):
+    """The registry entry of an appid that is already listed as In game (the game's own settings), else None."""
+    sys.path.insert(0, str(ROOT / "py_modules"))
+    from button_glyphs import ingame
+    try:
+        return ingame.by_appid(ingame.PATH).get(str(appid))
+    except (ingame.InGameError, OSError):
+        return None
+
+
 class _Parser(argparse.ArgumentParser):
     def error(self, message):                # exit 2 is reserved for "Deck unreachable"
         self.print_usage(sys.stderr)
@@ -1463,6 +1482,7 @@ def main(argv=None):
         if not rep.get("ok"):
             print("triage failed: %s" % rep.get("error"), file=sys.stderr)
             return 1
+        rep["ingame_registered"] = _ingame_entry(ns.appid)
     else:
         if not os.path.isdir(ns.path):
             print("not a folder: %s" % ns.path, file=sys.stderr)

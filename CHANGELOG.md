@@ -27,6 +27,7 @@ Add your line under **Unreleased** in the pull request; maintainers move it into
 - Games that already have an Xbox/PlayStation option in their own settings are marked with a blue "In game" dot (the plugin never
   changes them): the select shows "Set in the game" for them, and SUPPORTED_GAMES.md lists them. First entry: Digimon Story Time
   Stranger (reported by the project owner, not verified by Button Glyphs).
+- Maintainer tools for that list: `tools/ingame_add.py` (add, update, remove, list; reads the name from the Deck, refuses duplicates and games with a profile, writes atomically and regenerates SUPPORTED_GAMES.md) and an `in-game option` lead in `tools/triage_game.py`.
 
 ## [0.3.10] - 2026-11-24
 
