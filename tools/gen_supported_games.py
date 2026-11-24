@@ -16,6 +16,7 @@ Support level (a row of every game page, exactly one of these):
   unconfirmed       applied or verified offline only; nobody has reported the result yet
 """
 import argparse
+import os
 import re
 import sys
 import urllib.parse
@@ -35,6 +36,9 @@ STRATEGY = {
                     "them, so **Original** gives back the exact bytes Steam installed.",
     "il-patch": "Changes **one byte** of the game's executable so the game uses its own PlayStation or Xbox art for "
                 "every controller. A backup of the executable is kept.",
+    "config-value": "Changes **one stored setting** in the game's save file so the game uses its own PlayStation or "
+                    "Xbox button art. Nothing else in the save is touched, and **Original** puts back the value you "
+                    "had before. A copy of the save is kept the first time.",
     "regions": "Rewrites the button textures **in place** inside a very large archive (same size, nothing moves). "
                "Only the changed parts are backed up, not the whole archive.",
     "dxt-regions": "Rewrites the button textures **in place** inside a very large archive (same size, nothing moves). "
@@ -92,10 +96,14 @@ def styles_of(profile):
         note = " (%s is the same as Original: the game already shows it)" % STYLE_NAME[native]
     if profile.kind == "il-patch":
         note = " (Original is automatic: the game decides by controller type)"
+    if profile.kind == "config-value":
+        note = " (Original keeps the setting you had in the game)"
     return ", ".join(names) + note
 
 
 def files_of(profile):
+    if getattr(profile, "config_level", False):
+        return "one value in the game's save file `%s` (inside its Proton prefix)" % os.path.basename(profile.file)
     if getattr(profile, "entry_level", False):
         files = [t["file"] for t in profile.targets()]
         return "`%s` and %d other archive%s" % (files[0], len(files) - 1, "" if len(files) == 2 else "s")

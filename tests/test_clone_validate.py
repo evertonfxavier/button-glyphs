@@ -17,6 +17,8 @@ sys.modules["clone_validate"] = clone_validate
 spec.loader.exec_module(clone_validate)
 
 import forge_fixture as fx  # noqa: E402
+from test_ten_second_ninja_x import APPID as NINJA, BUILD as NINJA_BUILD, DATA_WIN, SAVE_REL  # noqa: E402
+from test_ten_second_ninja_x import padded, save_text, test_profile as ninja_profile  # noqa: E402
 from test_entries import AREA, AREA_ENTRY, PRIMARY, make_profile  # noqa: E402
 
 
@@ -94,6 +96,72 @@ class CloneValidateTest(unittest.TestCase):
         finally:
             sys.stdout = old
         self.assertIn("FAIL", out.getvalue())
+
+
+class CloneValidateConfigValueTest(unittest.TestCase):
+    """A config-value game: data.win in the install folder, the save inside the Proton prefix."""
+
+    def setUp(self):
+        self.src = tempfile.mkdtemp()
+        self.save = os.path.join(self.src, SAVE_REL)
+        os.makedirs(os.path.dirname(self.save))
+        with open(os.path.join(self.src, "data.win"), "wb") as f:
+            f.write(DATA_WIN)
+        self.write_save(padded(save_text("525.000000")))
+        self.profiles = {NINJA: ninja_profile()}
+        self.lines = []
+
+    def tearDown(self):
+        shutil.rmtree(self.src)
+
+    def write_save(self, data):
+        with open(self.save, "wb") as f:
+            f.write(data)
+
+    def validate(self, **kw):
+        return clone_validate.validate(NINJA, self.src, profiles=self.profiles, log=self.lines.append, **kw)
+
+    def test_full_cycle_gives_back_the_pristine_save(self):
+        with open(self.save, "rb") as f:
+            pristine = f.read()
+        report = self.validate()
+        self.assertTrue(report["ok"], report["problems"])
+        self.assertEqual([s["style"] for s in report["steps"]], ["ps", "xbox", "ps", "original"])
+        self.assertTrue(all(s["ok"] and s["state"] == "ok" for s in report["steps"]))
+        self.assertTrue(any("2/2 file(s) byte-identical" in l for l in self.lines))
+        with open(self.save, "rb") as f:                # the source copy itself is never written
+            self.assertEqual(f.read(), pristine)
+
+    def test_missing_save_or_unpinned_build_is_reported(self):
+        os.remove(self.save)
+        report = self.validate()
+        self.assertFalse(report["ok"])
+        self.assertIn(SAVE_REL, report["problems"][0])
+        self.write_save(padded(save_text()))
+        report = self.validate(buildid="1")
+        self.assertFalse(report["ok"])
+        self.assertIn("not pinned", report["problems"][0])
+        self.assertTrue(self.validate(buildid=NINJA_BUILD)["ok"])
+
+    def test_a_broken_undo_of_the_save_is_detected(self):
+        from button_glyphs import engine
+        real = engine.Engine.sync
+
+        def sloppy(self_, appid, reason="check"):
+            result = real(self_, appid, reason)
+            if self_.load_config()["games"][appid]["style"] == "original":
+                path = os.path.join(self_.home, ".local/share/Steam/steamapps/compatdata", appid, "pfx", SAVE_REL)
+                with open(path, "r+b") as f:
+                    f.seek(5)
+                    f.write(b"#")
+            return result
+        engine.Engine.sync = sloppy
+        try:
+            report = self.validate()
+        finally:
+            engine.Engine.sync = real
+        self.assertFalse(report["ok"])
+        self.assertTrue(any("NOT identical" in p for p in report["problems"]))
 
 
 if __name__ == "__main__":

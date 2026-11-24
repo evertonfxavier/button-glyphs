@@ -54,6 +54,21 @@ class DxtRegionProfile:
             self._icons[key] = image.fit_icon(rgba, iw, ih, w, h)
         return self._icons[key]
 
+    def preflight(self):
+        """Load and fit every icon the layouts draw BEFORE the first byte is written."""
+        for region in self.regions:
+            key = region["key"]
+            for cell in self.layouts[region["layout"]]:
+                for rect, name in cell["draws"]:
+                    x0, y0, x1, y1 = rect
+                    try:
+                        if x1 < x0 or y1 < y0:
+                            raise ValueError("empty draw box")
+                        self._icon(name, x1 - x0 + 1, y1 - y0 + 1)
+                    except Exception as exc:
+                        raise RuntimeError("%s: bundled icon %r is missing or damaged (%s)"
+                                           % (key, name, exc))
+
     # ------------------------------------------------------------------ rendering
 
     def _draw_cell(self, body, tex_w, cell):

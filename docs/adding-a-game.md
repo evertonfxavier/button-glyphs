@@ -22,7 +22,7 @@ Read [safety-rules.md](safety-rules.md) once. It is short, and every rule exists
 ## The big picture
 
 Every game draws its button prompts in a different place. A **profile** describes where, for one game, and a **strategy** is
-the technique the profile uses to change them. There are four so far:
+the technique the profile uses to change them. There are five so far:
 
 | Strategy | Use it when… | Example | Class |
 |----------|--------------|---------|-------|
@@ -30,6 +30,7 @@ the technique the profile uses to change them. There are four so far:
 | **Entry-level archive patch** | Textures live in compressed archives of moderate size, spread over many files | [Assassin's Creed](games/15100-assassins-creed.md) | `ForgeGlyphProfile` |
 | **In-place raw regions** | Raw (uncompressed) textures sit at fixed offsets inside one giant file | [Quantum Break](games/474960-quantum-break.md) (56 GB archive) | `RegionGlyphProfile` |
 | **In-place DXT regions** | The same, but the textures are DXT-compressed (DDS) inside a container | [Saint Seiya](games/348710-saint-seiya.md) | `DxtRegionProfile` |
+| **Config value** | The game already contains both sets and stores the choice as a value in a save/config file | [10 Second Ninja X](games/435790-10-second-ninja-x.md) (one INI key in the save) | `ConfigValueProfile` |
 
 How to choose, in order (stop at the first yes):
 

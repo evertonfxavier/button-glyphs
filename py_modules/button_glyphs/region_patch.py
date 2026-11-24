@@ -187,6 +187,9 @@ def apply(profile, install_path, backup_dir, rows, style):
                 continue
             original = _original_bytes(f, region, state, backup_dir)
             new = bytearray(profile.render(original, region, style))
+            if len(new) != region["size"]:         # a region never changes size; refuse before writing
+                raise RuntimeError("%s: rendered %d bytes, expected %d"
+                                   % (region["key"], len(new), region["size"]))
             src = region["sha256"]
             writing = make_marker(b"W", style, profile.revision, src)
             new[MARK_OFF:MARK_OFF + MARK_LEN] = make_marker(b"P", style, profile.revision, src)

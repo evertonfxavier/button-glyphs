@@ -8,9 +8,9 @@
 | Engine / format | Dimps; `localize.cpk` (5.3 GB, CRI CPK, files stored uncompressed); UI bundles `.emb` with DXT5 DDS members |
 | Strategy / profile | in-place regions, `profiles/saint_seiya.py` (`DxtRegionProfile`) + generated `saint_seiya_regions.py`, revision 1 |
 | Styles | PlayStation, Original (= Xbox, the game is natively Xbox) |
-| Status | applied on the Deck by another session (status ok); **not confirmed in game by the user** |
+| Status | confirmed in game by the user (marked on their instruction, 2026-11-24) |
 | Summary | The controller sheet of menus and tutorials (A/B/X/Y → ✕ ○ □ △, LB/RB → L1/R1, LT/RT → L2/R2, L3/R3, START/BACK → OPTIONS/SHARE), the X/Y/B beside the attack commands in battle and the big A of the continue screen, in all eight languages. Sticks, D-pad, the numbered pad buttons and the controller drawings inside help pictures are left alone. Xbox and Original are the same thing here. |
-| Support level | unconfirmed |
+| Support level | confirmed |
 
 ## Where the button art lives
 `resource/ui/<BR|CH|EN|FR|IT|JP|NS|SP>/*.emb` inside `localize.cpk` (absolute offset =
@@ -33,12 +33,12 @@ copy it (no game art redistributed) and draws its own `ps/*` icons.
 Same DDS marker and region backups as Quantum Break.
 
 ## Verified / not verified
-- Verified: unit tests; read-only on the real Deck file: 34/34 hashes match, in-memory render 4.3 s.
-- NOT verified: how it looks in game (it is applied, nobody has reported the result); `HELP.emb` (`HELP_IMG*`) may still show
-  Xbox controller drawings - untouched.
+- Verified: unit tests; read-only on the real Deck file: 34/34 hashes match, in-memory render 4.3 s; in game, the user
+  confirmed the result (2026-11-24, by their own instruction to mark it confirmed).
+- NOT verified: `HELP.emb` (`HELP_IMG*`) may still show Xbox controller drawings - untouched.
 
 ## Deck state
-PlayStation active, status ok (read-only dry run on 2026-11-23); applied outside this page's author's session. Not confirmed visually. Run `/game-status 348710` for the current state.
+PlayStation active, status ok (read-only dry run on 2026-11-23); applied outside this page's author's session. Confirmed in game by the user (2026-11-24). Run `/game-status 348710` for the current state.
 
 ## How to re-derive the data
 `tools/ssss_build.py <install dir>` (with `tools/cpk.py`, stdlib, run it on the Deck) regenerates

@@ -16,6 +16,9 @@ A cell is one button shape in the atlas:
   style  how the old glyph was drawn: hole (transparent), solid (one colour), ps (role colour)
   color  colour of a "solid" glyph (B, G, R)
 Colours are in pixel order (B, G, R).
+
+A region may instead carry `replace` = {image, box, clear}: the whole picture is swapped for a
+bundled RGBA drawing (see `_replace_picture`). Such a region has no cells.
 """
 import os
 
@@ -60,6 +63,19 @@ class MaskLoader:
         return self.cache[key]
 
 
+class PictureLoader:
+    """Loads bundled full-colour drawings (RGBA PNG in masks/) once: -> (rgba, w, h)."""
+
+    def __init__(self, mask_dir=MASK_DIR):
+        self.mask_dir = mask_dir
+        self.cache = {}
+
+    def __call__(self, name):
+        if name not in self.cache:
+            self.cache[name] = image.read_png(os.path.join(self.mask_dir, name + ".png"))
+        return self.cache[name]
+
+
 class RegionGlyphProfile:
     kind = "regions"
     region_level = True
@@ -79,6 +95,47 @@ class RegionGlyphProfile:
         self.styles = {}                  # no bundled icon sets for the UI check
         self.textures = []
         self.masks = MaskLoader()
+        self.pictures = PictureLoader()
+
+    # ------------------------------------------------------------------ preflight
+
+    def preflight(self):
+        """Validate every bundled asset and box BEFORE the first byte is written.
+
+        Loads each picture and mask the regions use (the loaders cache them, so render() reuses
+        the result) and checks the geometry. Raises RuntimeError with a clear message, so a
+        missing or damaged PNG fails the whole apply instead of stopping it halfway.
+        """
+        for region in self.regions:
+            key, w, h = region["key"], region["width"], region["height"]
+            if region["size"] != HEADER + w * h * 4:
+                raise RuntimeError("%s: size does not match a %dx%d BGRA texture" % (key, w, h))
+            spec = region.get("replace")
+            if spec:
+                x0, y0, x1, y1 = spec["box"]
+                if not (0 <= x0 < x1 < w and 0 <= y0 < y1 < h):
+                    raise RuntimeError("%s: picture box lies outside the texture" % key)
+                try:
+                    rgba, pw, ph = self.pictures(spec["image"])
+                    if pw < 1 or ph < 1 or len(rgba) != pw * ph * 4:
+                        raise ValueError("pixel data does not match %dx%d" % (pw, ph))
+                except Exception as exc:
+                    raise RuntimeError("%s: bundled picture %r is missing or damaged (%s)"
+                                       % (key, spec["image"], exc))
+                if pw > x1 - x0 + 1 or ph > y1 - y0 + 1:
+                    raise RuntimeError("%s: picture %r (%dx%d) does not fit its box"
+                                       % (key, spec["image"], pw, ph))
+            for cell in region["cells"]:
+                name = SYMBOL[cell["role"]] if cell["kind"] in ("disc", "letter") \
+                    else LABEL[cell["role"]]
+                dx0, dy0, dx1, dy1 = cell["draw"]
+                try:
+                    if dx1 < dx0 or dy1 < dy0:
+                        raise ValueError("empty draw box")
+                    self.masks(name, dx1 - dx0 + 1, dy1 - dy0 + 1)
+                except Exception as exc:
+                    raise RuntimeError("%s: bundled mask %r is missing or damaged (%s)"
+                                       % (key, name, exc))
 
     # ------------------------------------------------------------------ rendering
 
@@ -119,6 +176,38 @@ class RegionGlyphProfile:
                         (base[k] * (255 - a) + color[k] * a + 127) // 255 for k in range(3)
                     ) + b"\xff"
 
+    def _replace_picture(self, buf, w, h, spec, key):
+        """Swap the whole picture: clear the body to transparent, draw the bundled art in the box.
+
+        The art is stored as straight (not premultiplied) RGBA, like the game's own pixels, and
+        is centred in `box` (inclusive pixel rectangle) without resampling when it already has
+        the final size. Fully transparent pixels get the colour the game keeps under them.
+        The 128-byte header is not touched.
+        """
+        if w * h * 4 + HEADER != len(buf):
+            raise ValueError("%s: not a %dx%d BGRA texture" % (key, w, h))
+        x0, y0, x1, y1 = spec["box"]
+        if not (0 <= x0 < x1 < w and 0 <= y0 < y1 < h):
+            raise ValueError("%s: picture box outside the texture" % key)
+        bw, bh = x1 - x0 + 1, y1 - y0 + 1
+        rgba, pw, ph = self.pictures(spec["image"])
+        if pw > bw or ph > bh:                   # larger than its box: fit (slow, never needed
+            rgba, pw, ph = image.fit_icon(rgba, pw, ph, bw, bh)    # for the bundled art)
+        ox, oy = x0 + (bw - pw) // 2, y0 + (bh - ph) // 2
+        clear = bytes(spec["clear"]) + b"\0"
+        buf[HEADER:] = clear * (w * h)
+        for py in range(ph):
+            row = rgba[py * pw * 4:(py + 1) * pw * 4]
+            if not any(row[3::4]):
+                continue
+            o = HEADER + ((oy + py) * w + ox) * 4
+            out = bytearray(buf[o:o + pw * 4])
+            for px in range(pw):
+                i = px * 4
+                if row[i + 3]:
+                    out[i:i + 4] = bytes((row[i + 2], row[i + 1], row[i], row[i + 3]))
+            buf[o:o + pw * 4] = out
+
     def render(self, original, region, style):
         """New bytes of a region for `style`, from the original bytes (marker not included)."""
         if style not in self.patch_styles:
@@ -126,6 +215,9 @@ class RegionGlyphProfile:
         if len(original) != region["size"]:
             raise ValueError("%s: wrong size" % region["key"])
         buf = bytearray(original)
+        if region.get("replace"):
+            self._replace_picture(buf, region["width"], region["height"], region["replace"],
+                                  region["key"])
         for cell in region["cells"]:
             self._draw_cell(buf, region["width"], region["height"], cell)
         return bytes(buf)

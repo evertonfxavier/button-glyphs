@@ -190,6 +190,7 @@ class EngineTest(unittest.TestCase):
         profile = DxtRegionProfile(
             appid="348710", name="t", file="localize.cpk", regions=regions, layouts=layouts,
             roles=[], native_style="xbox")
+        self.profile = profile
         proc = os.path.join(self.home, "proc")
         os.makedirs(proc)
         self.eng = engine.Engine(
@@ -230,6 +231,27 @@ class EngineTest(unittest.TestCase):
         results = self.eng.sync_all("watch")
         self.assertTrue(results and results[0]["changed"], results)
         self.assertEqual(self.status()["applied"], "ps")
+
+    def test_refusal_shows_the_error_not_pending(self):
+        off = self.profile.regions[0]["offset"]
+        with open(self.path, "r+b") as f:
+            f.seek(off + HEADER + 16)
+            f.write(b"\x01" * 16)               # another build of the texture
+        before = self.data()
+        self.assertFalse(self.eng.set_style("348710", "ps")["ok"])
+        self.assertEqual(self.data(), before)
+        st = self.status()
+        self.assertEqual(st["state"], "error")
+        self.assertIn("not supported", st["message"])
+
+    def test_missing_icon_fails_before_the_first_write(self):
+        self.profile.glyph_dir = os.path.join(self.home, "no-glyphs")
+        r = self.eng.set_style("348710", "ps")
+        self.assertFalse(r["ok"])
+        self.assertIn("icon", r["errors"][0])
+        self.assertEqual(self.data(), self.pristine)
+        self.assertNotIn(region_patch.MAGIC, self.data())
+        self.assertEqual(self.status()["state"], "error")
 
 
 if __name__ == "__main__":

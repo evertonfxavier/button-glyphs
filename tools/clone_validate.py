@@ -14,6 +14,11 @@
      sizes do not grow when styles are switched, and that the engine reports no error.
 
 Exit status 0 = all good. Use --keep to leave the patched clone for a visual check.
+Config-value games (10 Second Ninja X): <dir> holds the pinned build's data file(s) at the root
+(`data.win`) and the real save at its path relative to the Proton prefix
+(`drive_c/users/steamuser/AppData/.../10SNX.sav`). The save is placed in the fake library's
+`compatdata/<appid>/pfx/` and the cycle must give back the pristine save byte for byte (valid when
+the game changed nothing else, which a copy made while the game is closed guarantees).
 Giant archives (Quantum Break, Saint Seiya) are not cloned this way: validate those read-only on
 the Deck (profile.check + in-memory render), see skill `testing-glyph-profiles`.
 """
@@ -84,7 +89,16 @@ def validate(appid, src_dir, styles=None, profiles=None, glyph_dir=None, keep=Fa
         return {"ok": False, "problems": ["appid %s has no registered profile" % appid], "steps": []}
     profile = profiles[appid]
     src_dir = Path(src_dir)
-    files = profile_files(profile)
+    config = getattr(profile, "config_level", False)
+    if config:
+        if buildid == "0" and len(profile.builds) == 1:
+            buildid = next(iter(profile.builds))
+        if buildid not in profile.builds:
+            return {"ok": False, "steps": [],
+                    "problems": ["build %s is not pinned by the profile (use --buildid)" % buildid]}
+        files = [profile.builds[buildid]["file"], profile.file]
+    else:
+        files = profile_files(profile)
     missing = [f for f in files if not (src_dir / f).is_file()]
     if missing:
         return {"ok": False, "steps": [],
@@ -99,10 +113,14 @@ def validate(appid, src_dir, styles=None, profiles=None, glyph_dir=None, keep=Fa
     report = {"ok": False, "problems": [], "steps": [], "files": files, "kept": None}
     try:
         game = make_library(tmp, appid, profile.name, installdir, buildid)
+        paths = {f: game / f for f in files}
+        if config:      # the save lives in the Proton prefix of the (fake) library, not in the game folder
+            prefix = tmp / ".local" / "share" / "Steam" / "steamapps" / "compatdata" / appid / "pfx"
+            paths[profile.file] = prefix / profile.file
         for f in files:
-            clone(src_dir / f, game / f)
-        before = {f: sha256(game / f) for f in files}
-        size0 = {f: os.path.getsize(game / f) for f in files}
+            clone(src_dir / f, paths[f])
+        before = {f: sha256(paths[f]) for f in files}
+        size0 = {f: os.path.getsize(paths[f]) for f in files}
         log("cloned %d file(s), %.1f MB" % (len(files), sum(size0.values()) / 1e6))
 
         eng = engine.Engine(str(tmp), str(tmp / "settings"), str(tmp / "runtime"),
@@ -113,7 +131,7 @@ def validate(appid, src_dir, styles=None, profiles=None, glyph_dir=None, keep=Fa
             result = eng.set_style(appid, style)
             took = time.time() - t
             status = next((g for g in eng.list_games() if g["appid"] == appid), {})
-            total = sum(os.path.getsize(game / f) for f in files)
+            total = sum(os.path.getsize(paths[f]) for f in files)
             step = {"style": style, "ok": result["ok"], "changed": result.get("changed"),
                     "seconds": round(took, 1), "mb": round(total / 1e6, 1),
                     "state": status.get("state"), "message": status.get("message", "")}
@@ -125,12 +143,12 @@ def validate(appid, src_dir, styles=None, profiles=None, glyph_dir=None, keep=Fa
             elif status.get("state") != "ok":
                 report["problems"].append("%s left the game in state %r" % (style, status.get("state")))
             if style != "original":
-                snapshot = {f: os.path.getsize(game / f) for f in files}
+                snapshot = {f: os.path.getsize(paths[f]) for f in files}
                 if style in sizes_after_style and sizes_after_style[style] != snapshot:
                     report["problems"].append("files grew when %s was applied again" % style)
                 sizes_after_style.setdefault(style, snapshot)
 
-        after = {f: sha256(game / f) for f in files}
+        after = {f: sha256(paths[f]) for f in files}
         for f in files:
             if after[f] != before[f]:
                 report["problems"].append("NOT identical after 'original': %s" % f)
