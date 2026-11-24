@@ -4,6 +4,7 @@ import os
 import shutil
 import sys
 import tempfile
+import types
 import unittest
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -20,6 +21,12 @@ from test_backend import GLYPH_DIR, make_library  # noqa: E402
 AREA_ENTRY = "Area_DataBlock"
 PRIMARY = "DataPC.forge"
 AREA = "DataPC_Area.forge"
+
+
+def slot_of(record):
+    """What forge.set_slot needs from an index entry, rebuilt from a trailer record (the old `_Slot`)."""
+    return types.SimpleNamespace(slot_off=record["slot_off"], name_off=record["name_off"],
+                                 file_id=record["orig"][1])
 
 
 def sha(path):
@@ -139,7 +146,7 @@ class EntryEngineTest(unittest.TestCase):
         from button_glyphs.forge import set_slot
         rec = trailer["entries"][0]
         with open(self.area, "r+b") as f:
-            set_slot(f, entries._Slot(rec), rec["orig"][0], rec["orig"][2], rec["orig_name_size"])
+            set_slot(f, slot_of(rec), rec["orig"][0], rec["orig"][2], rec["orig_name_size"])
         self.assertEqual(entries.inspect(self.area)[0], entries.PARTIAL)
 
         self.assertTrue(self.eng.sync("15100")["ok"])
@@ -213,7 +220,7 @@ class EntriesUnitTest(unittest.TestCase):
             rec = trailer["entries"][0]
             from button_glyphs.forge import set_slot
             with open(path, "r+b") as f:
-                set_slot(f, entries._Slot(rec), 12345, 1, 1)
+                set_slot(f, slot_of(rec), 12345, 1, 1)
             with open(path, "rb") as f:
                 before = f.read()
             state, trailer = entries.inspect(path)

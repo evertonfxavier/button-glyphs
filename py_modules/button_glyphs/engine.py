@@ -210,7 +210,8 @@ class Engine:
             for appid, gcfg in cfg["games"].items():
                 if appid in self.profiles and (gcfg.get("style", "original") != "original"
                                                or self._restore_pending(appid, gcfg)
-                                               or self._files_restore_pending(appid)):
+                                               or self._files_restore_pending(appid)
+                                               or self._marker_restore_pending(appid)):
                     results.append(self.sync(appid, reason=reason))
         return results
 
@@ -480,6 +481,32 @@ class Engine:
         else:
             out.update(state="ok", message="%s glyphs active" % STYLE_LABEL[desired])
         return out
+
+    def _marker_restore_pending(self, appid):
+        """An entry / region / single-file game set to Original whose file still carries OUR marker
+        (Original was cut by a power loss, or the game was running when it was chosen): the watcher
+        finishes the restore. Reacts only to states we wrote (entries patched/half/partial, regions
+        patched/writing, our trailer); unknown, strange or missing files never trigger a sync."""
+        profile = self.profiles[appid]
+        if getattr(profile, "files_level", False) or getattr(profile, "config_level", False):
+            return False
+        app = steam.installed_apps(self.home).get(appid)
+        if not app or not steam.is_ready(app):
+            return False
+        try:
+            if getattr(profile, "entry_level", False):
+                rows = entries.plan(profile, app["install_path"], "original")
+                return any(r[2] in (entries.PATCHED, entries.HALF, entries.PARTIAL) for r in rows)
+            path = self.target_path(app, profile)
+            if getattr(profile, "region_level", False):
+                with open(path, "rb") as f:
+                    return any(region_patch.region_state(f, r)[0] in (region_patch.PATCHED, region_patch.WRITING)
+                               for r in profile.regions)
+            return read_trailer(path) is not None
+        except Exception:                          # the watcher must go on with the other games
+            if self.log:
+                self.log.exception("watcher: cannot read the files of %s", appid)
+            return False
 
     def _files_restore_pending(self, appid):
         """A loose-files game set to Original whose files still hold our drawing (the game was

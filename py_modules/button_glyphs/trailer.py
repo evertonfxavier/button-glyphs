@@ -35,15 +35,23 @@ def read_trailer(path):
         return None
 
 
-def write_trailer(path, info):
+def write_trailer(path, info, at=None):
+    """Write the marker at the end of the file, or at offset `at` (a multiple of ALIGN) in ONE write
+    that also extends the file to at + ALIGN. The bytes are the same either way."""
     body = json.dumps(info, sort_keys=True).encode("utf-8")
     block = TRAILER_MAGIC + struct.pack("<I", len(body)) + body
     if len(block) > ALIGN:
         raise ValueError("trailer too large")
     with open(path, "r+b") as f:
-        f.seek(0, os.SEEK_END)
-        size = f.tell()
-        f.write(b"\0" * ((-size) % ALIGN))
+        if at is None:
+            f.seek(0, os.SEEK_END)
+            size = f.tell()
+            f.write(b"\0" * ((-size) % ALIGN))
+        else:
+            f.seek(0, os.SEEK_END)
+            if at % ALIGN or at < f.tell():          # never over existing bytes, always on the block grid
+                raise ValueError("trailer offset %d must be a multiple of %d and not before the end of the file" % (at, ALIGN))
+            f.seek(at)
         f.write(block + b"\0" * (ALIGN - len(block)))
         f.flush()
         os.fsync(f.fileno())

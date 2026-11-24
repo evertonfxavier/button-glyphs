@@ -58,9 +58,12 @@ never opens a backup, writes a marker or decides when to run.
   chunks and therefore remove our marker) are detected without trusting the config.
 - **Trailer**: last 2048 bytes of the file, magic `BUTTONGLYPHS\x01` + JSON. Entry-level trailers
   hold `orig_size`, `patched_size` and, per entry, the original and new index slot.
-- **Entry-level write order**: blob → trailer → index slot. Undo: slot back → truncate.
-  States found by `entries.inspect`: `original`, `patched`, `partial` (crashed before the slot
-  moved), `strange` (file no longer matches the trailer: only our marker is cut), `legacy`
+- **Entry-level write order**: trailer (at its final place, one write that extends the file) → blob →
+  index slot → name-record size, each fsynced. Undo: slot back → name size back → truncate.
+  States found by `entries.inspect` (it reads both the slot and the name size): `original`, `patched`
+  (both new), `partial` (both original: crashed before the index moved), `half` (a cut between the two
+  fields: every field is one of our recorded values but they disagree; `revert` is total and repeats safely),
+  `strange` (a field or the size is not one of ours: a game update; only our marker is cut), `legacy`
   (v0.1.x whole-file trailer, migrated from its backup).
 - **Region markers**: `W` (writing) / `P` (patched) + style + revision + SHA-256[:16] of the
   original region. Write order: marker `W` → body → final header.
@@ -77,6 +80,10 @@ never opens a backup, writes a marker or decides when to run.
   `os.replace`, fsync of the folder, read back). Undo: verified backups back in reverse order, each checked against the
   pinned hash. A crash leaves every file whole (original or drawn); the next sync finishes, or Original restores. An
   Original chosen while the game ran is finished by `sync_all` (`_files_restore_pending`).
+- **Entry, region and single-file games set to Original** are also finished by `sync_all` when a file still carries OUR
+  marker (`_marker_restore_pending`: entries patched/half/partial, regions patched/writing, our trailer): a power cut
+  inside Original or a game that was running then. Unknown, strange or missing files never trigger it; an idle tick
+  writes nothing.
 - **Config value** (user data the game rewrites, so no whole-file hash): checks (one save, layout, pinned
   build) -> copy of the save, first change only -> durable record (`original_value`, `intended_value`) in
   `config.json` and `backups/<appid>/*.record.json`, both fsynced -> one in-place same-length write +

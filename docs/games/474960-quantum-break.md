@@ -90,3 +90,4 @@ transparent-pixel colour read from the extract) and, with a preview dir, a rende
 colour. The extract is only read, never copied into the repo.
 
 ## Learnings
+- A power cut inside Original leaves regions with the W marker and the watcher does not resume it (sync_all only follows config-value and loose-file restores); only choosing a style again finishes the restore, and the status stays pending until then. _(verify_profile crash probe, 2026-11-24)_

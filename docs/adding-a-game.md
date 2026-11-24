@@ -136,7 +136,9 @@ Run everything: `python3 -W error::ResourceWarning -m unittest discover -s tests
 ### 10. Verify on the real files
 - Single-file and forge games: copy the files the profile touches and run
   `python3 tools/clone_validate.py <appid> <folder with the files>`. It clones them (instantly on macOS), runs *PlayStation → Xbox → PlayStation → Original* through the real engine, and proves the originals come back byte for byte.
-- Giant archives: validate read-only on the Deck instead (the profile's `check` against every recorded hash, plus an in-memory render).
+- The full battery (cycle, crash injection, running guard, Steam verify, update, unknown build, damaged art, timings) is one command on copies of the real files:
+  `python3 tools/verify_profile.py <appid> <folder with the copies>`. For a giant archive the folder holds the extracted regions and a sparse stand-in archive is built (see [development.md](development.md#verifying-a-profile)).
+- Giant archives: validate read-only on the Deck instead (the profile's `check` against every recorded hash, plus an in-memory render): `python3 tools/deck_probe.py <appid>` hashes only the pinned ranges and reports the filesystem, owner, running guard and plugin state without writing anything.
 - **Look at the result.** Make a contact sheet with the original on top and the patched textures below, in game orientation, for every style.
 
 ### 11. Write the game's page and regenerate the list

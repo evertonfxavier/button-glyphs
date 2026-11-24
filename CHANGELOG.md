@@ -7,6 +7,22 @@ Add your line under **Unreleased** in the pull request; maintainers move it into
 
 ## [Unreleased]
 
+### Fixed
+- *Assassin's Creed*: a power cut between the two writes that repoint an entry (the index slot and the size in its name
+  record), or while the new data was being written, could leave the file in a state the plugin did not recognise, so
+  **Original** was no longer byte-exact. Apply and Original now recover from a cut at every write point, with no change to
+  the on-disk format: files patched by older versions keep working, and half-applied ones are repaired. Known limits are
+  documented on the game page (a torn marker write; a junk tail left by the older code, which Steam "Verify" fixes).
+- An **Original** interrupted by a power cut (or chosen while the game was running) is now finished by the watcher for
+  *Assassin's Creed*, *Charlie Murder*, *Quantum Break* and *Saint Seiya*, as it already was for the loose-file and
+  saved-value games. It reacts only to states the plugin itself wrote and writes nothing on an idle check.
+
+### Added
+- Maintainer tools: `tools/verify_profile.py` (offline battery on copies of real files with the real engine: pinned hashes,
+  whole-tree cycle, power cuts as an exception and as a hard exit, running guard, Steam verify, new build, unknown build,
+  damaged art, ownership ledger, timings) and `tools/deck_probe.py` (one read-only SSH round trip: filesystem, owner,
+  pinned hashes, running guard, installed plugin).
+
 ## [0.3.7] - 2026-11-24
 
 ## [0.3.6] - 2026-11-24
