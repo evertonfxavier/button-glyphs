@@ -128,7 +128,7 @@ Fill every section of the page in `docs/games/` (the template tells you what eac
 *Support level* rows feed the public list, so write them for players. Start with `unconfirmed` unless you saw the result in the game. Then:
 
 ```bash
-python3 tools/gen_supported_games.py     # updates SUPPORTED_GAMES.md and the README tables
+python3 tools/gen_supported_games.py     # updates SUPPORTED_GAMES.md (the READMEs only link to it)
 ```
 The tests fail if you forget.
 

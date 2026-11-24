@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """Generate the list of supported games from the profile registry and the game pages.
 
-    python3 tools/gen_supported_games.py            write SUPPORTED_GAMES.md and refresh the README tables
-    python3 tools/gen_supported_games.py --check    exit 1 if any of them is out of date (CI and tests use this)
+    python3 tools/gen_supported_games.py            write SUPPORTED_GAMES.md
+    python3 tools/gen_supported_games.py --check    exit 1 if it is out of date (CI and tests use this)
 
 Sources of truth - never edit the generated parts by hand:
   * button_glyphs.profiles.PROFILES      which games exist, their styles, the files they touch
   * docs/games/<appid>-*.md              the "Summary" and "Support level" rows of "At a glance",
                                          and every "- NOT verified:" line
-The README.md / README.pt-BR.md tables live between <!-- GAMES:START --> and <!-- GAMES:END -->.
+The READMEs deliberately do NOT list games (the list will grow long): they link to SUPPORTED_GAMES.md.
 
 Support level (a row of every game page, exactly one of these):
   confirmed         somebody saw the result in the game
@@ -41,17 +41,10 @@ STRATEGY = {
                    "Only the changed parts are backed up, not the whole archive.",
 }
 STYLE_NAME = {"original": "Original", "ps": "PlayStation", "xbox": "Xbox"}
-START, END = "<!-- GAMES:START -->", "<!-- GAMES:END -->"
 
 
 class PageError(Exception):
     pass
-
-
-def anchor(heading):
-    """GitHub's heading anchor: lowercase, drop punctuation, spaces to hyphens."""
-    text = re.sub(r"[^\w\s-]", "", heading.lower())
-    return re.sub(r"\s", "-", text.strip())
 
 
 def read_page(root, appid):
@@ -154,22 +147,21 @@ def render_supported_games(root=ROOT):
         "",
         "## At a glance",
         "",
-        "| Game | Steam ID | Styles | Support |",
-        "|------|----------|--------|---------|",
+        "| Game | Steam ID | Styles | Support | Technical notes |",
+        "|------|----------|--------|---------|-----------------|",
     ]
     for g in games:
         lv = LEVELS[g["level"]]
-        out.append("| [%s](#%s) | [%s](https://store.steampowered.com/app/%s) | %s | %s %s |" % (
-            g["name"], anchor(g["heading"]), g["appid"], g["appid"], styles_of(g["profile"]).split(" (")[0],
-            lv["icon"], lv["en"]))
-    out += ["", "## Details", ""]
+        out.append("| **%s** | [%s](https://store.steampowered.com/app/%s) | %s | %s %s | [notes](docs/games/%s) |" % (
+            g["name"], g["appid"], g["appid"], styles_of(g["profile"]).split(" (")[0],
+            lv["icon"], lv["en"], g["page"]))
+    out += ["", "## Details per game", "", "Click a game to see what it changes and what is not confirmed yet.", ""]
     for g in games:
         p = g["profile"]
         lv = LEVELS[g["level"]]
         out += [
-            "### %s" % g["heading"],
-            "",
-            "**Support:** %s %s" % (lv["icon"], lv["en"]),
+            "<details>",
+            "<summary><b>%s</b> · %s %s</summary>" % (g["heading"], lv["icon"], lv["en"]),
             "",
             g["summary"],
             "",
@@ -184,6 +176,8 @@ def render_supported_games(root=ROOT):
             "[report how it looks in game](%s)" % (g["appid"], g["page"],
                                                   issue_link("in_game_report.yml", "[In-game report] %s" % g["name"])),
             "",
+            "</details>",
+            "",
         ]
     out += [
         "## Not on the list?",
@@ -196,37 +190,9 @@ def render_supported_games(root=ROOT):
     return "\n".join(out)
 
 
-def render_table(games, lang):
-    if lang == "pt":
-        head = ["| Jogo | Steam ID | Suporte | Detalhes |", "|------|----------|---------|----------|"]
-        details = "notas técnicas"
-    else:
-        head = ["| Game | Steam ID | Support | Details |", "|------|----------|---------|---------|"]
-        details = "technical notes"
-    rows = []
-    for g in games:
-        lv = LEVELS[g["level"]]
-        rows.append("| [%s](SUPPORTED_GAMES.md#%s) | %s | %s %s | [%s](docs/games/%s) |" % (
-            g["name"], anchor(g["heading"]), g["appid"], lv["icon"], lv[lang if lang == "pt" else "en"], details, g["page"]))
-    return "\n".join(head + rows)
-
-
-def update_block(text, table):
-    a, b = text.find(START), text.find(END)
-    if a < 0 or b < a:
-        raise PageError("missing %s ... %s markers" % (START, END))
-    return text[:a + len(START)] + "\n" + table + "\n" + text[b:]
-
-
 def targets(root=ROOT):
     """(path, new content) for every generated file."""
-    games = collect(root)
-    result = [(root / "SUPPORTED_GAMES.md", render_supported_games(root))]
-    for name, lang in (("README.md", "en"), ("README.pt-BR.md", "pt")):
-        path = root / name
-        if path.exists():
-            result.append((path, update_block(path.read_text(), render_table(games, lang))))
-    return result
+    return [(root / "SUPPORTED_GAMES.md", render_supported_games(root))]
 
 
 def main(argv=None):

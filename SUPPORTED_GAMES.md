@@ -20,18 +20,19 @@ Whatever the level, the plugin checks the game files before changing anything, a
 
 ## At a glance
 
-| Game | Steam ID | Styles | Support |
-|------|----------|--------|---------|
-| [Assassin's Creed](#assassins-creed-15100) | [15100](https://store.steampowered.com/app/15100) | Original, PlayStation, Xbox | 🟡 partly confirmed |
-| [Charlie Murder](#charlie-murder-405290) | [405290](https://store.steampowered.com/app/405290) | Original, PlayStation, Xbox | ✅ confirmed |
-| [Quantum Break](#quantum-break-474960) | [474960](https://store.steampowered.com/app/474960) | Original, PlayStation | ⚪ unconfirmed |
-| [Saint Seiya: Soldiers' Soul](#saint-seiya-soldiers-soul-348710) | [348710](https://store.steampowered.com/app/348710) | Original, PlayStation | ⚪ unconfirmed |
+| Game | Steam ID | Styles | Support | Technical notes |
+|------|----------|--------|---------|-----------------|
+| **Assassin's Creed** | [15100](https://store.steampowered.com/app/15100) | Original, PlayStation, Xbox | 🟡 partly confirmed | [notes](docs/games/15100-assassins-creed.md) |
+| **Charlie Murder** | [405290](https://store.steampowered.com/app/405290) | Original, PlayStation, Xbox | ✅ confirmed | [notes](docs/games/405290-charlie-murder.md) |
+| **Quantum Break** | [474960](https://store.steampowered.com/app/474960) | Original, PlayStation | ⚪ unconfirmed | [notes](docs/games/474960-quantum-break.md) |
+| **Saint Seiya: Soldiers' Soul** | [348710](https://store.steampowered.com/app/348710) | Original, PlayStation | ⚪ unconfirmed | [notes](docs/games/348710-saint-seiya.md) |
 
-## Details
+## Details per game
 
-### Assassin's Creed (15100)
+Click a game to see what it changes and what is not confirmed yet.
 
-**Support:** 🟡 partly confirmed
+<details>
+<summary><b>Assassin's Creed (15100)</b> · 🟡 partly confirmed</summary>
 
 The four action glyphs (head, weapon hand, empty hand, legs) in the HUD, tutorials and menus become △ □ ○ ✕ (PlayStation) or Y X B A (Xbox). PlayStation also redraws the Xbox 360 button art of the menus and the Animus room: A/B/X/Y → ✕ ○ □ △, LT/RT → L2/R2 and the L/R sticks.
 
@@ -41,9 +42,10 @@ The four action glyphs (head, weapon hand, empty hand, legs) in the HUD, tutoria
 - **Not confirmed yet:** where each `Conrtols_*` texture appears in game and whether the trigger icons (square L2/R2 in a 32x64 texture) look right; whether LB/RB prompts exist (none found).
 - **Links:** [Steam store](https://store.steampowered.com/app/15100) · [technical notes](docs/games/15100-assassins-creed.md) · [report how it looks in game](https://github.com/evertonfxavier/button-glyphs/issues/new?template=in_game_report.yml&title=%5BIn-game+report%5D+Assassin%27s+Creed)
 
-### Charlie Murder (405290)
+</details>
 
-**Support:** ✅ confirmed
+<details>
+<summary><b>Charlie Murder (405290)</b> · ✅ confirmed</summary>
 
 All button prompts (text, HUD, tutorials, attribute screen) use the game's own PlayStation or Xbox set for every controller. Original is automatic: PlayStation only for a DualShock 4, Xbox for anything else (including the Deck).
 
@@ -53,9 +55,10 @@ All button prompts (text, HUD, tutorials, attribute screen) use the game's own P
 - **Not confirmed yet:** other builds than 8270183; Xbox style on a DualShock 4 (not needed on the Deck).
 - **Links:** [Steam store](https://store.steampowered.com/app/405290) · [technical notes](docs/games/405290-charlie-murder.md) · [report how it looks in game](https://github.com/evertonfxavier/button-glyphs/issues/new?template=in_game_report.yml&title=%5BIn-game+report%5D+Charlie+Murder)
 
-### Quantum Break (474960)
+</details>
 
-**Support:** ⚪ unconfirmed
+<details>
+<summary><b>Quantum Break (474960)</b> · ⚪ unconfirmed</summary>
 
 Every Xbox prompt of the HUD, menus and video player: A/B/X/Y become ✕ ○ □ △ in the PlayStation colours, LB/RB → L1/R1, LT/RT → L2/R2, in all four HUD scales. Sticks, D-pad and View/Menu already match a PlayStation pad, and the Xbox controller picture of the options screen is not redrawn. Xbox and Original are the same thing here.
 
@@ -65,9 +68,10 @@ Every Xbox prompt of the HUD, menus and video player: A/B/X/Y become ✕ ○ □
 - **Not confirmed yet:** the result in game; whether the game checks the `.meta` CRC (`m_uFileCRC`) - if it fails to start, revert with `set_style original`.
 - **Links:** [Steam store](https://store.steampowered.com/app/474960) · [technical notes](docs/games/474960-quantum-break.md) · [report how it looks in game](https://github.com/evertonfxavier/button-glyphs/issues/new?template=in_game_report.yml&title=%5BIn-game+report%5D+Quantum+Break)
 
-### Saint Seiya: Soldiers' Soul (348710)
+</details>
 
-**Support:** ⚪ unconfirmed
+<details>
+<summary><b>Saint Seiya: Soldiers' Soul (348710)</b> · ⚪ unconfirmed</summary>
 
 The controller sheet of menus and tutorials (A/B/X/Y → ✕ ○ □ △, LB/RB → L1/R1, LT/RT → L2/R2, L3/R3, START/BACK → OPTIONS/SHARE), the X/Y/B beside the attack commands in battle and the big A of the continue screen, in all eight languages. Sticks, D-pad, the numbered pad buttons and the controller drawings inside help pictures are left alone. Xbox and Original are the same thing here.
 
@@ -76,6 +80,8 @@ The controller sheet of menus and tutorials (A/B/X/Y → ✕ ○ □ △, LB/RB 
 - **Files it changes:** `localize.cpk`
 - **Not confirmed yet:** how it looks in game (it is applied, nobody has reported the result); `HELP.emb` (`HELP_IMG*`) may still show Xbox controller drawings - untouched.
 - **Links:** [Steam store](https://store.steampowered.com/app/348710) · [technical notes](docs/games/348710-saint-seiya.md) · [report how it looks in game](https://github.com/evertonfxavier/button-glyphs/issues/new?template=in_game_report.yml&title=%5BIn-game+report%5D+Saint+Seiya%3A+Soldiers%27+Soul)
+
+</details>
 
 ## Not on the list?
 

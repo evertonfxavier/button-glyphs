@@ -43,7 +43,7 @@ The [development guide](docs/development.md) explains the project layout, every 
 - **Tests pass:** `python3 -W error::ResourceWarning -m unittest discover -s tests` and `npx tsc --noEmit -p .`
 - **Safety rules hold** ([docs/safety-rules.md](docs/safety-rules.md)). Anything that writes game files needs tests for exact undo, refusal of unknown layouts, and crash recovery.
 - **No game assets** in the repository: no extracted textures, no copies of mods, no game files. Tools produce hashes and coordinates, never art.
-- **Generated files are regenerated, not edited:** `SUPPORTED_GAMES.md`, the tables between `<!-- GAMES:START -->` and `<!-- GAMES:END -->`, `src/generated/`, and `py_modules/button_glyphs/glyphs/`. Run `python3 tools/gen_supported_games.py` or `pnpm run glyphs`.
+- **Generated files are regenerated, not edited:** `SUPPORTED_GAMES.md`, `src/generated/`, and `py_modules/button_glyphs/glyphs/`. Run `python3 tools/gen_supported_games.py` or `pnpm run glyphs`.
 - **English** for code, identifiers, docs and UI strings. If you change the English README, update `README.pt-BR.md` too, or say in the pull request that you could not.
 - **Honest docs:** a game's page says what was verified and what was not. "Unconfirmed" is a fine answer.
 - **A changelog line** under *Unreleased* in [CHANGELOG.md](CHANGELOG.md) for anything a user would notice.

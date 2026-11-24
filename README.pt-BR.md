@@ -54,16 +54,9 @@ Só isso. Abra o jogo e olhe os botões.
 
 ## Jogos suportados
 
-<!-- GAMES:START -->
-| Jogo | Steam ID | Suporte | Detalhes |
-|------|----------|---------|----------|
-| [Assassin's Creed](SUPPORTED_GAMES.md#assassins-creed-15100) | 15100 | 🟡 parcialmente confirmado | [notas técnicas](docs/games/15100-assassins-creed.md) |
-| [Charlie Murder](SUPPORTED_GAMES.md#charlie-murder-405290) | 405290 | ✅ confirmado | [notas técnicas](docs/games/405290-charlie-murder.md) |
-| [Quantum Break](SUPPORTED_GAMES.md#quantum-break-474960) | 474960 | ⚪ não confirmado | [notas técnicas](docs/games/474960-quantum-break.md) |
-| [Saint Seiya: Soldiers' Soul](SUPPORTED_GAMES.md#saint-seiya-soldiers-soul-348710) | 348710 | ⚪ não confirmado | [notas técnicas](docs/games/348710-saint-seiya.md) |
-<!-- GAMES:END -->
+A lista de jogos, o que cada um muda e o quanto temos certeza fica em **[SUPPORTED_GAMES.md](SUPPORTED_GAMES.md)**
+(em inglês; é gerada a partir do código, então está sempre em dia).
 
-Detalhes completos, o que cada jogo muda e o quanto temos certeza: **[SUPPORTED_GAMES.md](SUPPORTED_GAMES.md)** (em inglês).
 Cada jogo guarda os botões de um jeito, então cada um precisa do seu próprio *perfil*. Falta o seu?
 [Peça aqui](https://github.com/evertonfxavier/button-glyphs/issues/new?template=game_request.yml) ou
 [adicione você mesmo](docs/adding-a-game.md).

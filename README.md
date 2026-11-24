@@ -51,16 +51,9 @@ That is all. Start the game and look at the prompts.
 
 ## Supported games
 
-<!-- GAMES:START -->
-| Game | Steam ID | Support | Details |
-|------|----------|---------|---------|
-| [Assassin's Creed](SUPPORTED_GAMES.md#assassins-creed-15100) | 15100 | 🟡 partly confirmed | [technical notes](docs/games/15100-assassins-creed.md) |
-| [Charlie Murder](SUPPORTED_GAMES.md#charlie-murder-405290) | 405290 | ✅ confirmed | [technical notes](docs/games/405290-charlie-murder.md) |
-| [Quantum Break](SUPPORTED_GAMES.md#quantum-break-474960) | 474960 | ⚪ unconfirmed | [technical notes](docs/games/474960-quantum-break.md) |
-| [Saint Seiya: Soldiers' Soul](SUPPORTED_GAMES.md#saint-seiya-soldiers-soul-348710) | 348710 | ⚪ unconfirmed | [technical notes](docs/games/348710-saint-seiya.md) |
-<!-- GAMES:END -->
+The list of games, what each one changes and how sure we are about it lives in **[SUPPORTED_GAMES.md](SUPPORTED_GAMES.md)**
+(it is generated from the code, so it is always up to date).
 
-Full details, what each game changes and how sure we are: **[SUPPORTED_GAMES.md](SUPPORTED_GAMES.md)**.
 Every game stores its prompts differently, so each one needs its own *profile*. Yours is missing?
 [Request it](https://github.com/evertonfxavier/button-glyphs/issues/new?template=game_request.yml) or
 [add it yourself](docs/adding-a-game.md).

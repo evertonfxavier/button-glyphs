@@ -24,7 +24,7 @@ pnpm install
 | `pnpm run build:zip` | Build `out/button-glyphs-vX.Y.Z.zip` (the file users install) |
 | `pnpm run glyphs` | Re-render the icon PNGs and `src/generated/glyphs.ts` from `assets/svg/` |
 | `pnpm run brand` | Re-render the logo and the social preview from `assets/logo.svg` |
-| `python3 tools/gen_supported_games.py` | Refresh `SUPPORTED_GAMES.md` and the README tables (tests fail if they are stale) |
+| `python3 tools/gen_supported_games.py` | Refresh `SUPPORTED_GAMES.md`, the one place that lists the games (tests fail if it is stale) |
 
 ## Project map
 
