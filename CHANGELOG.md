@@ -7,6 +7,11 @@ Add your line under **Unreleased** in the pull request; maintainers move it into
 
 ## [Unreleased]
 
+### Changed
+- Every push to `main` is now released: when the version in `package.json` already has a release at another commit, CI bumps
+  the patch version, moves `Unreleased` in this file to the new version, builds the zip with it and publishes the release.
+  Before, the release stayed at the first zip of a version while the code moved on (`scripts/ci_version.py`).
+
 ### Added
 - Open-source packaging: a new README (English and Portuguese), project logo and social preview, `SUPPORTED_GAMES.md`
   (generated from the code), FAQ, contributor guides, issue forms, pull request template, code of conduct and security policy.

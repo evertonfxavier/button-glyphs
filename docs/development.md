@@ -78,11 +78,17 @@ A SteamOS update may switch it off again.
 
 ## Releases
 
-Releases are automatic. When a push to `main` carries a `version` in `package.json` that has no GitHub release yet, CI runs the tests, builds the zip and publishes it as `vX.Y.Z` (with a `.sha256` and generated notes). A push that does not change the version publishes nothing.
+Releases are automatic: **every push to `main` is released**, so the release never lags behind the code. CI runs the tests, builds the zip and publishes it as `vX.Y.Z` (with a `.sha256` and generated notes). The version is decided by `scripts/ci_version.py`:
 
-- Pick the version with [semantic versioning](https://semver.org): patch for fixes, minor for a new game or feature, major for breaking changes; `X.Y.Z-beta.1` for a pre-release.
-- Add a section to [CHANGELOG.md](../CHANGELOG.md) in the same pull request (the repository-health test checks the current version is there).
-- Contributors normally **do not bump the version**; maintainers do when they cut a release.
+- `package.json` carries a version that has no release yet (you bumped it by hand, e.g. for a new minor): that version is released as is.
+- Its release already exists at another commit: CI bumps the **patch** (0.3.1 to 0.3.2, the next free one), moves what is under `## [Unreleased]` in [CHANGELOG.md](../CHANGELOG.md) to `## [0.3.2] - date`, builds the zip with that version, commits `chore(release): v0.3.2 [skip ci]` to `main` and publishes the release at that commit.
+- A re-run of the commit that was already released does nothing. A pre-release (`X.Y.Z-beta.1`) is never bumped automatically. Pull requests build and test but never release.
+
+Things to know:
+- The bot adds a commit to `main` after each release: **`git pull --rebase` before your next push**.
+- If `main` moves while a release run is going, the bot's push is refused and that run fails without publishing; the run of the newer commit releases both.
+- Pick the version yourself ([semantic versioning](https://semver.org)) when it is more than a patch: minor for a new game or feature, major for breaking changes. Put the line in `## [Unreleased]` of the changelog in the same pull request.
+- Contributors normally **do not bump the version**. Docs-only pushes to `main` are released too.
 
 ## Conventions
 

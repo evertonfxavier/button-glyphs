@@ -76,7 +76,7 @@ Small fixes (typos, links, wording) can go straight to a pull request, no issue 
 
 ## Releases
 
-Maintainers publish releases: when the `version` in `package.json` changes on `main`, CI tests, builds the zip and creates the GitHub release. Details in [docs/development.md](docs/development.md#releases).
+Every push to `main` is released automatically: CI tests, builds the zip and creates the GitHub release, bumping the patch version itself when the code moved on. Maintainers only set the version by hand for a bigger change. Details in [docs/development.md](docs/development.md#releases).
 
 ## Licensing of contributions
 
