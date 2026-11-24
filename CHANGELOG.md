@@ -7,6 +7,8 @@ Add your line under **Unreleased** in the pull request; maintainers move it into
 
 ## [Unreleased]
 
+## [0.3.4] - 2026-11-24
+
 ### Changed
 - Songs for a Hero: the game page and the generated art table now state the origin of the artwork (drawn by the project
   owner), with a re-run overlap check against the game's textures (0 identical pixels).
@@ -52,7 +54,8 @@ First published release.
 - A background watcher that re-applies the chosen style after a game update or "Verify integrity of game files".
 - Automatic GitHub releases with a zip and a `.sha256` file when the version in `package.json` changes.
 
-[Unreleased]: https://github.com/evertonfxavier/button-glyphs/compare/v0.3.3...HEAD
+[Unreleased]: https://github.com/evertonfxavier/button-glyphs/compare/v0.3.4...HEAD
+[0.3.4]: https://github.com/evertonfxavier/button-glyphs/compare/v0.3.3...v0.3.4
 [0.3.3]: https://github.com/evertonfxavier/button-glyphs/compare/v0.3.2...v0.3.3
 [0.3.2]: https://github.com/evertonfxavier/button-glyphs/compare/v0.3.1...v0.3.2
 [0.3.1]: https://github.com/evertonfxavier/button-glyphs/releases/tag/v0.3.1
