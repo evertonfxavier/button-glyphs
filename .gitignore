@@ -50,3 +50,7 @@ out/*
 cli/
 cli/*
 cli/decky
+
+# Claude Code local state
+.claude/.state/
+.claude/settings.local.json

@@ -14,9 +14,9 @@ Per-texture options:
   verify     "glyphs" (default): coloured glyphs must be present in the boxes;
              "name": only the resource name and format are checked
 
-A profile with `extra_targets` (more forge files, each {"file", "entry", "textures"}) is
-handled by the engine one entry at a time (see entries.py), so big archives are never
-copied whole. Without them the profile keeps the single-file behaviour.
+A profile with `extra_targets` (more forge files, each {"file", "entry", "textures",
+optional "styles"}) is handled by the engine one entry at a time (see entries.py), so big
+archives are never copied whole. Without them the profile keeps the single-file behaviour.
 """
 import struct
 
@@ -86,6 +86,11 @@ class ForgeGlyphProfile:
 
     def targets(self):
         return [self.primary_target()] + self.extra_targets
+
+    def targets_for(self, style):
+        """Targets that carry glyphs in `style`. A target may list the `styles` it applies to
+        (e.g. Xbox 360 button art needs no change to look like Xbox)."""
+        return [t for t in self.targets() if style in t.get("styles", self.styles)]
 
     def check(self, path):
         """Problems that make `path` unsafe to patch (empty list = OK). Expects an original file."""

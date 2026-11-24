@@ -244,7 +244,7 @@ class DataFile:
 
     def read_resource(self, fid):
         if fid not in self.resources:
-            raise ForgeError("resource %#x not found" % fid)
+            raise ForgeError("resource %s not found" % (hex(fid) if isinstance(fid, int) else fid))
         start, size = self.resources[fid]
         return self.data_block.read(start, size)
 

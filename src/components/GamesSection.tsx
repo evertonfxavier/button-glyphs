@@ -58,7 +58,7 @@ function SupportedGame({ game, model }: { game: Game; model: ButtonGlyphsModel }
       ) : null}
       <PanelSectionRow>
         <div style={{ fontSize: "0.72em", color: MUTED }}>
-          The original files are backed up before the first change. Pick “Original” to restore them.
+          Your original game data is kept safe. Pick “Original” to restore it exactly.
         </div>
       </PanelSectionRow>
     </>

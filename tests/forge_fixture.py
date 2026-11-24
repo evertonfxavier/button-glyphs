@@ -69,8 +69,8 @@ def datafile_payload(variant=0, compress=True):
     return block(table, compress) + block(data, compress)
 
 
-def build_forge(path, variant=0, compress=True):
-    names = ["GlobalMetaFile", "Game Bootstrap Settings", "Game Fix"]
+def build_forge(path, variant=0, compress=True, entry="Game Bootstrap Settings"):
+    names = ["GlobalMetaFile", entry, "Game Fix"]
     payloads = [b"meta" * 10, datafile_payload(variant, compress), block(b"fix" * 5000)]
     n = len(names)
     hdr_off = 0x40

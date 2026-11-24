@@ -14,13 +14,14 @@ import threading
 import time
 
 from . import image, steam
-from .forge import ALIGN
+from . import entries
+from . import region_patch
+from .trailer import TRAILER_MAGIC, read_trailer, write_trailer  # noqa: F401  (re-exported)
 from .profiles import PROFILES
 
 CONFIG_VERSION = 1
 STYLES = ("original", "ps", "xbox")
 STYLE_LABEL = {"original": "Original", "ps": "PlayStation", "xbox": "Xbox"}
-TRAILER_MAGIC = b"BUTTONGLYPHS\x01"
 TMP_SUFFIX = ".button-glyphs.tmp"
 
 
@@ -33,42 +34,6 @@ def sha256_file(path, chunk=1 << 20):
                 break
             h.update(block)
     return h.hexdigest()
-
-
-def read_trailer(path):
-    """The trailer dict of a file we patched, or None for any other file."""
-    try:
-        with open(path, "rb") as f:
-            f.seek(0, os.SEEK_END)
-            size = f.tell()
-            if size < ALIGN:
-                return None
-            f.seek(size - ALIGN)
-            tail = f.read(ALIGN)
-    except OSError:
-        return None
-    if not tail.startswith(TRAILER_MAGIC):
-        return None
-    try:
-        n = struct.unpack_from("<I", tail, len(TRAILER_MAGIC))[0]
-        start = len(TRAILER_MAGIC) + 4
-        return json.loads(tail[start:start + n].decode("utf-8"))
-    except (ValueError, struct.error):
-        return None
-
-
-def write_trailer(path, info):
-    body = json.dumps(info, sort_keys=True).encode("utf-8")
-    block = TRAILER_MAGIC + struct.pack("<I", len(body)) + body
-    if len(block) > ALIGN:
-        raise ValueError("trailer too large")
-    with open(path, "r+b") as f:
-        f.seek(0, os.SEEK_END)
-        size = f.tell()
-        f.write(b"\0" * ((-size) % ALIGN))
-        f.write(block + b"\0" * (ALIGN - len(block)))
-        f.flush()
-        os.fsync(f.fileno())
 
 
 class IconLoader:
@@ -158,15 +123,22 @@ class Engine:
             return games
 
     def _status(self, app, profile, cfg, cmdlines):
+        if getattr(profile, "region_level", False):
+            return self._status_regions(app, profile, cfg, cmdlines)
         gcfg = cfg["games"].get(app["appid"], {})
         desired = gcfg.get("style", "original")
         path = self.target_path(app, profile)
         trailer = read_trailer(path)
         applied = trailer["style"] if trailer else "original"
+        rows = None
+        if getattr(profile, "entry_level", False):
+            rows = entries.plan(profile, app["install_path"], desired)
+            applied = entries.applied_style(rows)
+            trailer = None
         out = {
             "style": desired,
             "applied": applied,
-            "has_backup": os.path.exists(self.backup_path(app["appid"], profile)),
+            "has_backup": rows is not None or os.path.exists(self.backup_path(app["appid"], profile)),
             "last_event": gcfg.get("last_event", ""),
             "roles": [label for _, label in profile.roles],
             "original_hint": getattr(profile, "original_hint", ""),
@@ -177,7 +149,11 @@ class Engine:
             out.update(state="running", message="Game is running; changes apply when it closes")
         elif not steam.is_ready(app):
             out.update(state="updating", message="Steam is updating this game")
-        elif applied != desired:
+        elif gcfg.get("error"):
+            out.update(state="error", message=gcfg["error"])
+        elif rows is not None and not all(r[4] for r in rows):
+            out.update(state="pending", message="%s will be applied" % STYLE_LABEL[desired])
+        elif rows is None and applied != desired:
             out.update(state="pending", message="%s will be applied" % STYLE_LABEL[desired])
         elif trailer and trailer.get("revision", 1) != profile.revision:
             out.update(state="pending", message="Improved %s glyphs will be applied"
@@ -246,6 +222,10 @@ class Engine:
             return result
 
     def _sync_file(self, app, profile, gcfg, reason, logs):
+        if getattr(profile, "region_level", False):
+            return self._sync_regions(app, profile, gcfg, reason, logs)
+        if getattr(profile, "entry_level", False):
+            return self._sync_entries(app, profile, gcfg, reason, logs)
         appid = app["appid"]
         desired = gcfg.get("style", "original")
         target = self.target_path(app, profile)
@@ -319,6 +299,169 @@ class Engine:
         logs.append("%s applied" % STYLE_LABEL[desired])
         self._info("%s: %s applied (%s)", appid, desired, reason)
         return True
+
+    # ------------------------------------------------------------------ region-level strategy
+
+    @staticmethod
+    def _effective(profile, style):
+        """The style to draw: the game's own look (its native style) means "restore"."""
+        return "original" if style in ("original", profile.native_style) else style
+
+    def _region_backup_dir(self, appid):
+        return os.path.join(self.backup_root, appid, "regions")
+
+    def _status_regions(self, app, profile, cfg, cmdlines):
+        gcfg = cfg["games"].get(app["appid"], {})
+        desired = gcfg.get("style", "original")
+        want = self._effective(profile, desired)
+        path = self.target_path(app, profile)
+        out = {
+            "style": desired,
+            "applied": desired,
+            "has_backup": os.path.isdir(self._region_backup_dir(app["appid"])),
+            "last_event": gcfg.get("last_event", ""),
+            "roles": [label for _, label in profile.roles],
+            "original_hint": getattr(profile, "original_hint", ""),
+        }
+        if not os.path.exists(path):
+            out.update(state="error", message="%s not found" % profile.file)
+            return out
+        try:
+            rows = region_patch.plan(profile, app["install_path"], want)
+        except OSError as exc:
+            out.update(state="error", message="cannot read %s: %s" % (profile.file, exc))
+            return out
+        current = region_patch.applied_style(rows)
+        out["applied"] = profile.native_style if current == "original" else current
+        if steam.is_running(app, cmdlines):
+            out.update(state="running", message="Game is running; changes apply when it closes")
+        elif not steam.is_ready(app):
+            out.update(state="updating", message="Steam is updating this game")
+        elif not all(r[3] for r in rows):
+            out.update(state="pending", message="%s will be applied" % STYLE_LABEL[desired])
+        elif gcfg.get("error"):
+            out.update(state="error", message=gcfg["error"])
+        else:
+            out.update(state="ok", message="%s glyphs active" % STYLE_LABEL[desired])
+        return out
+
+    def _sync_regions(self, app, profile, gcfg, reason, logs):
+        """Bring every texture region of the archive to the chosen style, in place."""
+        appid = app["appid"]
+        desired = gcfg.get("style", "original")
+        want = self._effective(profile, desired)
+        install = app["install_path"]
+        backup_dir = self._region_backup_dir(appid)
+        rows = region_patch.plan(profile, install, want)
+        if all(r[3] for r in rows):
+            logs.append("%s already applied" % STYLE_LABEL[desired])
+            return False
+
+        todo = [r for r in rows if not r[3]]
+        problems = region_patch.check(profile, install, backup_dir, todo)
+        if want == "original":
+            # only regions that carry our marker need work, and they need their backup
+            problems = [p for p in problems if "backup" in p]
+            if problems:
+                raise RuntimeError("cannot restore: " + "; ".join(problems[:3]))
+            region_patch.revert(profile, install, backup_dir, rows)
+            gcfg["last_event"] = "Original restored"
+            logs.append("original restored")
+            gcfg["applied_buildid"] = app["buildid"]
+            return True
+
+        if problems:
+            raise RuntimeError("this game version is not supported yet: " + "; ".join(problems[:3]))
+        region_patch.ensure_backups(profile, install, backup_dir, todo)
+        region_patch.apply(profile, install, backup_dir, rows, want)
+
+        previous = gcfg.get("applied_buildid")
+        gcfg["applied_buildid"] = app["buildid"]
+        if reason == "user":
+            gcfg["last_event"] = "%s applied" % STYLE_LABEL[desired]
+            logs.append("%s applied" % STYLE_LABEL[desired])
+        else:
+            note = ("build %s -> %s" % (previous, app["buildid"])
+                    if previous and previous != app["buildid"] else "build %s" % app["buildid"])
+            gcfg["last_event"] = "%s re-applied (%s)" % (STYLE_LABEL[desired], note)
+            logs.append(gcfg["last_event"])
+        self._info("%s: %s applied to %d region(s) (%s)", appid, desired,
+                   len(todo), reason)
+        return True
+
+    # ------------------------------------------------------------------ entry-level strategy
+
+    def _sync_entries(self, app, profile, gcfg, reason, logs):
+        """Bring every archive of an entry-level profile to the chosen style.
+
+        1. undo files that are not as wanted (back to the exact original bytes)
+        2. check every file that must change, while all of them are original
+        3. patch them
+        A game that fails the check is therefore left original, never half-patched.
+        """
+        appid = app["appid"]
+        desired = gcfg.get("style", "original")
+        rows = entries.plan(profile, app["install_path"], desired)
+        todo = [r for r in rows if not r[4]]
+        if not todo:
+            logs.append("%s already applied" % STYLE_LABEL[desired])
+            return False
+
+        want = {t["file"] for t in entries.wanted(profile, desired)}
+        migrated = False
+        for target, path, state, trailer, _ in todo:
+            if state is None:
+                raise RuntimeError("%s not found" % target["file"])
+            if state == entries.LEGACY:
+                self._migrate_legacy(app, profile, path, trailer, gcfg)
+                migrated = True
+            elif state != entries.ORIGINAL:
+                entries.revert(path, state, trailer)
+        if migrated:
+            logs.append("moved to the new patch format")
+
+        patch = [r for r in todo if r[0]["file"] in want]
+        problems = []
+        for target, path, *_ in patch:
+            problems += profile.check_target(path, target)
+        if problems:
+            raise RuntimeError("this game version is not supported yet: " + "; ".join(problems[:3]))
+
+        info = {"appid": appid, "buildid": app["buildid"], "plugin": self.version,
+                "revision": profile.revision}
+        for target, path, *_ in patch:
+            entries.apply(path, profile, target, desired, self.icons, info)
+            logs.append("patched %s" % target["file"])
+
+        previous = gcfg.get("applied_buildid")
+        gcfg["applied_buildid"] = app["buildid"]
+        if desired == "original":
+            gcfg["last_event"] = "Original restored"
+            logs.append("original restored")
+        elif reason == "user":
+            gcfg["last_event"] = "%s applied" % STYLE_LABEL[desired]
+            logs.append("%s applied" % STYLE_LABEL[desired])
+        elif migrated:
+            gcfg["last_event"] = "%s kept (patch format updated)" % STYLE_LABEL[desired]
+            logs.append(gcfg["last_event"])
+        else:
+            note = ("build %s -> %s" % (previous, app["buildid"])
+                    if previous and previous != app["buildid"] else "build %s" % app["buildid"])
+            gcfg["last_event"] = "%s re-applied after update (%s)" % (STYLE_LABEL[desired], note)
+            logs.append(gcfg["last_event"])
+        self._info("%s: %s applied to %d file(s) (%s)", appid, desired, len(patch), reason)
+        return True
+
+    def _migrate_legacy(self, app, profile, path, trailer, gcfg):
+        """Files patched by v0.1.x carry a whole-file trailer: restore them from that backup."""
+        backup = self.backup_path(app["appid"], profile)
+        sha = trailer.get("source_sha256")
+        if not sha or not os.path.exists(backup) or sha256_file(backup) != sha:
+            raise RuntimeError("cannot restore %s from the old backup; use Steam > Verify files"
+                               % os.path.basename(path))
+        self._replace_from(backup, path, sha)
+        os.remove(backup)
+        gcfg.pop("backup", None)
 
     # ------------------------------------------------------------------ file ops
 
