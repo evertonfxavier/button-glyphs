@@ -21,7 +21,7 @@ Every game stores its prompts differently, so each one needs its own profile (se
 
 ## Installation
 
-1. Download `button-glyphs-vX.Y.Z.zip` from Releases (or build it, below).
+1. Download `button-glyphs-vX.Y.Z.zip` from the [latest release](https://github.com/evertonfxavier/button-glyphs/releases/latest) (or build it, below). A `.sha256` file sits next to it.
 2. In **Game Mode**: Quick Access (⋯) → **Decky** → **Settings** → enable **Developer Mode**.
 3. **Install Plugin from ZIP** and pick the file.
 4. Open **Button Glyphs** from the Decky plugin list.
@@ -62,6 +62,15 @@ pnpm run build        # frontend -> dist/
 pnpm test             # backend unit tests (synthetic forge, no game data needed)
 pnpm run build:zip    # out/button-glyphs-vX.Y.Z.zip
 ```
+
+### Releases (automatic)
+Releases are published by GitHub Actions ([`build-plugin.yml`](.github/workflows/build-plugin.yml)); there is nothing to tag by hand.
+
+1. Bump `version` in `package.json` (`X.Y.Z`, or `X.Y.Z-beta.1` for a pre-release) and push to `main`.
+2. CI runs the tests and builds the plugin. If that version has **no release yet**, the zip that was just tested is
+   published as release `vX.Y.Z` (the tag is created at that commit) with `button-glyphs-vX.Y.Z.zip`, its `.sha256` and
+   generated notes. A push that does not change the version publishes nothing.
+3. A failing test or build publishes nothing. Re-run the workflow from the Actions tab (`Run workflow`) to retry.
 
 ### Project layout
 

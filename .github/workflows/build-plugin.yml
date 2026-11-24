@@ -1,22 +1,44 @@
 name: Build plugin
 
+# Every push / PR: tests + zip. On main, when package.json carries a version that has no GitHub
+# release yet, the zip that was just tested is published as release vX.Y.Z (tag created at that commit).
+# To ship a new version: bump "version" in package.json and push to main. Nothing to tag by hand.
+
 on:
   push:
     branches: [main, master]
   pull_request:
     branches: [main, master]
+  workflow_dispatch:
 
 concurrency:
   group: build-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  # a push run may be publishing a release: only superseded pull-request runs are cancelled
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.meta.outputs.version }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Read and validate the version
+        id: meta
+        run: |
+          VERSION="$(node -p "require('./package.json').version")"
+          if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.]+)?$ ]]; then
+            echo "package.json version '$VERSION' is not semver (X.Y.Z or X.Y.Z-suffix)" >&2
+            exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Building Button Glyphs v$VERSION"
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -43,9 +65,10 @@ jobs:
             out/*.zip
           if-no-files-found: error
 
-      - name: Upload extracted plugin (smoke layout)
+      - name: Check the layout of the ZIP
         run: |
-          PLUGIN_ZIP=$(ls -1 out/button-glyphs-v*.zip | head -1)
+          PLUGIN_ZIP="out/button-glyphs-v${{ steps.meta.outputs.version }}.zip"
+          test -f "$PLUGIN_ZIP"
           mkdir -p out/extracted
           unzip -q "$PLUGIN_ZIP" -d out/extracted
           find out/extracted -path '*/dist/index.js' | grep -q .
@@ -53,6 +76,8 @@ jobs:
           find out/extracted -name main.py | grep -q .
           find out/extracted -path '*/py_modules/button_glyphs/forge.py' | grep -q .
           find out/extracted -path '*/py_modules/button_glyphs/glyphs/ps/*.png' | grep -q .
+          # the version inside the zip must be the one being released
+          test "$(unzip -p "$PLUGIN_ZIP" 'Button Glyphs/package.json' | node -p "JSON.parse(require('fs').readFileSync(0,'utf8')).version")" = "${{ steps.meta.outputs.version }}"
 
       - name: Upload extracted folder
         uses: actions/upload-artifact@v4
@@ -60,3 +85,66 @@ jobs:
           name: button-glyphs-plugin
           path: out/extracted/
           if-no-files-found: error
+
+  release:
+    # only on main, only after tests and build passed, never for pull requests
+    needs: build
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      VERSION: ${{ needs.build.outputs.version }}
+
+    steps:
+      - name: Download the tested ZIP
+        uses: actions/download-artifact@v4
+        with:
+          name: button-glyphs-plugin-zip
+          path: dist
+
+      - name: Publish the release for this version (once per version)
+        run: |
+          TAG="v${VERSION}"
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "Release $TAG already exists: nothing to publish. Bump \"version\" in package.json to ship a new one."
+            exit 0
+          fi
+
+          ZIP="button-glyphs-v${VERSION}.zip"
+          test -f "dist/$ZIP"
+          (cd dist && sha256sum "$ZIP" > "$ZIP.sha256")
+
+          cat > notes.md <<EOF
+          ## Button Glyphs v${VERSION}
+
+          Decky Loader plugin that swaps in-game button prompts to PlayStation or Xbox style, keeps the original files safe and re-applies your choice after game updates.
+
+          ### Install
+
+          1. Download \`${ZIP}\` below (optional: check it against \`${ZIP}.sha256\`).
+          2. On the Steam Deck: Quick Access, Decky, Settings, turn **Developer Mode** on.
+          3. **Install Plugin from ZIP** and pick the file.
+
+          ### Requirements
+
+          - [Decky Loader](https://github.com/SteamDeckHomebrew/decky-loader)
+          - A supported game, see the [README](https://github.com/${GITHUB_REPOSITORY}#supported-games)
+
+          Unofficial tool, not affiliated with Valve or the game publishers. Back up your saves; the plugin keeps the original game data and can restore it ("Original"), but a modded game is used at your own risk.
+
+          ### Changes
+          EOF
+
+          FLAGS=""
+          if [[ "$VERSION" == *-* ]]; then FLAGS="--prerelease"; fi
+
+          gh release create "$TAG" "dist/$ZIP" "dist/$ZIP.sha256" \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --title "Button Glyphs $TAG" \
+            --notes-file notes.md \
+            --generate-notes \
+            $FLAGS
+          echo "Published $TAG"
