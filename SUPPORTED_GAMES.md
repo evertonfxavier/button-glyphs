@@ -22,10 +22,10 @@ Whatever the level, the plugin checks the game files before changing anything, a
 
 | Game | Steam ID | Styles | Support | Technical notes |
 |------|----------|--------|---------|-----------------|
-| **10 Second Ninja X** | [435790](https://store.steampowered.com/app/435790) | Original, PlayStation, Xbox | ⚪ unconfirmed | [notes](docs/games/435790-10-second-ninja-x.md) |
+| **10 Second Ninja X** | [435790](https://store.steampowered.com/app/435790) | Original, PlayStation, Xbox | ✅ confirmed | [notes](docs/games/435790-10-second-ninja-x.md) |
 | **Assassin's Creed** | [15100](https://store.steampowered.com/app/15100) | Original, PlayStation, Xbox | 🟡 partly confirmed | [notes](docs/games/15100-assassins-creed.md) |
 | **Charlie Murder** | [405290](https://store.steampowered.com/app/405290) | Original, PlayStation, Xbox | ✅ confirmed | [notes](docs/games/405290-charlie-murder.md) |
-| **Quantum Break** | [474960](https://store.steampowered.com/app/474960) | Original, PlayStation | ⚪ unconfirmed | [notes](docs/games/474960-quantum-break.md) |
+| **Quantum Break** | [474960](https://store.steampowered.com/app/474960) | Original, PlayStation | ✅ confirmed | [notes](docs/games/474960-quantum-break.md) |
 | **Saint Seiya: Soldiers' Soul** | [348710](https://store.steampowered.com/app/348710) | Original, PlayStation | ✅ confirmed | [notes](docs/games/348710-saint-seiya.md) |
 
 ## Details per game
@@ -33,14 +33,14 @@ Whatever the level, the plugin checks the game files before changing anything, a
 Click a game to see what it changes and what is not confirmed yet.
 
 <details>
-<summary><b>10 Second Ninja X (435790)</b> · ⚪ unconfirmed</summary>
+<summary><b>10 Second Ninja X (435790)</b> · ✅ confirmed</summary>
 
 The game already ships PlayStation 4, Xbox 360, Xbox One and Vita button sprites and picks one from a saved number. The plugin will set that number; no art is changed.
 
 - **Styles:** Original, PlayStation, Xbox (Original keeps the setting you had in the game)
 - **How it works:** Changes **one stored setting** in the game's save file so the game uses its own PlayStation or Xbox button art. Nothing else in the save is touched, and **Original** puts back the value you had before. A copy of the save is kept the first time.
 - **Files it changes:** one value in the game's save file `10SNX.sav` (inside its Proton prefix)
-- **Not confirmed yet:** that the menu option exists on the PC build; that the game reads `buttons` from the save at startup and shows PS4 art; whether the save is checksummed; whether the PS4 sprite frames match the Xbox frame order; anything about Proton controller behaviour; the profile on the real save file (no clone validation yet); that the game does not rewrite `buttons` from its own default when it starts.
+- **Not confirmed yet:** whether the game rewrites `buttons` from its own default on a later start; whether the save is checksummed (no clone validation was run); anything about Proton controller behaviour.
 - **Links:** [Steam store](https://store.steampowered.com/app/435790) · [technical notes](docs/games/435790-10-second-ninja-x.md) · [report how it looks in game](https://github.com/evertonfxavier/button-glyphs/issues/new?template=in_game_report.yml&title=%5BIn-game+report%5D+10+Second+Ninja+X)
 
 </details>
@@ -72,14 +72,14 @@ All button prompts (text, HUD, tutorials, attribute screen) use the game's own P
 </details>
 
 <details>
-<summary><b>Quantum Break (474960)</b> · ⚪ unconfirmed</summary>
+<summary><b>Quantum Break (474960)</b> · ✅ confirmed</summary>
 
 Every Xbox prompt of the HUD, menus and video player: A/B/X/Y become ✕ ○ □ △ in the PlayStation colours, LB/RB → L1/R1, LT/RT → L2/R2, in all four HUD scales. Sticks, D-pad and View/Menu already match a PlayStation pad. The Xbox controller picture of the options screen (`controller.tex`) is replaced by a DualSense drawing. Xbox and Original are the same thing here.
 
 - **Styles:** Original, PlayStation (Xbox is the same as Original: the game already shows it)
 - **How it works:** Rewrites the button textures **in place** inside a very large archive (same size, nothing moves). Only the changed parts are backed up, not the whole archive.
 - **Files it changes:** `data/ep999-000.rmdp`
-- **Not confirmed yet:** how the picture looks in game (scaling by the menu, filtering of the soft edge: the game may blend with straight or premultiplied alpha; the colour under transparent pixels matches the original, so either way the edge should stay clean), and the render time on the Deck. the result in game as a whole, and whether the game checks the `.meta` CRC (`m_uFileCRC`); if it fails to start, revert with Original.
+- **Not confirmed yet:** whether the controls screen still shows the Xbox 360 photo with labels (`ctrllayout_01..04` in `ep999-000-en.rmdp`; not redrawn), and `controller_disconnected.tex` (not redrawn).
 - **Links:** [Steam store](https://store.steampowered.com/app/474960) · [technical notes](docs/games/474960-quantum-break.md) · [report how it looks in game](https://github.com/evertonfxavier/button-glyphs/issues/new?template=in_game_report.yml&title=%5BIn-game+report%5D+Quantum+Break)
 
 </details>

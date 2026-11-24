@@ -8,9 +8,9 @@
 | Engine / format | Remedy Northlight; `data/ep999-000.rmdp` (56 GB) stores raw files at fixed offsets; index `ep999-000.xml` lists (offset, size, crc32) |
 | Strategy / profile | in-place regions, `profiles/quantum_break.py` (`RegionGlyphProfile`) + generated `quantum_break_cells.py` + `quantum_break_pictures.py`, revision 2 |
 | Styles | PlayStation, Original (the game is natively Xbox) |
-| Status | revision 1 (8 prompt atlases) was applied on a previous Deck; revision 2 (adds the controller picture) is **not yet applied or seen in game** (see Deck state) |
+| Status | revision 2 (8 prompt atlases + the controller picture) applied on the current Deck; confirmed ok in game by the user (2026-11-24, their report; see Deck state) |
 | Summary | Every Xbox prompt of the HUD, menus and video player: A/B/X/Y become ✕ ○ □ △ in the PlayStation colours, LB/RB → L1/R1, LT/RT → L2/R2, in all four HUD scales. Sticks, D-pad and View/Menu already match a PlayStation pad. The Xbox controller picture of the options screen (`controller.tex`) is replaced by a DualSense drawing. Xbox and Original are the same thing here. |
-| Support level | unconfirmed |
+| Support level | confirmed |
 
 ## Where the button art lives
 `textures/hardcoded/prompts.tex` and `videoplayer_controls.tex`, each in four HUD scales
@@ -59,16 +59,19 @@ restores the chunk), or reinstall revision 2 and choose Original (the backup of 
   render, header untouched except the marker, exact SHA-256 undo, unknown texture refused, crash
   recovery); the real extract of `controller.tex` renders centred (511.5/511.5), 704x450, with
   no white halo on the dark menu colour (40, 40, 48); the render takes ~0.7 s on the Mac.
-- NOT verified: how the picture looks in game (scaling by the menu, filtering of the soft edge:
-  the game may blend with straight or premultiplied alpha; the colour under transparent pixels
-  matches the original, so either way the edge should stay clean), and the render time on the Deck.
-- NOT verified: the result in game as a whole, and whether the game checks the `.meta` CRC
-  (`m_uFileCRC`); if it fails to start, revert with Original.
+- Verified in game: the user reported the result ok (2026-11-24, their instruction to mark it confirmed);
+  which screens they looked at was not recorded. The game started with the patched files, so the `.meta`
+  CRC (`m_uFileCRC`) does not block it (inferred, not tested separately). Preflight takes 10.5 s cold on the
+  Deck. If it ever fails to start, revert with Original.
+- NOT verified: whether the controls screen still shows the Xbox 360 photo with labels (`ctrllayout_01..04`
+  in `ep999-000-en.rmdp`; not redrawn), and `controller_disconnected.tex` (not redrawn).
 
 ## Deck state
-Current Deck: fully original, the plugin is **not installed**; nothing of this
-game was ever applied there. The previous Deck had revision 1 applied (PlayStation,
-status ok); do not mix the two up. Re-read the real state with `/game-status` before trusting this.
+Current Deck: plugin v0.3.1 with revision 2 installed on 2026-11-24 (with the user's approval),
+after a clean read-only dry run (9/9 hashes matched, preflight 10.5 s cold on the Deck). The user chose
+PlayStation in the plugin UI right after the install: all 9 regions patched (marker P/ps/rev 2),
+9 backups in the plugin data folder. Before that this Deck was fully original. The previous Deck had
+revision 1 applied; do not mix the two up. **Confirmed ok by the user (2026-11-24).** Re-read the real state with `/game-status` before trusting this.
 
 ## Open questions and caveats
 Steam "verify" restores whole chunks; every touched chunk differs from the manifest, so it all

@@ -8,9 +8,9 @@
 | Engine / format | GameMaker Studio 1.4, VM bytecode (not YYC), Windows build run through Proton. `data.win` is a plain, unencrypted FORM container (140 MB) |
 | Strategy / profile | **config value** (new): edit one key in the game's save file; `profiles/ten_second_ninja_x.py` on `profiles/config_value.py` (`ConfigValueProfile`, `config_level`), revision 1 |
 | Styles | ps / xbox / original |
-| Status | profile written and registered; synthetic-fixture tests green; not run on the real save yet (clone validation pending) |
+| Status | applied on the Deck from the plugin UI and confirmed ok in game by the user (2026-11-24, their report); clone validation was not run |
 | Summary | The game already ships PlayStation 4, Xbox 360, Xbox One and Vita button sprites and picks one from a saved number. The plugin will set that number; no art is changed. |
-| Support level | unconfirmed |
+| Support level | confirmed |
 
 ## Where the button art lives
 Nothing needs to be drawn. `data.win` (SPRT chunk) holds four 64x64, 12-frame sprites:
@@ -59,10 +59,11 @@ Planned: clone validation (`python3 tools/clone_validate.py 435790 <dir>`; `<dir
 
 ## Verified / not verified
 - Verified: sprite names and option strings are present in `data.win`; the save exists on the Deck with the `buttons` line (read-only); the profile's logic on synthetic fixtures; the pinned `data.win` size and SHA-256 on the copy used for recon.
-- NOT verified: that the menu option exists on the PC build; that the game reads `buttons` from the save at startup and shows PS4 art; whether the save is checksummed; whether the PS4 sprite frames match the Xbox frame order; anything about Proton controller behaviour; the profile on the real save file (no clone validation yet); that the game does not rewrite `buttons` from its own default when it starts.
+- Verified in game: the user applied PlayStation from the plugin (save `buttons` 523 -> 524, log '435790: ps applied to the save (user)', 2026-11-24 00:27) and reported it ok; which screens they looked at was not recorded.
+- NOT verified: whether the game rewrites `buttons` from its own default on a later start; whether the save is checksummed (no clone validation was run); anything about Proton controller behaviour.
 
 ## Deck state
-Nothing installed or changed by this work (the Deck was not touched). Save was `buttons="523.000000"` at recon time.
+Plugin v0.3.1 was installed on the Deck on 2026-11-24 (with the Quantum Break work); the user then applied PlayStation to this game from the plugin UI: save `buttons` was `523.000000` (original), now `524.000000`; confirmed ok in game by the user (2026-11-24). Re-read the real state with `/game-status`.
 
 ## Open questions and caveats
 - If the player changes the option in the game menu (e.g. to Xbox One, 525) while PlayStation or Xbox is chosen in the plugin, the periodic check puts the plugin's value back after the game closes. Choose Original to use the in-game option freely.
