@@ -158,6 +158,58 @@ class ChangelogTest(unittest.TestCase):
         self.assertIn("[0.99.0]", ci.promote_changelog(real, "0.99.0", "2026-01-01"))
 
 
+class EmptyNotesTest(unittest.TestCase):
+    def test_detects_an_empty_unreleased_section(self):
+        self.assertTrue(ci.unreleased_is_empty("## [Unreleased]\n\n## [0.3.3] - d\n\nx\n"))
+        self.assertTrue(ci.unreleased_is_empty("## [Unreleased]\n\n[Unreleased]: https://x/compare/v1.0.0...HEAD\n"))
+        self.assertTrue(ci.unreleased_is_empty("## [Unreleased]\n"))
+
+    def test_notes_under_unreleased_are_notes(self):
+        self.assertFalse(ci.unreleased_is_empty("## [Unreleased]\n\n### Added\n- a thing\n\n## [0.3.3]\n"))
+
+    def test_no_unreleased_section_is_not_reported_as_empty(self):
+        self.assertFalse(ci.unreleased_is_empty("# Changelog\n\n## [0.3.3]\n"))
+
+    def test_stamp_reports_whether_the_release_has_notes(self):
+        with tempfile.TemporaryDirectory() as d:
+            pkg, log = os.path.join(d, "package.json"), os.path.join(d, "CHANGELOG.md")
+            with open(pkg, "w") as f:
+                f.write('{"version": "0.3.1"}\n')
+            with open(log, "w") as f:
+                f.write("## [Unreleased]\n\n## [0.3.1]\n")
+            self.assertFalse(ci.stamp("0.3.2", "2026-11-24", pkg, log))       # still stamped, but flagged
+            with open(log) as f:
+                self.assertIn("## [0.3.2] - 2026-11-24", f.read())
+            with open(log, "w") as f:
+                f.write("## [Unreleased]\n\n- a note\n\n## [0.3.2]\n")
+            self.assertTrue(ci.stamp("0.3.3", "2026-11-24", pkg, log))
+
+    def test_the_cli_prints_a_warning_annotation_and_still_succeeds(self):
+        with tempfile.TemporaryDirectory() as d:
+            pkg, log = os.path.join(d, "package.json"), os.path.join(d, "CHANGELOG.md")
+            with open(pkg, "w") as f:
+                f.write('{"version": "0.3.1"}\n')
+            with open(log, "w") as f:
+                f.write("## [Unreleased]\n\n## [0.3.1]\n")
+            out, err = io.StringIO(), io.StringIO()
+            with redirect_stdout(out), redirect_stderr(err):
+                code = ci.main(["stamp", "--version", "0.3.2", "--date", "2026-11-24", "--package", pkg, "--changelog", log])
+        self.assertEqual(code, 0)
+        self.assertIn("::warning title=Release v0.3.2 has no notes::", out.getvalue())
+
+    def test_the_cli_is_quiet_when_there_are_notes(self):
+        with tempfile.TemporaryDirectory() as d:
+            pkg, log = os.path.join(d, "package.json"), os.path.join(d, "CHANGELOG.md")
+            with open(pkg, "w") as f:
+                f.write('{"version": "0.3.1"}\n')
+            with open(log, "w") as f:
+                f.write("## [Unreleased]\n\n### Added\n- x\n\n## [0.3.1]\n")
+            out = io.StringIO()
+            with redirect_stdout(out):
+                ci.main(["stamp", "--version", "0.3.2", "--date", "2026-11-24", "--package", pkg, "--changelog", log])
+        self.assertNotIn("::warning", out.getvalue())
+
+
 class CliTest(unittest.TestCase):
     def run_cli(self, *argv):
         out, err = io.StringIO(), io.StringIO()

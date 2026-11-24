@@ -1,0 +1,397 @@
+{
+ "_readme": [
+  "HAND-MAINTAINED input of tools/build_button_catalog.py. Everything the tool can derive (sizes, roles, keys, ps_action, art used, ids) comes from the generated profile tables and the art folders; only what cannot be derived is typed here: roles vocabulary, the look of each game's OWN buttons, art origins and tag rules.",
+  "Never put game pixels, offsets or hashes here: the catalog stores OUR art plus metadata about the game's art (rule 13 of the safety invariants).",
+  "vocabulary: the controlled tag values. A tag outside it fails the tests. Where a look is not known write 'unknown' (never guess).",
+  "roles: the standard role names. xbox/ps = the names on each pad, shape/label = defaults for art of that role, ps_action = what a PlayStation pad needs (redraw | relabel | same | switch).",
+  "role_aliases: a game's own role names mapped to the standard role (AC1 draws body-part glyphs).",
+  "origins: one line of origin/licence per kind of art; art_rules (first match wins) give a PNG its kind, origin and tags; svg_rules (first match wins) give an SVG its role and detail.",
+  "art_roles: role of a PNG that no registered profile uses (the role of used art is derived from the profile). Keep empty unless the builder asks for it.",
+  "games: one entry per CONFIRMED game (Support level 'confirmed' or 'partly confirmed' on docs/games/<appid>-*.md; a test compares). families: look of the game's own buttons (native_look) and, only where it differs from the tags of our art, what we put there (ps_look). Key = family id the builder derives, or '<family>/<role,role>' for a role-specific entry (most specific wins). manual_slots: for games that draw no art of ours (switch strategies), whose slots cannot be derived from a table.",
+  "After editing: python3 tools/build_button_catalog.py build"
+ ],
+ "schema": 1,
+ "vocabulary": {
+  "style": {
+   "ps": "PlayStation look (cross circle square triangle, L1/R2, OPTIONS/SHARE)",
+   "xbox": "Xbox look (A B X Y, LB/RT, Menu/View)",
+   "neutral": "no console look (tinted by the profile, or a picture without buttons)"
+  },
+  "shape": {
+   "disc": "round face button",
+   "pill": "small rounded rectangle (menu / start / select)",
+   "bumper": "shoulder button (curved or slanted pill, usually with a word)",
+   "trigger": "trigger (trapezoid or tall rectangle, usually with a word)",
+   "d-pad": "cross-shaped direction pad",
+   "stick-cap": "thumbstick (round cap, ring or press symbol)",
+   "arrow": "single arrow",
+   "text": "bare text without a button body",
+   "glyph": "bare symbol or label drawn onto the game's own shape (white-on-transparent mask)",
+   "rect": "plain rectangle (touchpad)",
+   "icon": "pictogram that is not a standard button (AC1 body-part glyphs)",
+   "picture": "whole controller drawing",
+   "unknown": "not recorded"
+  },
+  "shading": {
+   "flat": "flat fill",
+   "outline": "outline only (ring or stroke)",
+   "jewel-3d": "glossy gem-like pixel shading (the game's own SFH tooltip buttons)",
+   "pixel-bevel": "hand-pixelled edge light/dark (bevel) and a 1 px outline",
+   "line-art": "line drawing",
+   "unknown": "not recorded"
+  },
+  "label": {
+   "letter": "a single letter (A, B, X, Y, L, R)",
+   "symbol": "PlayStation symbol (cross, circle, square, triangle)",
+   "word": "a word or code (LB, L2, OPTIONS, START)",
+   "icon": "a drawn icon (menu lines, play arrow, share, body part)",
+   "none": "nothing printed",
+   "mixed": "varies by role",
+   "unknown": "not recorded"
+  },
+  "background": {
+   "dark": "dark body or dark surface behind the glyph",
+   "light": "light body or light surface",
+   "transparent": "no body: transparent around the glyph",
+   "mixed": "several body colours in the same family (e.g. black, orange and grey-blue)",
+   "unknown": "not recorded"
+  },
+  "colour": {
+   "xbox-colours": "A green, B red, X blue, Y yellow",
+   "ps-symbol-colours": "filled in by the builder from region_glyphs.PS_COLORS",
+   "mono-light": "one light colour",
+   "mono-dark": "one dark colour",
+   "mono-white-mask": "white mask, tinted by the profile when drawn",
+   "mixed": "several colours without a console scheme",
+   "unknown": "not recorded"
+  },
+  "ps_action": {
+   "redraw": "new symbol drawn (cross circle square triangle, OPTIONS, SHARE, controller picture)",
+   "relabel": "new text drawn (LB becomes L1, RT becomes R2, L3)",
+   "same": "identical on a PlayStation pad: left alone",
+   "switch": "the game already ships a PlayStation version: the plugin only selects it, no art of ours"
+  },
+  "kind": {
+   "vector": "SVG in assets/svg (rendered at any size)",
+   "mask": "white-on-transparent PNG tinted and fitted when drawn",
+   "pixel": "native-size RGBA PNG that replaces a whole tiny texture",
+   "picture": "whole-picture RGBA PNG placed in a box"
+  }
+ },
+ "roles": {
+  "a": {"name": "bottom face button", "xbox": "A", "ps": "cross", "shape": "disc", "label": {"ps": "symbol", "xbox": "letter"}, "ps_action": "redraw"},
+  "b": {"name": "right face button", "xbox": "B", "ps": "circle", "shape": "disc", "label": {"ps": "symbol", "xbox": "letter"}, "ps_action": "redraw"},
+  "x": {"name": "left face button", "xbox": "X", "ps": "square", "shape": "disc", "label": {"ps": "symbol", "xbox": "letter"}, "ps_action": "redraw"},
+  "y": {"name": "top face button", "xbox": "Y", "ps": "triangle", "shape": "disc", "label": {"ps": "symbol", "xbox": "letter"}, "ps_action": "redraw"},
+  "lb": {"name": "left shoulder", "xbox": "LB", "ps": "L1", "shape": "bumper", "label": "word", "ps_action": "relabel"},
+  "rb": {"name": "right shoulder", "xbox": "RB", "ps": "R1", "shape": "bumper", "label": "word", "ps_action": "relabel"},
+  "lt": {"name": "left trigger", "xbox": "LT", "ps": "L2", "shape": "trigger", "label": "word", "ps_action": "relabel"},
+  "rt": {"name": "right trigger", "xbox": "RT", "ps": "R2", "shape": "trigger", "label": "word", "ps_action": "relabel"},
+  "l3": {"name": "left stick press", "xbox": "LS press", "ps": "L3", "shape": "stick-cap", "label": "word", "ps_action": "relabel"},
+  "r3": {"name": "right stick press", "xbox": "RS press", "ps": "R3", "shape": "stick-cap", "label": "word", "ps_action": "relabel"},
+  "lstick": {"name": "left stick (cap, ring or all directions)", "xbox": "LS", "ps": "L", "shape": "stick-cap", "label": "letter", "ps_action": "same"},
+  "lstick_neutral": {"name": "left stick at rest (one state of a directional set)", "xbox": "LS", "ps": "L", "shape": "stick-cap", "label": "none", "ps_action": "same"},
+  "lstick_up": {"name": "left stick pushed up", "xbox": "LS up", "ps": "L up", "shape": "stick-cap", "label": "letter", "ps_action": "same"},
+  "lstick_down": {"name": "left stick pushed down", "xbox": "LS down", "ps": "L down", "shape": "stick-cap", "label": "letter", "ps_action": "same"},
+  "lstick_left": {"name": "left stick pushed left", "xbox": "LS left", "ps": "L left", "shape": "stick-cap", "label": "letter", "ps_action": "same"},
+  "lstick_right": {"name": "left stick pushed right", "xbox": "LS right", "ps": "L right", "shape": "stick-cap", "label": "letter", "ps_action": "same"},
+  "rstick": {"name": "right stick (cap, ring or all directions)", "xbox": "RS", "ps": "R", "shape": "stick-cap", "label": "letter", "ps_action": "same"},
+  "rstick_neutral": {"name": "right stick at rest (one state of a directional set)", "xbox": "RS", "ps": "R", "shape": "stick-cap", "label": "none", "ps_action": "same"},
+  "rstick_up": {"name": "right stick pushed up", "xbox": "RS up", "ps": "R up", "shape": "stick-cap", "label": "letter", "ps_action": "same"},
+  "rstick_down": {"name": "right stick pushed down", "xbox": "RS down", "ps": "R down", "shape": "stick-cap", "label": "letter", "ps_action": "same"},
+  "rstick_left": {"name": "right stick pushed left", "xbox": "RS left", "ps": "R left", "shape": "stick-cap", "label": "letter", "ps_action": "same"},
+  "rstick_right": {"name": "right stick pushed right", "xbox": "RS right", "ps": "R right", "shape": "stick-cap", "label": "letter", "ps_action": "same"},
+  "dpad": {"name": "direction pad", "xbox": "D-pad", "ps": "D-pad", "shape": "d-pad", "label": "none", "ps_action": "same"},
+  "dpad_up": {"name": "direction pad, up", "xbox": "D-pad up", "ps": "D-pad up", "shape": "d-pad", "label": "none", "ps_action": "same"},
+  "dpad_down": {"name": "direction pad, down", "xbox": "D-pad down", "ps": "D-pad down", "shape": "d-pad", "label": "none", "ps_action": "same"},
+  "dpad_left": {"name": "direction pad, left", "xbox": "D-pad left", "ps": "D-pad left", "shape": "d-pad", "label": "none", "ps_action": "same"},
+  "dpad_right": {"name": "direction pad, right", "xbox": "D-pad right", "ps": "D-pad right", "shape": "d-pad", "label": "none", "ps_action": "same"},
+  "start": {"name": "right small button", "xbox": "Menu", "ps": "OPTIONS", "shape": "pill", "label": {"ps": "word", "xbox": "icon"}, "ps_action": "redraw"},
+  "select": {"name": "left small button", "xbox": "View / Back", "ps": "SHARE", "shape": "pill", "label": "icon", "ps_action": "redraw"},
+  "home": {"name": "guide / PS button", "xbox": "Guide", "ps": "PS", "shape": "disc", "label": "icon", "ps_action": "same"},
+  "touchpad": {"name": "touchpad", "xbox": "-", "ps": "touchpad", "shape": "rect", "label": "none", "ps_action": "same"},
+  "hold": {"name": "HOLD label", "xbox": "-", "ps": "-", "shape": "text", "label": "word", "ps_action": "same"},
+  "controller": {"name": "whole controller picture (options screen)", "xbox": "Xbox pad", "ps": "DualSense", "shape": "picture", "label": "none", "ps_action": "redraw"}
+ },
+ "role_aliases": {
+  "head": ["y", "AC1 eagle-vision glyph (Y)"],
+  "weapon": ["x", "AC1 weapon-hand glyph (X)"],
+  "empty": ["b", "AC1 empty-hand glyph (B)"],
+  "legs": ["a", "AC1 legs glyph (A)"],
+  "ls": ["lstick", "AC1 / older name of the left stick"],
+  "rs": ["rstick", "AC1 / older name of the right stick"],
+  "options": ["start", "PlayStation name of start"],
+  "share": ["select", "PlayStation name of select"]
+ },
+ "origins": {
+  "figma-ps": "Figma community file 'PlayStation Controller Icons' (third-party set; the Sony marks are theirs; licence stated as open by the project owner, 2026-11-24; exact licence name not recorded), split into one SVG per icon by tools/split_svg_sheet.py",
+  "figma-xbox": "Figma community file 'Xbox Controller Icons Free' (third-party set; the Microsoft marks are theirs; licence stated as open by the project owner, 2026-11-24; exact licence name not recorded), split into one SVG per icon by tools/split_svg_sheet.py",
+  "our-drawing": "drawn by this project: PIL shapes rendered by tools/qb_build.py (render_masks)",
+  "montserrat-ofl": "label text set in Montserrat Bold (SIL OFL 1.1, py_modules/button_glyphs/masks/OFL-Montserrat.txt) by tools/qb_build.py",
+  "owner-pixel-art": "the project owner's own PlayStation pixel art (stated by the owner, 2026-11-24), sliced and fitted to the texture size by tools/sfh_art.py; some labels use the 3x5 pixel font drawn for that tool",
+  "owner-line-art": "a DualSense line drawing supplied by the project owner (authorship not stated), cut out and scaled by tools/qb_controller_art.py"
+ },
+ "art_rules": [
+  {"match": "py_modules/button_glyphs/masks/controller_dualsense.png", "kind": "picture", "origin": "owner-line-art", "tags": {"style": "ps", "shape": "picture", "shading": "line-art", "label": "none", "colour": "mono-light", "background": "transparent"}},
+  {"match": "py_modules/button_glyphs/masks/sfh/*.png", "kind": "pixel", "origin": "owner-pixel-art", "tags": {"style": "ps", "shading": "pixel-bevel", "background": "dark", "colour": "mono-light"}, "role_tags": {"a,b,x,y": {"colour": "ps-symbol-colours"}}},
+  {"match": "py_modules/button_glyphs/masks/[LR][12].png", "kind": "mask", "origin": "montserrat-ofl", "tags": {"style": "ps", "shape": "glyph", "shading": "flat", "label": "word", "colour": "mono-white-mask", "background": "transparent"}},
+  {"match": "py_modules/button_glyphs/masks/*.png", "kind": "mask", "origin": "our-drawing", "tags": {"style": "ps", "shape": "glyph", "shading": "flat", "label": "symbol", "colour": "mono-white-mask", "background": "transparent"}}
+ ],
+ "svg_rules": [
+  {"match": "^ps/direction-L$", "role": "lstick", "detail": "stick in a ring with arrows left and right"},
+  {"match": "^ps/direction-R$", "role": "rstick", "detail": "stick in a ring with arrows left and right"},
+  {"match": "^ps/outline-L$", "role": "lstick", "detail": "L in a ring, outline"},
+  {"match": "^ps/outline-R$", "role": "rstick", "detail": "R in a ring, outline"},
+  {"match": "^ps/plain-L$", "role": "lstick", "detail": "L in a double ring, filled"},
+  {"match": "^ps/plain-R$", "role": "rstick", "detail": "R in a double ring, filled"},
+  {"match": "^ps/(?:outline|plain)-L1$|^ps/plain-rectangle-L1$", "role": "lb"},
+  {"match": "^ps/(?:outline|plain)-L2$|^ps/plain-rectangle-L2$", "role": "lt"},
+  {"match": "^ps/(?:outline|plain)-R1$|^ps/plain-rectangle-R1$", "role": "rb"},
+  {"match": "^ps/(?:outline|plain)-R2$|^ps/plain-rectangle-R2$", "role": "rt"},
+  {"match": "^ps/(?:outline|plain)-L3$", "role": "l3", "detail": "L3 in a ring"},
+  {"match": "^ps/(?:outline-)?press-(?:big-)?L3$|^ps/press-L$", "role": "l3", "detail": "press symbol (arrow towards the cap)"},
+  {"match": "^ps/(?:outline|plain)-R3$", "role": "r3", "detail": "R3 in a ring"},
+  {"match": "^ps/(?:outline-)?press-(?:big-)?R3$|^ps/press-R$", "role": "r3", "detail": "press symbol (arrow towards the cap)"},
+  {"match": "^ps/(?:outline-PS|plain-big-PS|plain-small-PS)$", "role": "home"},
+  {"match": "^ps/outline-(?:big|medium|small)-pad$", "role": "touchpad", "detail": "touchpad with a dot grid"},
+  {"match": "^ps/touch-(?:top|bottom|left|right)$", "role": "touchpad", "detail": "touchpad swipe/zone with a direction arrow (role is a best guess from the name)"},
+  {"match": "^ps/(?:outline|plain)-top$", "role": "dpad_up", "detail": "d-pad with the up arm marked"},
+  {"match": "^ps/(?:outline|plain)-bottom$", "role": "dpad_down", "detail": "d-pad with the down arm marked"},
+  {"match": "^ps/(?:outline|plain)-left$", "role": "dpad_left", "detail": "d-pad with the left arm marked"},
+  {"match": "^ps/(?:outline|plain)-right$", "role": "dpad_right", "detail": "d-pad with the right arm marked"},
+  {"match": "^ps/plain-cross$|^ps/outline-blue-cross$", "role": "a"},
+  {"match": "^ps/outline-cross$", "role": "a", "detail": "four-dot cluster, the bottom dot filled"},
+  {"match": "^ps/plain-circle$|^ps/outline-red-circle$", "role": "b"},
+  {"match": "^ps/outline-circle$", "role": "b", "detail": "four-dot cluster, the right dot filled"},
+  {"match": "^ps/plain-square$|^ps/outline-purple-square$", "role": "x"},
+  {"match": "^ps/outline-square$", "role": "x", "detail": "four-dot cluster, the left dot filled"},
+  {"match": "^ps/plain-triangle$|^ps/outline-green-triangle$", "role": "y"},
+  {"match": "^ps/outline-triangle$", "role": "y", "detail": "four-dot cluster, the top dot filled"},
+  {"match": "^ps/outline-share$", "role": "select", "detail": "SHARE word above a pill"},
+  {"match": "^ps/plain-(?:big|small)-option$", "role": "start", "detail": "OPTIONS word above a pill"},
+  {"match": "^xbox/([abxy])-(?:filled|outlined)(?:-[a-z]+)?$", "role": "\\1"},
+  {"match": "^xbox/dpad$", "role": "dpad"},
+  {"match": "^xbox/dpad-(up|down|left|right)$", "role": "dpad_\\1", "detail": "d-pad outline with one arm filled"},
+  {"match": "^xbox/left-bumper$", "role": "lb"},
+  {"match": "^xbox/right-bumper$", "role": "rb"},
+  {"match": "^xbox/left-trigger$", "role": "lt"},
+  {"match": "^xbox/right-trigger$", "role": "rt"},
+  {"match": "^xbox/left-joystick-(up|down|left|right)$", "role": "lstick_\\1", "detail": "stick with an arrow in that direction"},
+  {"match": "^xbox/right-joystick-(up|down|left|right)$", "role": "rstick_\\1", "detail": "stick with an arrow in that direction"},
+  {"match": "^xbox/left-joystick-all$", "role": "lstick", "detail": "stick with four direction arrows"},
+  {"match": "^xbox/right-joystick-all$", "role": "rstick", "detail": "stick with four direction arrows"},
+  {"match": "^xbox/left-joystick$", "role": "lstick", "detail": "L in a double ring"},
+  {"match": "^xbox/right-joystick$", "role": "rstick", "detail": "R in a double ring"},
+  {"match": "^xbox/(?:left-joystick-press|left-stick)$", "role": "l3", "detail": "stick press (L on a cap)"},
+  {"match": "^xbox/(?:right-joystick-press|right-stick)$", "role": "r3", "detail": "stick press (R on a cap)"},
+  {"match": "^xbox/menu$", "role": "start", "detail": "three lines in a disc"},
+  {"match": "^xbox/view$", "role": "select", "detail": "two overlapping windows in a disc"}
+ ],
+ "art_roles": {},
+ "games": {
+  "15100": {
+   "short": "AC1",
+   "families": {
+    "font-colour": {
+     "native_look": {"shape": "icon", "shading": "flat", "label": "icon", "background": "transparent", "colour": "xbox-colours"},
+     "note": "font glyphs: head (Y yellow), weapon hand (X blue), empty hand (B red), legs (A green); our PlayStation style uses coloured outline icons"
+    },
+    "font-white": {
+     "native_look": {"shape": "icon", "shading": "flat", "label": "icon", "background": "transparent", "colour": "mono-light"},
+     "ps_look": {"colour": "mono-light"},
+     "note": "white font atlas, our art is tinted white"
+    },
+    "hud-a": {
+     "native_look": {"shape": "disc", "shading": "unknown", "label": "letter", "background": "unknown", "colour": "unknown"},
+     "note": "Xbox 360 A button of the HUD (64x64); its look was not recorded on the page"
+    },
+    "area-white": {
+     "native_look": {"shape": "disc", "shading": "unknown", "label": "letter", "background": "unknown", "colour": "mono-light"},
+     "note": "Conrtols_*_Map, the white Xbox 360 button art of the area archives (only the PlayStation style redraws it)"
+    },
+    "area-colour": {
+     "native_look": {"shape": "disc", "shading": "unknown", "label": "letter", "background": "unknown", "colour": "xbox-colours"},
+     "note": "Conrtols_*_Color_Map, the coloured Xbox 360 button art (absent in Present_Room)"
+    },
+    "area-pad": {
+     "native_look": {"shape": "unknown", "shading": "unknown", "label": "unknown", "background": "unknown", "colour": "unknown"},
+     "note": "Conrtols_{Left,Right}Joystick_Map 32x32 and Conrtols_{Left,Right}Trigger_Map 32x64, Animus room only; look not recorded"
+    }
+   }
+  },
+  "405290": {
+   "short": "CM",
+   "families": {
+    "builtin-ps-set": {
+     "native_look": {"shape": "unknown", "shading": "unknown", "label": "unknown", "background": "unknown", "colour": "unknown"},
+     "ps_look": {"shape": "unknown", "shading": "unknown", "label": "mixed", "background": "unknown", "colour": "unknown"},
+     "note": "the game's own PlayStation set (cross circle square triangle, L1/R1/L2/R2/L3/R3, OPTIONS/SHARE, red D-pad), chosen by one byte; looks not recorded"
+    }
+   },
+   "manual_slots": [
+    {"key": "gfx/attribs.xnb (PS set)", "role": "a", "family": "builtin-ps-set", "ps_action": "switch"},
+    {"key": "gfx/attribs.xnb (PS set)", "role": "b", "family": "builtin-ps-set", "ps_action": "switch"},
+    {"key": "gfx/attribs.xnb (PS set)", "role": "x", "family": "builtin-ps-set", "ps_action": "switch"},
+    {"key": "gfx/attribs.xnb (PS set)", "role": "y", "family": "builtin-ps-set", "ps_action": "switch"},
+    {"key": "gfx/attribs.xnb (PS set)", "role": "lb", "family": "builtin-ps-set", "ps_action": "switch"},
+    {"key": "gfx/attribs.xnb (PS set)", "role": "rb", "family": "builtin-ps-set", "ps_action": "switch"},
+    {"key": "gfx/attribs.xnb (PS set)", "role": "lt", "family": "builtin-ps-set", "ps_action": "switch"},
+    {"key": "gfx/attribs.xnb (PS set)", "role": "rt", "family": "builtin-ps-set", "ps_action": "switch"},
+    {"key": "gfx/attribs.xnb (PS set)", "role": "l3", "family": "builtin-ps-set", "ps_action": "switch"},
+    {"key": "gfx/attribs.xnb (PS set)", "role": "r3", "family": "builtin-ps-set", "ps_action": "switch"},
+    {"key": "gfx/attribs.xnb (PS set)", "role": "start", "family": "builtin-ps-set", "ps_action": "switch", "note": "OPTIONS"},
+    {"key": "gfx/attribs.xnb (PS set)", "role": "select", "family": "builtin-ps-set", "ps_action": "switch", "note": "SHARE"},
+    {"key": "gfx/attribs.xnb (PS set)", "role": "dpad", "family": "builtin-ps-set", "ps_action": "switch", "note": "red D-pad"}
+   ]
+  },
+  "435790": {
+   "short": "10SNX",
+   "families": {
+    "spr-ps4": {
+     "native_look": {"shape": "unknown", "shading": "unknown", "label": "unknown", "background": "unknown", "colour": "unknown"},
+     "ps_look": {"shape": "unknown", "shading": "unknown", "label": "unknown", "background": "unknown", "colour": "unknown"},
+     "note": "spr_XboxButtons (523) and spr_PS4Buttons (524) are 64x64 sprites of 12 frames; which frame is which button and their look were not recorded"
+    }
+   },
+   "manual_slots": [
+    {"key": "data.win spr_PS4Buttons (sprite 524)", "role": "a", "size": "64x64", "family": "spr-ps4", "ps_action": "switch", "note": "frame layout of the 12 frames not recorded"},
+    {"key": "data.win spr_PS4Buttons (sprite 524)", "role": "b", "size": "64x64", "family": "spr-ps4", "ps_action": "switch", "note": "frame layout of the 12 frames not recorded"},
+    {"key": "data.win spr_PS4Buttons (sprite 524)", "role": "x", "size": "64x64", "family": "spr-ps4", "ps_action": "switch", "note": "frame layout of the 12 frames not recorded"},
+    {"key": "data.win spr_PS4Buttons (sprite 524)", "role": "y", "size": "64x64", "family": "spr-ps4", "ps_action": "switch", "note": "frame layout of the 12 frames not recorded"}
+   ]
+  },
+  "474960": {
+   "short": "QB",
+   "families": {
+    "prompts:disc": {
+     "native_look": {"shape": "disc", "shading": "flat", "label": "letter", "background": "mixed", "colour": "mixed"},
+     "ps_look": {"shape": "disc", "shading": "flat", "label": "symbol", "background": "mixed", "colour": "mixed"},
+     "note": "flat discs in black, yellow-orange or grey-blue (hud scales 75/100/150/200); the glyph is a hole, one colour or the role colour; we keep the disc and redraw the glyph"
+    },
+    "prompts:letter": {
+     "native_look": {"shape": "text", "shading": "flat", "label": "letter", "background": "transparent", "colour": "mixed"},
+     "ps_look": {"shape": "text", "shading": "flat", "label": "symbol", "background": "transparent", "colour": "mixed"},
+     "note": "bare coloured letters A B X Y (no disc) in the key legend; redrawn as bare symbols"
+    },
+    "prompts:trig": {
+     "native_look": {"shape": "trigger", "shading": "flat", "label": "word", "background": "mixed", "colour": "mixed"},
+     "ps_look": {"shape": "trigger", "shading": "flat", "label": "word", "background": "mixed", "colour": "mixed"},
+     "note": "trapezoid in black, yellow-orange or grey-blue with LT / RT; relabelled L2 / R2"
+    },
+    "prompts:bump": {
+     "native_look": {"shape": "bumper", "shading": "flat", "label": "word", "background": "mixed", "colour": "mixed"},
+     "ps_look": {"shape": "bumper", "shading": "flat", "label": "word", "background": "mixed", "colour": "mixed"},
+     "note": "slanted bar in black, yellow-orange or grey-blue with LB / RB; relabelled L1 / R1"
+    },
+    "videoplayer_controls:disc": {
+     "native_look": {"shape": "disc", "shading": "flat", "label": "letter", "background": "dark", "colour": "xbox-colours"},
+     "ps_look": {"shape": "disc", "shading": "flat", "label": "symbol", "background": "dark", "colour": "ps-symbol-colours"},
+     "note": "the video player's back button: black disc with a red B, becomes a red circle"
+    },
+    "controller:picture": {
+     "native_look": {"shape": "picture", "shading": "line-art", "label": "none", "background": "transparent", "colour": "mono-light"},
+     "note": "Xbox One pad drawing of the options screen (white body, steel-grey buttons) replaced by the owner's DualSense drawing"
+    }
+   }
+  },
+  "348710": {
+   "short": "SSSS",
+   "families": {
+    "pad/a,b,x,y": {
+     "native_look": {"shape": "disc", "shading": "unknown", "label": "letter", "background": "unknown", "colour": "unknown"},
+     "note": "controller sheet BTN_PS3_S (Xbox art despite the name); the page does not describe its look, the icons chosen suggest coloured rings"
+    },
+    "pad/lb,rb": {
+     "native_look": {"shape": "bumper", "shading": "unknown", "label": "word", "background": "unknown", "colour": "unknown"},
+     "note": "LB / RB on the controller sheet"
+    },
+    "pad/lt,rt": {
+     "native_look": {"shape": "trigger", "shading": "unknown", "label": "word", "background": "unknown", "colour": "unknown"},
+     "note": "LT / RT on the controller sheet"
+    },
+    "pad/l3,r3": {
+     "native_look": {"shape": "stick-cap", "shading": "unknown", "label": "word", "background": "unknown", "colour": "unknown"},
+     "note": "L3 / R3 on the controller sheet"
+    },
+    "pad/start,select": {
+     "native_look": {"shape": "pill", "shading": "unknown", "label": "unknown", "background": "unknown", "colour": "unknown"},
+     "note": "START / BACK on the controller sheet"
+    },
+    "cockpit/x,y,b": {
+     "native_look": {"shape": "disc", "shading": "unknown", "label": "letter", "background": "unknown", "colour": "unknown"},
+     "note": "cockpit_arts_btn: X / Y / B beside the attack commands; the B has a glow"
+    },
+    "continue/a": {
+     "native_look": {"shape": "disc", "shading": "unknown", "label": "letter", "background": "unknown", "colour": "unknown"},
+     "note": "the big A of the continue screen (2048x1024 texture), normal and pressed"
+    }
+   }
+  },
+  "389170": {
+   "short": "SFH",
+   "families": {
+    "tip_face": {
+     "native_look": {"shape": "disc", "shading": "jewel-3d", "label": "letter", "background": "transparent", "colour": "xbox-colours"},
+     "ps_look": {"shape": "disc", "shading": "pixel-bevel", "label": "symbol", "background": "dark", "colour": "ps-symbol-colours"},
+     "note": "tooltip A/B/X/Y: glossy 11 px gems in green, red, blue and yellow; ours: dark discs with a coloured symbol"
+    },
+    "tip_dpad": {
+     "native_look": {"shape": "d-pad", "shading": "pixel-bevel", "label": "none", "background": "dark", "colour": "mono-dark"},
+     "ps_look": {"shape": "d-pad", "shading": "pixel-bevel", "label": "none", "background": "dark", "colour": "mono-dark"},
+     "note": "dark-grey pad; the Up/Down/Left/Right textures light one arm yellow with rays"
+    },
+    "tip_text": {
+     "native_look": {"shape": "text", "shading": "flat", "label": "word", "background": "transparent", "colour": "mono-dark"},
+     "note": "HOLD, 26x11, dark letters; left alone"
+    },
+    "tip_stick": {
+     "native_look": {"shape": "stick-cap", "shading": "pixel-bevel", "label": "none", "background": "dark", "colour": "mono-dark"},
+     "note": "left-stick tooltips: cap in a well, the pushed direction in yellow; left alone"
+    },
+    "tip_label/lb,rb": {
+     "native_look": {"shape": "bumper", "shading": "pixel-bevel", "label": "word", "background": "transparent", "colour": "mono-dark"},
+     "ps_look": {"shape": "bumper", "shading": "pixel-bevel", "label": "word", "background": "dark", "colour": "mono-light"},
+     "note": "tooltip LB / RB: dark letters over a grey crescent; ours: a dark rounded bumper with L1 / R1 (3x5 pixel font)"
+    },
+    "tip_label/lt,rt": {
+     "native_look": {"shape": "trigger", "shading": "pixel-bevel", "label": "word", "background": "transparent", "colour": "mono-dark"},
+     "ps_look": {"shape": "trigger", "shading": "pixel-bevel", "label": "word", "background": "dark", "colour": "mono-light"},
+     "note": "tooltip LT / RT: dark letters beside a grey tall rectangle; ours: a dark square-cornered trigger with L2 / R2 (3x5 pixel font)"
+    },
+    "tip_start": {
+     "native_look": {"shape": "pill", "shading": "pixel-bevel", "label": "icon", "background": "dark", "colour": "mono-dark"},
+     "ps_look": {"shape": "pill", "shading": "pixel-bevel", "label": "icon", "background": "dark", "colour": "mono-light"},
+     "note": "tooltip START: a pill with a play arrow and the word START under it; ours: a pill with the menu lines"
+    },
+    "menu_face": {
+     "native_look": {"shape": "disc", "shading": "jewel-3d", "label": "letter", "background": "transparent", "colour": "xbox-colours"},
+     "ps_look": {"shape": "disc", "shading": "pixel-bevel", "label": "symbol", "background": "dark", "colour": "ps-symbol-colours"},
+     "note": "menu A/B/X/Y: 13 px coloured gems with a letter; ours: 13 px dark discs with a coloured symbol"
+    },
+    "menu_arrow": {
+     "native_look": {"shape": "arrow", "shading": "flat", "label": "none", "background": "transparent", "colour": "mono-light"},
+     "note": "menu D-pad arrows 17x15, light grey; left alone"
+    },
+    "menu_label/lb,rb": {
+     "native_look": {"shape": "bumper", "shading": "flat", "label": "word", "background": "light", "colour": "mono-light"},
+     "ps_look": {"shape": "pill", "shading": "pixel-bevel", "label": "word", "background": "dark", "colour": "mono-light"},
+     "note": "menu LB / RB: grey flat bumper with a white word; ours: dark pill with L1 / R1"
+    },
+    "menu_label/lt,rt": {
+     "native_look": {"shape": "pill", "shading": "flat", "label": "word", "background": "light", "colour": "mono-light"},
+     "ps_look": {"shape": "trigger", "shading": "pixel-bevel", "label": "word", "background": "dark", "colour": "mono-light"},
+     "note": "menu LT / RT: grey flat pill with a white word; ours: dark square-cornered trigger with L2 / R2"
+    },
+    "menu_stick": {
+     "native_look": {"shape": "stick-cap", "shading": "flat", "label": "letter", "background": "light", "colour": "mono-light"},
+     "note": "menu L / R stick caps 13x13 (and the misspelled Menu/xbox/rstrick duplicate); left alone"
+    },
+    "menu_symbol": {
+     "native_look": {"shape": "pill", "shading": "flat", "label": "icon", "background": "light", "colour": "mono-light"},
+     "ps_look": {"shape": "pill", "shading": "pixel-bevel", "label": "icon", "background": "dark", "colour": "mono-light"},
+     "note": "menu START / BACK: grey flat pill with a white arrow icon; ours: dark pill with the menu lines / share icon"
+    }
+   }
+  }
+ }
+}

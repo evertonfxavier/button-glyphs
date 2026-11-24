@@ -96,14 +96,30 @@ def promote_changelog(text, version, date):
     return text
 
 
+def unreleased_is_empty(text):
+    """True when `## [Unreleased]` holds no line of content (the release would have no notes)."""
+    match = UNRELEASED.search(text)
+    if not match:
+        return False
+    rest = text[match.end():]
+    nxt = re.search(r"^(## \[|\[[^\]]+\]: )", rest, re.M)
+    body = rest[:nxt.start()] if nxt else rest
+    return not body.strip()
+
+
 def stamp(version, date, package="package.json", changelog="CHANGELOG.md"):
-    """Everything an automatic version bump changes: package.json and the changelog."""
+    """Everything an automatic version bump changes: package.json and the changelog.
+
+    Returns True when the release has notes, False when `Unreleased` was empty (the section is still
+    created, so the repository-health test passes, but the release goes out without a word about it)."""
     with open(changelog, "r", encoding="utf-8", newline="") as f:
         old = f.read()
+    had_notes = not unreleased_is_empty(old)
     new = promote_changelog(old, version, date)        # raises before anything is written
     apply_version(package, version)
     with open(changelog, "w", encoding="utf-8", newline="") as f:
         f.write(new)
+    return had_notes
 
 
 def main(argv=None):
@@ -126,8 +142,11 @@ def main(argv=None):
         if args.cmd == "stamp":
             if not re.match(r"^\d{4}-\d{2}-\d{2}$", args.date):
                 raise ValueError("--date must be YYYY-MM-DD")
-            stamp(args.version, args.date, args.package, args.changelog)
+            had_notes = stamp(args.version, args.date, args.package, args.changelog)
             print("%s and %s now say %s" % (args.package, args.changelog, args.version))
+            if not had_notes:       # a GitHub Actions annotation; it never fails the release
+                print("::warning title=Release v%s has no notes::CHANGELOG.md [Unreleased] was empty. "
+                      "Put the user-visible lines there in the same commit as the change." % args.version)
         elif args.cmd == "decide":
             with open(args.tags, "r", encoding="utf-8") as f:
                 version, bump = decide(args.version, args.head, parse_tags(f.read()))

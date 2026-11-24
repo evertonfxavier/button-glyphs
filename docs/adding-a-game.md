@@ -91,6 +91,20 @@ python3 tools/scaffold_profile.py --appid 12345 --name "Some Game" --kind region
 `--kind` is one of `forge-glyphs`, `il-patch`, `region-glyphs`, `dxt-regions`. This creates a valid but **empty** profile in `py_modules/button_glyphs/profiles/`,
 a page in `docs/games/` and a test in `tests/`. It does **not** register the game: that happens only when the data is real.
 
+### Start from the catalog (before you draw anything)
+[`button-catalog.md`](button-catalog.md) lists every distinct button we already drew or mapped for the confirmed games, per role and
+size. For each texture you must fill, ask it for the closest existing variant instead of starting from zero:
+
+```bash
+python3 tools/build_button_catalog.py find --role a --size 13x13 --style ps      # roles: a b x y lb rb lt rt l3 r3 lstick* rstick* dpad* start select ...
+python3 tools/build_button_catalog.py find --role dpad_up --size 28x23 --game 389170
+```
+It ranks exact size first, then the nearest by area and aspect, and says `drop-in` or `resize/restyle needed`; a drop-in is a
+button you do not have to implement. The catalog holds only our art plus metadata about each game's own buttons, never game pixels.
+After you add art (an SVG, a mask, a native-size picture) or a game becomes confirmed, run
+`python3 tools/build_button_catalog.py build`: `tests/test_button_catalog.py` fails until you do (a new PNG with no role also needs a
+line in `catalog/sources.json`, and a confirmed game needs its `games` entry with the look of its own buttons).
+
 ### 8. Fill in the profile
 Open the new profile: every `TODO` is a decision. The docstring of the strategy class explains each field. Choose the icons from
 [`assets/svg`](../assets/svg) (names like `ps/outline-blue-cross`, `ps/plain-L1`); the mapping between Xbox and PlayStation is by position:
@@ -131,6 +145,7 @@ Fill every section of the page in `docs/games/` (the template tells you what eac
 
 ```bash
 python3 tools/gen_supported_games.py     # updates SUPPORTED_GAMES.md (the READMEs only link to it)
+python3 tools/build_button_catalog.py build   # once the game is confirmed or you added art: updates the button catalog
 ```
 The tests fail if you forget.
 

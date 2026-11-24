@@ -5,6 +5,7 @@
 | Use the plugin, or fix a problem | [faq.md](faq.md) |
 | See which games are supported, and how sure we are | [../SUPPORTED_GAMES.md](../SUPPORTED_GAMES.md) |
 | Add support for a game | [adding-a-game.md](adding-a-game.md) |
+| Find the closest existing button for a new game (role, size, style) | [button-catalog.md](button-catalog.md) |
 | Understand the safety rules every change must follow | [safety-rules.md](safety-rules.md) |
 | Set up the project, run the tests, try it on a Deck | [development.md](development.md) |
 | Understand how the engine is built | [architecture.md](architecture.md) |

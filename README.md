@@ -130,7 +130,7 @@ Releases are published automatically when the version in `package.json` changes 
 
 ## Credits and legal
 
-- **Icons:** PlayStation and Xbox style icons come from the Figma community files *PlayStation Controller Icons* and *Xbox Controller Icons Free*. The project logo is original.
+- **Icons:** the PlayStation and Xbox style icons are open-licensed; the pixel-art pictures for some games are the project owner's own work. The project logo is original.
 - **Fonts:** relabelled shoulder buttons use Montserrat Bold (SIL Open Font License).
 - **Template:** based on the [decky-plugin-template](https://github.com/SteamDeckHomebrew/decky-plugin-template).
 - **Trademarks:** PlayStation, Xbox, Steam and the game titles belong to their owners. This is an unofficial community project, not affiliated with or endorsed by Sony, Microsoft, Valve, or any game publisher.

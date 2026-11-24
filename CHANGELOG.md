@@ -7,6 +7,17 @@ Add your line under **Unreleased** in the pull request; maintainers move it into
 
 ## [Unreleased]
 
+### Added
+- A **button catalog** (`catalog/`, `docs/button-catalog.md`, `tools/build_button_catalog.py`): every distinct button drawn or
+  mapped for the confirmed games (our own art plus metadata only, never game pixels), searchable with
+  `find --role a --size 13x13` (drop-in vs resize/restyle). A test fails when art, profiles or confirmed game pages change
+  without rebuilding it.
+
+### Changed
+- The release pipeline prints a warning when `Unreleased` is empty, so a release never goes out without notes unnoticed.
+- The README credits no longer name the source of the icon sets, which are open-licensed.
+- Quantum Break page: the DualSense picture is described as supplied by the project owner, without an authorship claim.
+
 ## [0.3.4] - 2026-11-24
 
 ### Changed

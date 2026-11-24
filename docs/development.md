@@ -25,6 +25,7 @@ pnpm install
 | `pnpm run glyphs` | Re-render the icon PNGs and `src/generated/glyphs.ts` from `assets/svg/` |
 | `pnpm run brand` | Re-render the logo and the social preview from `assets/logo.svg` |
 | `python3 tools/gen_supported_games.py` | Refresh `SUPPORTED_GAMES.md`, the one place that lists the games (tests fail if it is stale) |
+| `python3 tools/build_button_catalog.py build` / `find --role a --size 13x13` | Refresh `catalog/catalog.json` + `docs/button-catalog.md` (tests fail if stale) / look up the closest existing button |
 
 ## Project map
 
