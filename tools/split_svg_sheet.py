@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Split a flattened Figma SVG export (an icon sheet) into one SVG file per icon.
+"""Split a flattened SVG export (an icon sheet) into one SVG file per icon.
 
 Every top-level drawable is assigned to an icon cell; each output keeps only the
 elements of that cell plus the <mask>/<clipPath>/<filter>/defs they reference,

@@ -124,8 +124,8 @@
   "share": ["select", "PlayStation name of select"]
  },
  "origins": {
-  "figma-ps": "Figma community file 'PlayStation Controller Icons' (third-party set; the Sony marks are theirs; licence stated as open by the project owner, 2026-11-24; exact licence name not recorded), split into one SVG per icon by tools/split_svg_sheet.py",
-  "figma-xbox": "Figma community file 'Xbox Controller Icons Free' (third-party set; the Microsoft marks are theirs; licence stated as open by the project owner, 2026-11-24; exact licence name not recorded), split into one SVG per icon by tools/split_svg_sheet.py",
+  "svg-set-ps": "PlayStation-style icon set (third-party, open-licensed; the Sony marks are theirs; licence stated as open by the project owner, 2026-11-24; exact licence name not recorded), split into one SVG per icon by tools/split_svg_sheet.py",
+  "svg-set-xbox": "Xbox-style icon set (third-party, open-licensed; the Microsoft marks are theirs; licence stated as open by the project owner, 2026-11-24; exact licence name not recorded), split into one SVG per icon by tools/split_svg_sheet.py",
   "our-drawing": "drawn by this project: PIL shapes rendered by tools/qb_build.py (render_masks)",
   "montserrat-ofl": "label text set in Montserrat Bold (SIL OFL 1.1, py_modules/button_glyphs/masks/OFL-Montserrat.txt) by tools/qb_build.py",
   "owner-pixel-art": "the project owner's own PlayStation pixel art (stated by the owner, 2026-11-24), sliced and fitted to the texture size by tools/sfh_art.py; some labels use the 3x5 pixel font drawn for that tool",
@@ -154,7 +154,10 @@
   {"match": "^ps/(?:outline-)?press-(?:big-)?R3$|^ps/press-R$", "role": "r3", "detail": "press symbol (arrow towards the cap)"},
   {"match": "^ps/(?:outline-PS|plain-big-PS|plain-small-PS)$", "role": "home"},
   {"match": "^ps/outline-(?:big|medium|small)-pad$", "role": "touchpad", "detail": "touchpad with a dot grid"},
-  {"match": "^ps/touch-(?:top|bottom|left|right)$", "role": "touchpad", "detail": "touchpad swipe/zone with a direction arrow (role is a best guess from the name)"},
+  {"match": "^ps/touch-top$", "role": "dpad_up", "detail": "d-pad arm shape with an up arrow (a further d-pad variant; named touch-* in the set)"},
+  {"match": "^ps/touch-bottom$", "role": "dpad_down", "detail": "d-pad arm shape with a down arrow (a further d-pad variant; named touch-* in the set)"},
+  {"match": "^ps/touch-left$", "role": "dpad_left", "detail": "d-pad arm shape with a left arrow (a further d-pad variant; named touch-* in the set)"},
+  {"match": "^ps/touch-right$", "role": "dpad_right", "detail": "d-pad arm shape with a right arrow (a further d-pad variant; named touch-* in the set)"},
   {"match": "^ps/(?:outline|plain)-top$", "role": "dpad_up", "detail": "d-pad with the up arm marked"},
   {"match": "^ps/(?:outline|plain)-bottom$", "role": "dpad_down", "detail": "d-pad with the down arm marked"},
   {"match": "^ps/(?:outline|plain)-left$", "role": "dpad_left", "detail": "d-pad with the left arm marked"},

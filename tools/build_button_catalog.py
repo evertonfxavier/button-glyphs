@@ -220,7 +220,7 @@ def build_variants(root, paths, sources, role_hint=None):
                 raise CatalogError("identical SVGs %s have different roles %s" % (g["paths"], sorted(roles)))
             role, detail = sorted(classified)[0]
             style = icons[0].split("/", 1)[0]
-            origin = {"ps": "figma-ps", "xbox": "figma-xbox"}.get(style)
+            origin = {"ps": "svg-set-ps", "xbox": "svg-set-xbox"}.get(style)
             if origin is None:
                 raise CatalogError("%s: unknown icon set %r (add it to build_button_catalog.py)" % (primary, style))
             kind, tags = "vector", svg_tags(icons[0], role, sources)

@@ -20,12 +20,12 @@ Only distinct art is listed. `used by` names the confirmed games whose slots use
 | `a.pixel.sfh-menu-xbox-a-13x13` | pixel | 13x13 | ps, disc, pixel-bevel, symbol, dark, ps-symbol-colours | `masks/sfh/Menu_xbox_a.png` | SFH | owner-pixel-art |
 | `a.pixel.sfh-tooltip-a-28x23` | pixel | 28x23 | ps, disc, pixel-bevel, symbol, dark, ps-symbol-colours | `masks/sfh/Tooltip_A.png` | SFH | owner-pixel-art |
 | `a.mask.cross-256x256` | mask | 256x256 | ps, glyph, flat, symbol, transparent, mono-white-mask | `masks/cross.png` | QB | our-drawing |
-| `a.svg.ps-outline-blue-cross` | vector | vector | ps, disc, outline, symbol, transparent, ps-symbol-colours | `svg/ps/outline-blue-cross.svg` | AC1, SSSS | figma-ps |
-| `a.svg.ps-outline-cross` | vector | vector | ps, disc, outline, symbol, transparent, mono-light | `svg/ps/outline-cross.svg` | library | figma-ps |
-| `a.svg.ps-plain-cross` | vector | vector | ps, disc, flat, symbol, transparent, mono-light | `svg/ps/plain-cross.svg` | AC1 | figma-ps |
-| `a.svg.xbox-a-filled` | vector | vector | xbox, disc, flat, letter, transparent, mono-light | `svg/xbox/a-filled.svg` | library | figma-xbox |
-| `a.svg.xbox-a-filled-green` | vector | vector | xbox, disc, flat, letter, transparent, xbox-colours | `svg/xbox/a-filled-green.svg` | AC1 | figma-xbox |
-| `a.svg.xbox-a-outlined` | vector | vector | xbox, disc, outline, letter, transparent, mono-light | `svg/xbox/a-outlined.svg` | AC1 | figma-xbox |
+| `a.svg.ps-outline-blue-cross` | vector | vector | ps, disc, outline, symbol, transparent, ps-symbol-colours | `svg/ps/outline-blue-cross.svg` | AC1, SSSS | svg-set-ps |
+| `a.svg.ps-outline-cross` | vector | vector | ps, disc, outline, symbol, transparent, mono-light | `svg/ps/outline-cross.svg` | library | svg-set-ps |
+| `a.svg.ps-plain-cross` | vector | vector | ps, disc, flat, symbol, transparent, mono-light | `svg/ps/plain-cross.svg` | AC1 | svg-set-ps |
+| `a.svg.xbox-a-filled` | vector | vector | xbox, disc, flat, letter, transparent, mono-light | `svg/xbox/a-filled.svg` | library | svg-set-xbox |
+| `a.svg.xbox-a-filled-green` | vector | vector | xbox, disc, flat, letter, transparent, xbox-colours | `svg/xbox/a-filled-green.svg` | AC1 | svg-set-xbox |
+| `a.svg.xbox-a-outlined` | vector | vector | xbox, disc, outline, letter, transparent, mono-light | `svg/xbox/a-outlined.svg` | AC1 | svg-set-xbox |
 
 ### `b` - right face button (Xbox B / PS circle) - 9 distinct
 
@@ -34,12 +34,12 @@ Only distinct art is listed. `used by` names the confirmed games whose slots use
 | `b.pixel.sfh-menu-xbox-b-13x13` | pixel | 13x13 | ps, disc, pixel-bevel, symbol, dark, ps-symbol-colours | `masks/sfh/Menu_xbox_b.png` | SFH | owner-pixel-art |
 | `b.pixel.sfh-tooltip-b-28x23` | pixel | 28x23 | ps, disc, pixel-bevel, symbol, dark, ps-symbol-colours | `masks/sfh/Tooltip_B.png` | SFH | owner-pixel-art |
 | `b.mask.circle-256x256` | mask | 256x256 | ps, glyph, flat, symbol, transparent, mono-white-mask | `masks/circle.png` | QB | our-drawing |
-| `b.svg.ps-outline-circle` | vector | vector | ps, disc, outline, symbol, transparent, mono-light | `svg/ps/outline-circle.svg` | library | figma-ps |
-| `b.svg.ps-outline-red-circle` | vector | vector | ps, disc, outline, symbol, transparent, ps-symbol-colours | `svg/ps/outline-red-circle.svg` | AC1, SSSS | figma-ps |
-| `b.svg.ps-plain-circle` | vector | vector | ps, disc, flat, symbol, transparent, mono-light | `svg/ps/plain-circle.svg` | AC1 | figma-ps |
-| `b.svg.xbox-b-filled` | vector | vector | xbox, disc, flat, letter, transparent, mono-light | `svg/xbox/b-filled.svg` | library | figma-xbox |
-| `b.svg.xbox-b-filled-red` | vector | vector | xbox, disc, flat, letter, transparent, xbox-colours | `svg/xbox/b-filled-red.svg` | AC1 | figma-xbox |
-| `b.svg.xbox-b-outlined` | vector | vector | xbox, disc, outline, letter, transparent, mono-light | `svg/xbox/b-outlined.svg` | AC1 | figma-xbox |
+| `b.svg.ps-outline-circle` | vector | vector | ps, disc, outline, symbol, transparent, mono-light | `svg/ps/outline-circle.svg` | library | svg-set-ps |
+| `b.svg.ps-outline-red-circle` | vector | vector | ps, disc, outline, symbol, transparent, ps-symbol-colours | `svg/ps/outline-red-circle.svg` | AC1, SSSS | svg-set-ps |
+| `b.svg.ps-plain-circle` | vector | vector | ps, disc, flat, symbol, transparent, mono-light | `svg/ps/plain-circle.svg` | AC1 | svg-set-ps |
+| `b.svg.xbox-b-filled` | vector | vector | xbox, disc, flat, letter, transparent, mono-light | `svg/xbox/b-filled.svg` | library | svg-set-xbox |
+| `b.svg.xbox-b-filled-red` | vector | vector | xbox, disc, flat, letter, transparent, xbox-colours | `svg/xbox/b-filled-red.svg` | AC1 | svg-set-xbox |
+| `b.svg.xbox-b-outlined` | vector | vector | xbox, disc, outline, letter, transparent, mono-light | `svg/xbox/b-outlined.svg` | AC1 | svg-set-xbox |
 
 ### `x` - left face button (Xbox X / PS square) - 9 distinct
 
@@ -48,12 +48,12 @@ Only distinct art is listed. `used by` names the confirmed games whose slots use
 | `x.pixel.sfh-menu-xbox-x-13x13` | pixel | 13x13 | ps, disc, pixel-bevel, symbol, dark, ps-symbol-colours | `masks/sfh/Menu_xbox_x.png` | SFH | owner-pixel-art |
 | `x.pixel.sfh-tooltip-x-28x23` | pixel | 28x23 | ps, disc, pixel-bevel, symbol, dark, ps-symbol-colours | `masks/sfh/Tooltip_X.png` | SFH | owner-pixel-art |
 | `x.mask.square-256x256` | mask | 256x256 | ps, glyph, flat, symbol, transparent, mono-white-mask | `masks/square.png` | QB | our-drawing |
-| `x.svg.ps-outline-purple-square` | vector | vector | ps, disc, outline, symbol, transparent, ps-symbol-colours | `svg/ps/outline-purple-square.svg` | AC1, SSSS | figma-ps |
-| `x.svg.ps-outline-square` | vector | vector | ps, disc, outline, symbol, transparent, mono-light | `svg/ps/outline-square.svg` | library | figma-ps |
-| `x.svg.ps-plain-square` | vector | vector | ps, disc, flat, symbol, transparent, mono-light | `svg/ps/plain-square.svg` | AC1 | figma-ps |
-| `x.svg.xbox-x-filled` | vector | vector | xbox, disc, flat, letter, transparent, mono-light | `svg/xbox/x-filled.svg` | library | figma-xbox |
-| `x.svg.xbox-x-filled-blue` | vector | vector | xbox, disc, flat, letter, transparent, xbox-colours | `svg/xbox/x-filled-blue.svg` | AC1 | figma-xbox |
-| `x.svg.xbox-x-outlined` | vector | vector | xbox, disc, outline, letter, transparent, mono-light | `svg/xbox/x-outlined.svg` | AC1 | figma-xbox |
+| `x.svg.ps-outline-purple-square` | vector | vector | ps, disc, outline, symbol, transparent, ps-symbol-colours | `svg/ps/outline-purple-square.svg` | AC1, SSSS | svg-set-ps |
+| `x.svg.ps-outline-square` | vector | vector | ps, disc, outline, symbol, transparent, mono-light | `svg/ps/outline-square.svg` | library | svg-set-ps |
+| `x.svg.ps-plain-square` | vector | vector | ps, disc, flat, symbol, transparent, mono-light | `svg/ps/plain-square.svg` | AC1 | svg-set-ps |
+| `x.svg.xbox-x-filled` | vector | vector | xbox, disc, flat, letter, transparent, mono-light | `svg/xbox/x-filled.svg` | library | svg-set-xbox |
+| `x.svg.xbox-x-filled-blue` | vector | vector | xbox, disc, flat, letter, transparent, xbox-colours | `svg/xbox/x-filled-blue.svg` | AC1 | svg-set-xbox |
+| `x.svg.xbox-x-outlined` | vector | vector | xbox, disc, outline, letter, transparent, mono-light | `svg/xbox/x-outlined.svg` | AC1 | svg-set-xbox |
 
 ### `y` - top face button (Xbox Y / PS triangle) - 9 distinct
 
@@ -62,12 +62,12 @@ Only distinct art is listed. `used by` names the confirmed games whose slots use
 | `y.pixel.sfh-menu-xbox-y-13x13` | pixel | 13x13 | ps, disc, pixel-bevel, symbol, dark, ps-symbol-colours | `masks/sfh/Menu_xbox_y.png` | SFH | owner-pixel-art |
 | `y.pixel.sfh-tooltip-y-28x23` | pixel | 28x23 | ps, disc, pixel-bevel, symbol, dark, ps-symbol-colours | `masks/sfh/Tooltip_Y.png` | SFH | owner-pixel-art |
 | `y.mask.triangle-256x256` | mask | 256x256 | ps, glyph, flat, symbol, transparent, mono-white-mask | `masks/triangle.png` | QB | our-drawing |
-| `y.svg.ps-outline-green-triangle` | vector | vector | ps, disc, outline, symbol, transparent, ps-symbol-colours | `svg/ps/outline-green-triangle.svg` | AC1, SSSS | figma-ps |
-| `y.svg.ps-outline-triangle` | vector | vector | ps, disc, outline, symbol, transparent, mono-light | `svg/ps/outline-triangle.svg` | library | figma-ps |
-| `y.svg.ps-plain-triangle` | vector | vector | ps, disc, flat, symbol, transparent, mono-light | `svg/ps/plain-triangle.svg` | AC1 | figma-ps |
-| `y.svg.xbox-y-filled` | vector | vector | xbox, disc, flat, letter, transparent, mono-light | `svg/xbox/y-filled.svg` | library | figma-xbox |
-| `y.svg.xbox-y-filled-yellow` | vector | vector | xbox, disc, flat, letter, transparent, xbox-colours | `svg/xbox/y-filled-yellow.svg` | AC1 | figma-xbox |
-| `y.svg.xbox-y-outlined` | vector | vector | xbox, disc, outline, letter, transparent, mono-light | `svg/xbox/y-outlined.svg` | AC1 | figma-xbox |
+| `y.svg.ps-outline-green-triangle` | vector | vector | ps, disc, outline, symbol, transparent, ps-symbol-colours | `svg/ps/outline-green-triangle.svg` | AC1, SSSS | svg-set-ps |
+| `y.svg.ps-outline-triangle` | vector | vector | ps, disc, outline, symbol, transparent, mono-light | `svg/ps/outline-triangle.svg` | library | svg-set-ps |
+| `y.svg.ps-plain-triangle` | vector | vector | ps, disc, flat, symbol, transparent, mono-light | `svg/ps/plain-triangle.svg` | AC1 | svg-set-ps |
+| `y.svg.xbox-y-filled` | vector | vector | xbox, disc, flat, letter, transparent, mono-light | `svg/xbox/y-filled.svg` | library | svg-set-xbox |
+| `y.svg.xbox-y-filled-yellow` | vector | vector | xbox, disc, flat, letter, transparent, xbox-colours | `svg/xbox/y-filled-yellow.svg` | AC1 | svg-set-xbox |
+| `y.svg.xbox-y-outlined` | vector | vector | xbox, disc, outline, letter, transparent, mono-light | `svg/xbox/y-outlined.svg` | AC1 | svg-set-xbox |
 
 ### `lb` - left shoulder (Xbox LB / PS L1) - 7 distinct
 
@@ -76,10 +76,10 @@ Only distinct art is listed. `used by` names the confirmed games whose slots use
 | `lb.pixel.sfh-menu-xbox-lbumper-17x15` | pixel | 17x15 | ps, bumper, pixel-bevel, word, dark, mono-light | `masks/sfh/Menu_xbox_lbumper.png` | SFH | owner-pixel-art |
 | `lb.pixel.sfh-tooltip-shoulder-left-28x23` | pixel | 28x23 | ps, bumper, pixel-bevel, word, dark, mono-light | `masks/sfh/Tooltip_SHOULDER_LEFT.png` | SFH | owner-pixel-art |
 | `lb.mask.l1-256x216` | mask | 256x216 | ps, glyph, flat, word, transparent, mono-white-mask | `masks/L1.png` | QB | montserrat-ofl |
-| `lb.svg.ps-outline-l1` | vector | vector | ps, bumper, outline, word, transparent, mono-light | `svg/ps/outline-L1.svg` | library | figma-ps |
-| `lb.svg.ps-plain-l1` | vector | vector | ps, bumper, flat, word, transparent, mono-light | `svg/ps/plain-L1.svg` | library | figma-ps |
-| `lb.svg.ps-plain-rectangle-l1` | vector | vector | ps, bumper, flat, word, transparent, mono-light | `svg/ps/plain-rectangle-L1.svg` | SSSS | figma-ps |
-| `lb.svg.xbox-left-bumper` | vector | vector | xbox, bumper, flat, word, transparent, mono-light | `svg/xbox/left-bumper.svg` | library | figma-xbox |
+| `lb.svg.ps-outline-l1` | vector | vector | ps, bumper, outline, word, transparent, mono-light | `svg/ps/outline-L1.svg` | library | svg-set-ps |
+| `lb.svg.ps-plain-l1` | vector | vector | ps, bumper, flat, word, transparent, mono-light | `svg/ps/plain-L1.svg` | library | svg-set-ps |
+| `lb.svg.ps-plain-rectangle-l1` | vector | vector | ps, bumper, flat, word, transparent, mono-light | `svg/ps/plain-rectangle-L1.svg` | SSSS | svg-set-ps |
+| `lb.svg.xbox-left-bumper` | vector | vector | xbox, bumper, flat, word, transparent, mono-light | `svg/xbox/left-bumper.svg` | library | svg-set-xbox |
 
 ### `rb` - right shoulder (Xbox RB / PS R1) - 7 distinct
 
@@ -88,10 +88,10 @@ Only distinct art is listed. `used by` names the confirmed games whose slots use
 | `rb.pixel.sfh-menu-xbox-rbumper-17x15` | pixel | 17x15 | ps, bumper, pixel-bevel, word, dark, mono-light | `masks/sfh/Menu_xbox_rbumper.png` | SFH | owner-pixel-art |
 | `rb.pixel.sfh-tooltip-shoulder-right-28x23` | pixel | 28x23 | ps, bumper, pixel-bevel, word, dark, mono-light | `masks/sfh/Tooltip_SHOULDER_RIGHT.png` | SFH | owner-pixel-art |
 | `rb.mask.r1-256x186` | mask | 256x186 | ps, glyph, flat, word, transparent, mono-white-mask | `masks/R1.png` | QB | montserrat-ofl |
-| `rb.svg.ps-outline-r1` | vector | vector | ps, bumper, outline, word, transparent, mono-light | `svg/ps/outline-R1.svg` | library | figma-ps |
-| `rb.svg.ps-plain-r1` | vector | vector | ps, bumper, flat, word, transparent, mono-light | `svg/ps/plain-R1.svg` | library | figma-ps |
-| `rb.svg.ps-plain-rectangle-r1` | vector | vector | ps, bumper, flat, word, transparent, mono-light | `svg/ps/plain-rectangle-R1.svg` | SSSS | figma-ps |
-| `rb.svg.xbox-right-bumper` | vector | vector | xbox, bumper, flat, word, transparent, mono-light | `svg/xbox/right-bumper.svg` | library | figma-xbox |
+| `rb.svg.ps-outline-r1` | vector | vector | ps, bumper, outline, word, transparent, mono-light | `svg/ps/outline-R1.svg` | library | svg-set-ps |
+| `rb.svg.ps-plain-r1` | vector | vector | ps, bumper, flat, word, transparent, mono-light | `svg/ps/plain-R1.svg` | library | svg-set-ps |
+| `rb.svg.ps-plain-rectangle-r1` | vector | vector | ps, bumper, flat, word, transparent, mono-light | `svg/ps/plain-rectangle-R1.svg` | SSSS | svg-set-ps |
+| `rb.svg.xbox-right-bumper` | vector | vector | xbox, bumper, flat, word, transparent, mono-light | `svg/xbox/right-bumper.svg` | library | svg-set-xbox |
 
 ### `lt` - left trigger (Xbox LT / PS L2) - 7 distinct
 
@@ -100,10 +100,10 @@ Only distinct art is listed. `used by` names the confirmed games whose slots use
 | `lt.pixel.sfh-menu-xbox-ltrigger-17x15` | pixel | 17x15 | ps, trigger, pixel-bevel, word, dark, mono-light | `masks/sfh/Menu_xbox_ltrigger.png` | SFH | owner-pixel-art |
 | `lt.pixel.sfh-tooltip-trigger-left-28x23` | pixel | 28x23 | ps, trigger, pixel-bevel, word, dark, mono-light | `masks/sfh/Tooltip_TRIGGER_LEFT.png` | SFH | owner-pixel-art |
 | `lt.mask.l2-256x168` | mask | 256x168 | ps, glyph, flat, word, transparent, mono-white-mask | `masks/L2.png` | QB | montserrat-ofl |
-| `lt.svg.ps-outline-l2` | vector | vector | ps, trigger, outline, word, transparent, mono-light | `svg/ps/outline-L2.svg` | library | figma-ps |
-| `lt.svg.ps-plain-l2` | vector | vector | ps, trigger, flat, word, transparent, mono-light | `svg/ps/plain-L2.svg` | AC1 | figma-ps |
-| `lt.svg.ps-plain-rectangle-l2` | vector | vector | ps, trigger, flat, word, transparent, mono-light | `svg/ps/plain-rectangle-L2.svg` | SSSS | figma-ps |
-| `lt.svg.xbox-left-trigger` | vector | vector | xbox, trigger, flat, word, transparent, mono-light | `svg/xbox/left-trigger.svg` | library | figma-xbox |
+| `lt.svg.ps-outline-l2` | vector | vector | ps, trigger, outline, word, transparent, mono-light | `svg/ps/outline-L2.svg` | library | svg-set-ps |
+| `lt.svg.ps-plain-l2` | vector | vector | ps, trigger, flat, word, transparent, mono-light | `svg/ps/plain-L2.svg` | AC1 | svg-set-ps |
+| `lt.svg.ps-plain-rectangle-l2` | vector | vector | ps, trigger, flat, word, transparent, mono-light | `svg/ps/plain-rectangle-L2.svg` | SSSS | svg-set-ps |
+| `lt.svg.xbox-left-trigger` | vector | vector | xbox, trigger, flat, word, transparent, mono-light | `svg/xbox/left-trigger.svg` | library | svg-set-xbox |
 
 ### `rt` - right trigger (Xbox RT / PS R2) - 7 distinct
 
@@ -112,147 +112,151 @@ Only distinct art is listed. `used by` names the confirmed games whose slots use
 | `rt.pixel.sfh-menu-xbox-rtrigger-17x15` | pixel | 17x15 | ps, trigger, pixel-bevel, word, dark, mono-light | `masks/sfh/Menu_xbox_rtrigger.png` | SFH | owner-pixel-art |
 | `rt.pixel.sfh-tooltip-trigger-right-28x23` | pixel | 28x23 | ps, trigger, pixel-bevel, word, dark, mono-light | `masks/sfh/Tooltip_TRIGGER_RIGHT.png` | SFH | owner-pixel-art |
 | `rt.mask.r2-256x150` | mask | 256x150 | ps, glyph, flat, word, transparent, mono-white-mask | `masks/R2.png` | QB | montserrat-ofl |
-| `rt.svg.ps-outline-r2` | vector | vector | ps, trigger, outline, word, transparent, mono-light | `svg/ps/outline-R2.svg` | library | figma-ps |
-| `rt.svg.ps-plain-r2` | vector | vector | ps, trigger, flat, word, transparent, mono-light | `svg/ps/plain-R2.svg` | AC1 | figma-ps |
-| `rt.svg.ps-plain-rectangle-r2` | vector | vector | ps, trigger, flat, word, transparent, mono-light | `svg/ps/plain-rectangle-R2.svg` | SSSS | figma-ps |
-| `rt.svg.xbox-right-trigger` | vector | vector | xbox, trigger, flat, word, transparent, mono-light | `svg/xbox/right-trigger.svg` | library | figma-xbox |
+| `rt.svg.ps-outline-r2` | vector | vector | ps, trigger, outline, word, transparent, mono-light | `svg/ps/outline-R2.svg` | library | svg-set-ps |
+| `rt.svg.ps-plain-r2` | vector | vector | ps, trigger, flat, word, transparent, mono-light | `svg/ps/plain-R2.svg` | AC1 | svg-set-ps |
+| `rt.svg.ps-plain-rectangle-r2` | vector | vector | ps, trigger, flat, word, transparent, mono-light | `svg/ps/plain-rectangle-R2.svg` | SSSS | svg-set-ps |
+| `rt.svg.xbox-right-trigger` | vector | vector | xbox, trigger, flat, word, transparent, mono-light | `svg/xbox/right-trigger.svg` | library | svg-set-xbox |
 
 ### `l3` - left stick press (Xbox LS press / PS L3) - 8 distinct
 
 | Variant | Kind | Size | Look (style, shape, shading, label, colour, bg) | File | Used by | Origin |
 |---------|------|------|------|------|---------|--------|
-| `l3.svg.ps-outline-l3` | vector | vector | ps, stick-cap, outline, word, transparent, mono-light | `svg/ps/outline-L3.svg` | library | figma-ps |
-| `l3.svg.ps-outline-press-l3` | vector | vector | ps, stick-cap, outline, word, transparent, mono-light | `svg/ps/outline-press-L3.svg` | SSSS | figma-ps |
-| `l3.svg.ps-plain-l3` | vector | vector | ps, stick-cap, flat, word, transparent, mono-light | `svg/ps/plain-L3.svg` | library | figma-ps |
-| `l3.svg.ps-press-big-l3` | vector | vector | ps, stick-cap, flat, word, transparent, mono-light | `svg/ps/press-big-L3.svg` | library | figma-ps |
-| `l3.svg.ps-press-l` | vector | vector | ps, stick-cap, flat, word, transparent, mono-light | `svg/ps/press-L.svg` | library | figma-ps |
-| `l3.svg.ps-press-l3` | vector | vector | ps, stick-cap, flat, word, transparent, mono-light | `svg/ps/press-L3.svg` | library | figma-ps |
-| `l3.svg.xbox-left-joystick-press` | vector | vector | xbox, stick-cap, flat, word, transparent, mono-light | `svg/xbox/left-joystick-press.svg` | library | figma-xbox |
-| `l3.svg.xbox-left-stick` | vector | vector | xbox, stick-cap, flat, word, transparent, mono-light | `svg/xbox/left-stick.svg` | library | figma-xbox |
+| `l3.svg.ps-outline-l3` | vector | vector | ps, stick-cap, outline, word, transparent, mono-light | `svg/ps/outline-L3.svg` | library | svg-set-ps |
+| `l3.svg.ps-outline-press-l3` | vector | vector | ps, stick-cap, outline, word, transparent, mono-light | `svg/ps/outline-press-L3.svg` | SSSS | svg-set-ps |
+| `l3.svg.ps-plain-l3` | vector | vector | ps, stick-cap, flat, word, transparent, mono-light | `svg/ps/plain-L3.svg` | library | svg-set-ps |
+| `l3.svg.ps-press-big-l3` | vector | vector | ps, stick-cap, flat, word, transparent, mono-light | `svg/ps/press-big-L3.svg` | library | svg-set-ps |
+| `l3.svg.ps-press-l` | vector | vector | ps, stick-cap, flat, word, transparent, mono-light | `svg/ps/press-L.svg` | library | svg-set-ps |
+| `l3.svg.ps-press-l3` | vector | vector | ps, stick-cap, flat, word, transparent, mono-light | `svg/ps/press-L3.svg` | library | svg-set-ps |
+| `l3.svg.xbox-left-joystick-press` | vector | vector | xbox, stick-cap, flat, word, transparent, mono-light | `svg/xbox/left-joystick-press.svg` | library | svg-set-xbox |
+| `l3.svg.xbox-left-stick` | vector | vector | xbox, stick-cap, flat, word, transparent, mono-light | `svg/xbox/left-stick.svg` | library | svg-set-xbox |
 
 ### `r3` - right stick press (Xbox RS press / PS R3) - 8 distinct
 
 | Variant | Kind | Size | Look (style, shape, shading, label, colour, bg) | File | Used by | Origin |
 |---------|------|------|------|------|---------|--------|
-| `r3.svg.ps-outline-press-r3` | vector | vector | ps, stick-cap, outline, word, transparent, mono-light | `svg/ps/outline-press-R3.svg` | SSSS | figma-ps |
-| `r3.svg.ps-outline-r3` | vector | vector | ps, stick-cap, outline, word, transparent, mono-light | `svg/ps/outline-R3.svg` | library | figma-ps |
-| `r3.svg.ps-plain-r3` | vector | vector | ps, stick-cap, flat, word, transparent, mono-light | `svg/ps/plain-R3.svg` | library | figma-ps |
-| `r3.svg.ps-press-big-r3` | vector | vector | ps, stick-cap, flat, word, transparent, mono-light | `svg/ps/press-big-R3.svg` | library | figma-ps |
-| `r3.svg.ps-press-r` | vector | vector | ps, stick-cap, flat, word, transparent, mono-light | `svg/ps/press-R.svg` | library | figma-ps |
-| `r3.svg.ps-press-r3` | vector | vector | ps, stick-cap, flat, word, transparent, mono-light | `svg/ps/press-R3.svg` | library | figma-ps |
-| `r3.svg.xbox-right-joystick-press` | vector | vector | xbox, stick-cap, flat, word, transparent, mono-light | `svg/xbox/right-joystick-press.svg` | library | figma-xbox |
-| `r3.svg.xbox-right-stick` | vector | vector | xbox, stick-cap, flat, word, transparent, mono-light | `svg/xbox/right-stick.svg` | library | figma-xbox |
+| `r3.svg.ps-outline-press-r3` | vector | vector | ps, stick-cap, outline, word, transparent, mono-light | `svg/ps/outline-press-R3.svg` | SSSS | svg-set-ps |
+| `r3.svg.ps-outline-r3` | vector | vector | ps, stick-cap, outline, word, transparent, mono-light | `svg/ps/outline-R3.svg` | library | svg-set-ps |
+| `r3.svg.ps-plain-r3` | vector | vector | ps, stick-cap, flat, word, transparent, mono-light | `svg/ps/plain-R3.svg` | library | svg-set-ps |
+| `r3.svg.ps-press-big-r3` | vector | vector | ps, stick-cap, flat, word, transparent, mono-light | `svg/ps/press-big-R3.svg` | library | svg-set-ps |
+| `r3.svg.ps-press-r` | vector | vector | ps, stick-cap, flat, word, transparent, mono-light | `svg/ps/press-R.svg` | library | svg-set-ps |
+| `r3.svg.ps-press-r3` | vector | vector | ps, stick-cap, flat, word, transparent, mono-light | `svg/ps/press-R3.svg` | library | svg-set-ps |
+| `r3.svg.xbox-right-joystick-press` | vector | vector | xbox, stick-cap, flat, word, transparent, mono-light | `svg/xbox/right-joystick-press.svg` | library | svg-set-xbox |
+| `r3.svg.xbox-right-stick` | vector | vector | xbox, stick-cap, flat, word, transparent, mono-light | `svg/xbox/right-stick.svg` | library | svg-set-xbox |
 
 ### `lstick` - left stick (cap, ring or all directions) (Xbox LS / PS L) - 5 distinct
 
 | Variant | Kind | Size | Look (style, shape, shading, label, colour, bg) | File | Used by | Origin |
 |---------|------|------|------|------|---------|--------|
-| `lstick.svg.ps-direction-l` | vector | vector | ps, stick-cap, flat, letter, transparent, mono-light | `svg/ps/direction-L.svg` | library | figma-ps |
-| `lstick.svg.ps-outline-l` | vector | vector | ps, stick-cap, outline, letter, transparent, mono-light | `svg/ps/outline-L.svg` | library | figma-ps |
-| `lstick.svg.ps-plain-l` | vector | vector | ps, stick-cap, flat, letter, transparent, mono-light | `svg/ps/plain-L.svg` | AC1 | figma-ps |
-| `lstick.svg.xbox-left-joystick` | vector | vector | xbox, stick-cap, flat, letter, transparent, mono-light | `svg/xbox/left-joystick.svg` | library | figma-xbox |
-| `lstick.svg.xbox-left-joystick-all` | vector | vector | xbox, stick-cap, flat, letter, transparent, mono-light | `svg/xbox/left-joystick-all.svg` | library | figma-xbox |
+| `lstick.svg.ps-direction-l` | vector | vector | ps, stick-cap, flat, letter, transparent, mono-light | `svg/ps/direction-L.svg` | library | svg-set-ps |
+| `lstick.svg.ps-outline-l` | vector | vector | ps, stick-cap, outline, letter, transparent, mono-light | `svg/ps/outline-L.svg` | library | svg-set-ps |
+| `lstick.svg.ps-plain-l` | vector | vector | ps, stick-cap, flat, letter, transparent, mono-light | `svg/ps/plain-L.svg` | AC1 | svg-set-ps |
+| `lstick.svg.xbox-left-joystick` | vector | vector | xbox, stick-cap, flat, letter, transparent, mono-light | `svg/xbox/left-joystick.svg` | library | svg-set-xbox |
+| `lstick.svg.xbox-left-joystick-all` | vector | vector | xbox, stick-cap, flat, letter, transparent, mono-light | `svg/xbox/left-joystick-all.svg` | library | svg-set-xbox |
 
 ### `lstick_up` - left stick pushed up (Xbox LS up / PS L up) - 1 distinct
 
 | Variant | Kind | Size | Look (style, shape, shading, label, colour, bg) | File | Used by | Origin |
 |---------|------|------|------|------|---------|--------|
-| `lstick_up.svg.xbox-left-joystick-up` | vector | vector | xbox, stick-cap, flat, letter, transparent, mono-light | `svg/xbox/left-joystick-up.svg` | library | figma-xbox |
+| `lstick_up.svg.xbox-left-joystick-up` | vector | vector | xbox, stick-cap, flat, letter, transparent, mono-light | `svg/xbox/left-joystick-up.svg` | library | svg-set-xbox |
 
 ### `lstick_down` - left stick pushed down (Xbox LS down / PS L down) - 1 distinct
 
 | Variant | Kind | Size | Look (style, shape, shading, label, colour, bg) | File | Used by | Origin |
 |---------|------|------|------|------|---------|--------|
-| `lstick_down.svg.xbox-left-joystick-down` | vector | vector | xbox, stick-cap, flat, letter, transparent, mono-light | `svg/xbox/left-joystick-down.svg` | library | figma-xbox |
+| `lstick_down.svg.xbox-left-joystick-down` | vector | vector | xbox, stick-cap, flat, letter, transparent, mono-light | `svg/xbox/left-joystick-down.svg` | library | svg-set-xbox |
 
 ### `lstick_left` - left stick pushed left (Xbox LS left / PS L left) - 1 distinct
 
 | Variant | Kind | Size | Look (style, shape, shading, label, colour, bg) | File | Used by | Origin |
 |---------|------|------|------|------|---------|--------|
-| `lstick_left.svg.xbox-left-joystick-left` | vector | vector | xbox, stick-cap, flat, letter, transparent, mono-light | `svg/xbox/left-joystick-left.svg` | library | figma-xbox |
+| `lstick_left.svg.xbox-left-joystick-left` | vector | vector | xbox, stick-cap, flat, letter, transparent, mono-light | `svg/xbox/left-joystick-left.svg` | library | svg-set-xbox |
 
 ### `lstick_right` - left stick pushed right (Xbox LS right / PS L right) - 1 distinct
 
 | Variant | Kind | Size | Look (style, shape, shading, label, colour, bg) | File | Used by | Origin |
 |---------|------|------|------|------|---------|--------|
-| `lstick_right.svg.xbox-left-joystick-right` | vector | vector | xbox, stick-cap, flat, letter, transparent, mono-light | `svg/xbox/left-joystick-right.svg` | library | figma-xbox |
+| `lstick_right.svg.xbox-left-joystick-right` | vector | vector | xbox, stick-cap, flat, letter, transparent, mono-light | `svg/xbox/left-joystick-right.svg` | library | svg-set-xbox |
 
 ### `rstick` - right stick (cap, ring or all directions) (Xbox RS / PS R) - 5 distinct
 
 | Variant | Kind | Size | Look (style, shape, shading, label, colour, bg) | File | Used by | Origin |
 |---------|------|------|------|------|---------|--------|
-| `rstick.svg.ps-direction-r` | vector | vector | ps, stick-cap, flat, letter, transparent, mono-light | `svg/ps/direction-R.svg` | library | figma-ps |
-| `rstick.svg.ps-outline-r` | vector | vector | ps, stick-cap, outline, letter, transparent, mono-light | `svg/ps/outline-R.svg` | library | figma-ps |
-| `rstick.svg.ps-plain-r` | vector | vector | ps, stick-cap, flat, letter, transparent, mono-light | `svg/ps/plain-R.svg` | AC1 | figma-ps |
-| `rstick.svg.xbox-right-joystick` | vector | vector | xbox, stick-cap, flat, letter, transparent, mono-light | `svg/xbox/right-joystick.svg` | library | figma-xbox |
-| `rstick.svg.xbox-right-joystick-all` | vector | vector | xbox, stick-cap, flat, letter, transparent, mono-light | `svg/xbox/right-joystick-all.svg` | library | figma-xbox |
+| `rstick.svg.ps-direction-r` | vector | vector | ps, stick-cap, flat, letter, transparent, mono-light | `svg/ps/direction-R.svg` | library | svg-set-ps |
+| `rstick.svg.ps-outline-r` | vector | vector | ps, stick-cap, outline, letter, transparent, mono-light | `svg/ps/outline-R.svg` | library | svg-set-ps |
+| `rstick.svg.ps-plain-r` | vector | vector | ps, stick-cap, flat, letter, transparent, mono-light | `svg/ps/plain-R.svg` | AC1 | svg-set-ps |
+| `rstick.svg.xbox-right-joystick` | vector | vector | xbox, stick-cap, flat, letter, transparent, mono-light | `svg/xbox/right-joystick.svg` | library | svg-set-xbox |
+| `rstick.svg.xbox-right-joystick-all` | vector | vector | xbox, stick-cap, flat, letter, transparent, mono-light | `svg/xbox/right-joystick-all.svg` | library | svg-set-xbox |
 
 ### `rstick_up` - right stick pushed up (Xbox RS up / PS R up) - 1 distinct
 
 | Variant | Kind | Size | Look (style, shape, shading, label, colour, bg) | File | Used by | Origin |
 |---------|------|------|------|------|---------|--------|
-| `rstick_up.svg.xbox-right-joystick-up` | vector | vector | xbox, stick-cap, flat, letter, transparent, mono-light | `svg/xbox/right-joystick-up.svg` | library | figma-xbox |
+| `rstick_up.svg.xbox-right-joystick-up` | vector | vector | xbox, stick-cap, flat, letter, transparent, mono-light | `svg/xbox/right-joystick-up.svg` | library | svg-set-xbox |
 
 ### `rstick_down` - right stick pushed down (Xbox RS down / PS R down) - 1 distinct
 
 | Variant | Kind | Size | Look (style, shape, shading, label, colour, bg) | File | Used by | Origin |
 |---------|------|------|------|------|---------|--------|
-| `rstick_down.svg.xbox-right-joystick-down` | vector | vector | xbox, stick-cap, flat, letter, transparent, mono-light | `svg/xbox/right-joystick-down.svg` | library | figma-xbox |
+| `rstick_down.svg.xbox-right-joystick-down` | vector | vector | xbox, stick-cap, flat, letter, transparent, mono-light | `svg/xbox/right-joystick-down.svg` | library | svg-set-xbox |
 
 ### `rstick_left` - right stick pushed left (Xbox RS left / PS R left) - 1 distinct
 
 | Variant | Kind | Size | Look (style, shape, shading, label, colour, bg) | File | Used by | Origin |
 |---------|------|------|------|------|---------|--------|
-| `rstick_left.svg.xbox-right-joystick-left` | vector | vector | xbox, stick-cap, flat, letter, transparent, mono-light | `svg/xbox/right-joystick-left.svg` | library | figma-xbox |
+| `rstick_left.svg.xbox-right-joystick-left` | vector | vector | xbox, stick-cap, flat, letter, transparent, mono-light | `svg/xbox/right-joystick-left.svg` | library | svg-set-xbox |
 
 ### `rstick_right` - right stick pushed right (Xbox RS right / PS R right) - 1 distinct
 
 | Variant | Kind | Size | Look (style, shape, shading, label, colour, bg) | File | Used by | Origin |
 |---------|------|------|------|------|---------|--------|
-| `rstick_right.svg.xbox-right-joystick-right` | vector | vector | xbox, stick-cap, flat, letter, transparent, mono-light | `svg/xbox/right-joystick-right.svg` | library | figma-xbox |
+| `rstick_right.svg.xbox-right-joystick-right` | vector | vector | xbox, stick-cap, flat, letter, transparent, mono-light | `svg/xbox/right-joystick-right.svg` | library | svg-set-xbox |
 
 ### `dpad` - direction pad (Xbox D-pad / PS D-pad) - 2 distinct
 
 | Variant | Kind | Size | Look (style, shape, shading, label, colour, bg) | File | Used by | Origin |
 |---------|------|------|------|------|---------|--------|
 | `dpad.pixel.sfh-tooltip-dpad-28x23` | pixel | 28x23 | ps, d-pad, pixel-bevel, none, dark, mono-light | `masks/sfh/Tooltip_Dpad.png` | SFH | owner-pixel-art |
-| `dpad.svg.xbox-dpad` | vector | vector | xbox, d-pad, flat, none, transparent, mono-light | `svg/xbox/dpad.svg` | library | figma-xbox |
+| `dpad.svg.xbox-dpad` | vector | vector | xbox, d-pad, flat, none, transparent, mono-light | `svg/xbox/dpad.svg` | library | svg-set-xbox |
 
-### `dpad_up` - direction pad, up (Xbox D-pad up / PS D-pad up) - 4 distinct
+### `dpad_up` - direction pad, up (Xbox D-pad up / PS D-pad up) - 5 distinct
 
 | Variant | Kind | Size | Look (style, shape, shading, label, colour, bg) | File | Used by | Origin |
 |---------|------|------|------|------|---------|--------|
 | `dpad_up.pixel.sfh-tooltip-dpadup-28x23` | pixel | 28x23 | ps, d-pad, pixel-bevel, none, dark, mono-light | `masks/sfh/Tooltip_DpadUp.png` | SFH | owner-pixel-art |
-| `dpad_up.svg.ps-outline-top` | vector | vector | ps, d-pad, outline, none, transparent, mono-light | `svg/ps/outline-top.svg` | library | figma-ps |
-| `dpad_up.svg.ps-plain-top` | vector | vector | ps, d-pad, flat, none, transparent, mono-light | `svg/ps/plain-top.svg` | library | figma-ps |
-| `dpad_up.svg.xbox-dpad-up` | vector | vector | xbox, d-pad, flat, none, transparent, mono-light | `svg/xbox/dpad-up.svg` | library | figma-xbox |
+| `dpad_up.svg.ps-outline-top` | vector | vector | ps, d-pad, outline, none, transparent, mono-light | `svg/ps/outline-top.svg` | library | svg-set-ps |
+| `dpad_up.svg.ps-plain-top` | vector | vector | ps, d-pad, flat, none, transparent, mono-light | `svg/ps/plain-top.svg` | library | svg-set-ps |
+| `dpad_up.svg.ps-touch-top` | vector | vector | ps, d-pad, flat, none, transparent, mono-light | `svg/ps/touch-top.svg` | library | svg-set-ps |
+| `dpad_up.svg.xbox-dpad-up` | vector | vector | xbox, d-pad, flat, none, transparent, mono-light | `svg/xbox/dpad-up.svg` | library | svg-set-xbox |
 
-### `dpad_down` - direction pad, down (Xbox D-pad down / PS D-pad down) - 4 distinct
+### `dpad_down` - direction pad, down (Xbox D-pad down / PS D-pad down) - 5 distinct
 
 | Variant | Kind | Size | Look (style, shape, shading, label, colour, bg) | File | Used by | Origin |
 |---------|------|------|------|------|---------|--------|
 | `dpad_down.pixel.sfh-tooltip-dpaddown-28x23` | pixel | 28x23 | ps, d-pad, pixel-bevel, none, dark, mono-light | `masks/sfh/Tooltip_DpadDown.png` | SFH | owner-pixel-art |
-| `dpad_down.svg.ps-outline-bottom` | vector | vector | ps, d-pad, outline, none, transparent, mono-light | `svg/ps/outline-bottom.svg` | library | figma-ps |
-| `dpad_down.svg.ps-plain-bottom` | vector | vector | ps, d-pad, flat, none, transparent, mono-light | `svg/ps/plain-bottom.svg` | library | figma-ps |
-| `dpad_down.svg.xbox-dpad-down` | vector | vector | xbox, d-pad, flat, none, transparent, mono-light | `svg/xbox/dpad-down.svg` | library | figma-xbox |
+| `dpad_down.svg.ps-outline-bottom` | vector | vector | ps, d-pad, outline, none, transparent, mono-light | `svg/ps/outline-bottom.svg` | library | svg-set-ps |
+| `dpad_down.svg.ps-plain-bottom` | vector | vector | ps, d-pad, flat, none, transparent, mono-light | `svg/ps/plain-bottom.svg` | library | svg-set-ps |
+| `dpad_down.svg.ps-touch-bottom` | vector | vector | ps, d-pad, flat, none, transparent, mono-light | `svg/ps/touch-bottom.svg` | library | svg-set-ps |
+| `dpad_down.svg.xbox-dpad-down` | vector | vector | xbox, d-pad, flat, none, transparent, mono-light | `svg/xbox/dpad-down.svg` | library | svg-set-xbox |
 
-### `dpad_left` - direction pad, left (Xbox D-pad left / PS D-pad left) - 4 distinct
+### `dpad_left` - direction pad, left (Xbox D-pad left / PS D-pad left) - 5 distinct
 
 | Variant | Kind | Size | Look (style, shape, shading, label, colour, bg) | File | Used by | Origin |
 |---------|------|------|------|------|---------|--------|
 | `dpad_left.pixel.sfh-tooltip-dpadleft-28x23` | pixel | 28x23 | ps, d-pad, pixel-bevel, none, dark, mono-light | `masks/sfh/Tooltip_DpadLeft.png` | SFH | owner-pixel-art |
-| `dpad_left.svg.ps-outline-left` | vector | vector | ps, d-pad, outline, none, transparent, mono-light | `svg/ps/outline-left.svg` | library | figma-ps |
-| `dpad_left.svg.ps-plain-left` | vector | vector | ps, d-pad, flat, none, transparent, mono-light | `svg/ps/plain-left.svg` | library | figma-ps |
-| `dpad_left.svg.xbox-dpad-left` | vector | vector | xbox, d-pad, flat, none, transparent, mono-light | `svg/xbox/dpad-left.svg` | library | figma-xbox |
+| `dpad_left.svg.ps-outline-left` | vector | vector | ps, d-pad, outline, none, transparent, mono-light | `svg/ps/outline-left.svg` | library | svg-set-ps |
+| `dpad_left.svg.ps-plain-left` | vector | vector | ps, d-pad, flat, none, transparent, mono-light | `svg/ps/plain-left.svg` | library | svg-set-ps |
+| `dpad_left.svg.ps-touch-left` | vector | vector | ps, d-pad, flat, none, transparent, mono-light | `svg/ps/touch-left.svg` | library | svg-set-ps |
+| `dpad_left.svg.xbox-dpad-left` | vector | vector | xbox, d-pad, flat, none, transparent, mono-light | `svg/xbox/dpad-left.svg` | library | svg-set-xbox |
 
-### `dpad_right` - direction pad, right (Xbox D-pad right / PS D-pad right) - 4 distinct
+### `dpad_right` - direction pad, right (Xbox D-pad right / PS D-pad right) - 5 distinct
 
 | Variant | Kind | Size | Look (style, shape, shading, label, colour, bg) | File | Used by | Origin |
 |---------|------|------|------|------|---------|--------|
 | `dpad_right.pixel.sfh-tooltip-dpadright-28x23` | pixel | 28x23 | ps, d-pad, pixel-bevel, none, dark, mono-light | `masks/sfh/Tooltip_DpadRight.png` | SFH | owner-pixel-art |
-| `dpad_right.svg.ps-outline-right` | vector | vector | ps, d-pad, outline, none, transparent, mono-light | `svg/ps/outline-right.svg` | library | figma-ps |
-| `dpad_right.svg.ps-plain-right` | vector | vector | ps, d-pad, flat, none, transparent, mono-light | `svg/ps/plain-right.svg` | library | figma-ps |
-| `dpad_right.svg.xbox-dpad-right` | vector | vector | xbox, d-pad, flat, none, transparent, mono-light | `svg/xbox/dpad-right.svg` | library | figma-xbox |
+| `dpad_right.svg.ps-outline-right` | vector | vector | ps, d-pad, outline, none, transparent, mono-light | `svg/ps/outline-right.svg` | library | svg-set-ps |
+| `dpad_right.svg.ps-plain-right` | vector | vector | ps, d-pad, flat, none, transparent, mono-light | `svg/ps/plain-right.svg` | library | svg-set-ps |
+| `dpad_right.svg.ps-touch-right` | vector | vector | ps, d-pad, flat, none, transparent, mono-light | `svg/ps/touch-right.svg` | library | svg-set-ps |
+| `dpad_right.svg.xbox-dpad-right` | vector | vector | xbox, d-pad, flat, none, transparent, mono-light | `svg/xbox/dpad-right.svg` | library | svg-set-xbox |
 
 ### `start` - right small button (Xbox Menu / PS OPTIONS) - 5 distinct
 
@@ -260,37 +264,33 @@ Only distinct art is listed. `used by` names the confirmed games whose slots use
 |---------|------|------|------|------|---------|--------|
 | `start.pixel.sfh-menu-xbox-start-17x15` | pixel | 17x15 | ps, pill, pixel-bevel, word, dark, mono-light | `masks/sfh/Menu_xbox_start.png` | SFH | owner-pixel-art |
 | `start.pixel.sfh-tooltip-start-28x23` | pixel | 28x23 | ps, pill, pixel-bevel, word, dark, mono-light | `masks/sfh/Tooltip_START.png` | SFH | owner-pixel-art |
-| `start.svg.ps-plain-big-option` | vector | vector | ps, pill, flat, word, transparent, mono-light | `svg/ps/plain-big-option.svg` | SSSS | figma-ps |
-| `start.svg.ps-plain-small-option` | vector | vector | ps, pill, flat, word, transparent, mono-light | `svg/ps/plain-small-option.svg` | library | figma-ps |
-| `start.svg.xbox-menu` | vector | vector | xbox, pill, flat, icon, transparent, mono-light | `svg/xbox/menu.svg` | library | figma-xbox |
+| `start.svg.ps-plain-big-option` | vector | vector | ps, pill, flat, word, transparent, mono-light | `svg/ps/plain-big-option.svg` | SSSS | svg-set-ps |
+| `start.svg.ps-plain-small-option` | vector | vector | ps, pill, flat, word, transparent, mono-light | `svg/ps/plain-small-option.svg` | library | svg-set-ps |
+| `start.svg.xbox-menu` | vector | vector | xbox, pill, flat, icon, transparent, mono-light | `svg/xbox/menu.svg` | library | svg-set-xbox |
 
 ### `select` - left small button (Xbox View / Back / PS SHARE) - 3 distinct
 
 | Variant | Kind | Size | Look (style, shape, shading, label, colour, bg) | File | Used by | Origin |
 |---------|------|------|------|------|---------|--------|
 | `select.pixel.sfh-menu-xbox-select-17x15` | pixel | 17x15 | ps, pill, pixel-bevel, icon, dark, mono-light | `masks/sfh/Menu_xbox_select.png` | SFH | owner-pixel-art |
-| `select.svg.ps-outline-share` | vector | vector | ps, pill, outline, icon, transparent, mono-light | `svg/ps/outline-share.svg` | SSSS | figma-ps |
-| `select.svg.xbox-view` | vector | vector | xbox, pill, flat, icon, transparent, mono-light | `svg/xbox/view.svg` | library | figma-xbox |
+| `select.svg.ps-outline-share` | vector | vector | ps, pill, outline, icon, transparent, mono-light | `svg/ps/outline-share.svg` | SSSS | svg-set-ps |
+| `select.svg.xbox-view` | vector | vector | xbox, pill, flat, icon, transparent, mono-light | `svg/xbox/view.svg` | library | svg-set-xbox |
 
 ### `home` - guide / PS button (Xbox Guide / PS PS) - 3 distinct
 
 | Variant | Kind | Size | Look (style, shape, shading, label, colour, bg) | File | Used by | Origin |
 |---------|------|------|------|------|---------|--------|
-| `home.svg.ps-outline-ps` | vector | vector | ps, disc, outline, icon, transparent, mono-light | `svg/ps/outline-PS.svg` | library | figma-ps |
-| `home.svg.ps-plain-big-ps` | vector | vector | ps, disc, flat, icon, transparent, mono-light | `svg/ps/plain-big-PS.svg` | library | figma-ps |
-| `home.svg.ps-plain-small-ps` | vector | vector | ps, disc, flat, icon, transparent, mono-light | `svg/ps/plain-small-PS.svg` | library | figma-ps |
+| `home.svg.ps-outline-ps` | vector | vector | ps, disc, outline, icon, transparent, mono-light | `svg/ps/outline-PS.svg` | library | svg-set-ps |
+| `home.svg.ps-plain-big-ps` | vector | vector | ps, disc, flat, icon, transparent, mono-light | `svg/ps/plain-big-PS.svg` | library | svg-set-ps |
+| `home.svg.ps-plain-small-ps` | vector | vector | ps, disc, flat, icon, transparent, mono-light | `svg/ps/plain-small-PS.svg` | library | svg-set-ps |
 
-### `touchpad` - touchpad (Xbox - / PS touchpad) - 7 distinct
+### `touchpad` - touchpad (Xbox - / PS touchpad) - 3 distinct
 
 | Variant | Kind | Size | Look (style, shape, shading, label, colour, bg) | File | Used by | Origin |
 |---------|------|------|------|------|---------|--------|
-| `touchpad.svg.ps-outline-big-pad` | vector | vector | ps, rect, outline, none, transparent, mono-light | `svg/ps/outline-big-pad.svg` | library | figma-ps |
-| `touchpad.svg.ps-outline-medium-pad` | vector | vector | ps, rect, outline, none, transparent, mono-light | `svg/ps/outline-medium-pad.svg` | library | figma-ps |
-| `touchpad.svg.ps-outline-small-pad` | vector | vector | ps, rect, outline, none, transparent, mono-light | `svg/ps/outline-small-pad.svg` | library | figma-ps |
-| `touchpad.svg.ps-touch-bottom` | vector | vector | ps, rect, flat, none, transparent, mono-light | `svg/ps/touch-bottom.svg` | library | figma-ps |
-| `touchpad.svg.ps-touch-left` | vector | vector | ps, rect, flat, none, transparent, mono-light | `svg/ps/touch-left.svg` | library | figma-ps |
-| `touchpad.svg.ps-touch-right` | vector | vector | ps, rect, flat, none, transparent, mono-light | `svg/ps/touch-right.svg` | library | figma-ps |
-| `touchpad.svg.ps-touch-top` | vector | vector | ps, rect, flat, none, transparent, mono-light | `svg/ps/touch-top.svg` | library | figma-ps |
+| `touchpad.svg.ps-outline-big-pad` | vector | vector | ps, rect, outline, none, transparent, mono-light | `svg/ps/outline-big-pad.svg` | library | svg-set-ps |
+| `touchpad.svg.ps-outline-medium-pad` | vector | vector | ps, rect, outline, none, transparent, mono-light | `svg/ps/outline-medium-pad.svg` | library | svg-set-ps |
+| `touchpad.svg.ps-outline-small-pad` | vector | vector | ps, rect, outline, none, transparent, mono-light | `svg/ps/outline-small-pad.svg` | library | svg-set-ps |
 
 ### `controller` - whole controller picture (options screen) (Xbox Xbox pad / PS DualSense) - 1 distinct
 
@@ -483,14 +483,14 @@ Strategy `loose-files`, page [389170-songs-for-a-hero.md](games/389170-songs-for
 | `rstick_left` | right stick pushed left | RS left | R left | 1 | 0 |
 | `rstick_right` | right stick pushed right | RS right | R right | 1 | 0 |
 | `dpad` | direction pad | D-pad | D-pad | 2 | 2 |
-| `dpad_up` | direction pad, up | D-pad up | D-pad up | 4 | 2 |
-| `dpad_down` | direction pad, down | D-pad down | D-pad down | 4 | 2 |
-| `dpad_left` | direction pad, left | D-pad left | D-pad left | 4 | 2 |
-| `dpad_right` | direction pad, right | D-pad right | D-pad right | 4 | 2 |
+| `dpad_up` | direction pad, up | D-pad up | D-pad up | 5 | 2 |
+| `dpad_down` | direction pad, down | D-pad down | D-pad down | 5 | 2 |
+| `dpad_left` | direction pad, left | D-pad left | D-pad left | 5 | 2 |
+| `dpad_right` | direction pad, right | D-pad right | D-pad right | 5 | 2 |
 | `start` | right small button | Menu | OPTIONS | 5 | 4 |
 | `select` | left small button | View / Back | SHARE | 3 | 3 |
 | `home` | guide / PS button | Guide | PS | 3 | 0 |
-| `touchpad` | touchpad | - | touchpad | 7 | 0 |
+| `touchpad` | touchpad | - | touchpad | 3 | 0 |
 | `hold` | HOLD label | - | - | 0 | 1 |
 | `controller` | whole controller picture (options screen) | Xbox pad | DualSense | 1 | 1 |
 
@@ -573,8 +573,8 @@ A game's own role names are aliases: `empty` = `b` (AC1 empty-hand glyph (B)); `
 
 ## Origins and licences
 
-- `figma-ps`: Figma community file 'PlayStation Controller Icons' (third-party set; the Sony marks are theirs; licence stated as open by the project owner, 2026-11-24; exact licence name not recorded), split into one SVG per icon by tools/split_svg_sheet.py
-- `figma-xbox`: Figma community file 'Xbox Controller Icons Free' (third-party set; the Microsoft marks are theirs; licence stated as open by the project owner, 2026-11-24; exact licence name not recorded), split into one SVG per icon by tools/split_svg_sheet.py
+- `svg-set-ps`: PlayStation-style icon set (third-party, open-licensed; the Sony marks are theirs; licence stated as open by the project owner, 2026-11-24; exact licence name not recorded), split into one SVG per icon by tools/split_svg_sheet.py
+- `svg-set-xbox`: Xbox-style icon set (third-party, open-licensed; the Microsoft marks are theirs; licence stated as open by the project owner, 2026-11-24; exact licence name not recorded), split into one SVG per icon by tools/split_svg_sheet.py
 - `our-drawing`: drawn by this project: PIL shapes rendered by tools/qb_build.py (render_masks)
 - `montserrat-ofl`: label text set in Montserrat Bold (SIL OFL 1.1, py_modules/button_glyphs/masks/OFL-Montserrat.txt) by tools/qb_build.py
 - `owner-pixel-art`: the project owner's own PlayStation pixel art (stated by the owner, 2026-11-24), sliced and fitted to the texture size by tools/sfh_art.py; some labels use the 3x5 pixel font drawn for that tool

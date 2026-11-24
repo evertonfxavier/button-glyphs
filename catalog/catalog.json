@@ -77,8 +77,8 @@
   }
  },
  "origins": {
-  "figma-ps": "Figma community file 'PlayStation Controller Icons' (third-party set; the Sony marks are theirs; licence stated as open by the project owner, 2026-11-24; exact licence name not recorded), split into one SVG per icon by tools/split_svg_sheet.py",
-  "figma-xbox": "Figma community file 'Xbox Controller Icons Free' (third-party set; the Microsoft marks are theirs; licence stated as open by the project owner, 2026-11-24; exact licence name not recorded), split into one SVG per icon by tools/split_svg_sheet.py",
+  "svg-set-ps": "PlayStation-style icon set (third-party, open-licensed; the Sony marks are theirs; licence stated as open by the project owner, 2026-11-24; exact licence name not recorded), split into one SVG per icon by tools/split_svg_sheet.py",
+  "svg-set-xbox": "Xbox-style icon set (third-party, open-licensed; the Microsoft marks are theirs; licence stated as open by the project owner, 2026-11-24; exact licence name not recorded), split into one SVG per icon by tools/split_svg_sheet.py",
   "our-drawing": "drawn by this project: PIL shapes rendered by tools/qb_build.py (render_masks)",
   "montserrat-ofl": "label text set in Montserrat Bold (SIL OFL 1.1, py_modules/button_glyphs/masks/OFL-Montserrat.txt) by tools/qb_build.py",
   "owner-pixel-art": "the project owner's own PlayStation pixel art (stated by the owner, 2026-11-24), sliced and fitted to the texture size by tools/sfh_art.py; some labels use the 3x5 pixel font drawn for that tool",
@@ -198,10 +198,10 @@
    "slots": 0
   },
   "dpad": {"name": "direction pad", "xbox": "D-pad", "ps": "D-pad", "shape": "d-pad", "label": "none", "ps_action": "same", "variants": 2, "slots": 2},
-  "dpad_up": {"name": "direction pad, up", "xbox": "D-pad up", "ps": "D-pad up", "shape": "d-pad", "label": "none", "ps_action": "same", "variants": 4, "slots": 2},
-  "dpad_down": {"name": "direction pad, down", "xbox": "D-pad down", "ps": "D-pad down", "shape": "d-pad", "label": "none", "ps_action": "same", "variants": 4, "slots": 2},
-  "dpad_left": {"name": "direction pad, left", "xbox": "D-pad left", "ps": "D-pad left", "shape": "d-pad", "label": "none", "ps_action": "same", "variants": 4, "slots": 2},
-  "dpad_right": {"name": "direction pad, right", "xbox": "D-pad right", "ps": "D-pad right", "shape": "d-pad", "label": "none", "ps_action": "same", "variants": 4, "slots": 2},
+  "dpad_up": {"name": "direction pad, up", "xbox": "D-pad up", "ps": "D-pad up", "shape": "d-pad", "label": "none", "ps_action": "same", "variants": 5, "slots": 2},
+  "dpad_down": {"name": "direction pad, down", "xbox": "D-pad down", "ps": "D-pad down", "shape": "d-pad", "label": "none", "ps_action": "same", "variants": 5, "slots": 2},
+  "dpad_left": {"name": "direction pad, left", "xbox": "D-pad left", "ps": "D-pad left", "shape": "d-pad", "label": "none", "ps_action": "same", "variants": 5, "slots": 2},
+  "dpad_right": {"name": "direction pad, right", "xbox": "D-pad right", "ps": "D-pad right", "shape": "d-pad", "label": "none", "ps_action": "same", "variants": 5, "slots": 2},
   "start": {
    "name": "right small button",
    "xbox": "Menu",
@@ -214,7 +214,7 @@
   },
   "select": {"name": "left small button", "xbox": "View / Back", "ps": "SHARE", "shape": "pill", "label": "icon", "ps_action": "redraw", "variants": 3, "slots": 3},
   "home": {"name": "guide / PS button", "xbox": "Guide", "ps": "PS", "shape": "disc", "label": "icon", "ps_action": "same", "variants": 3, "slots": 0},
-  "touchpad": {"name": "touchpad", "xbox": "-", "ps": "touchpad", "shape": "rect", "label": "none", "ps_action": "same", "variants": 7, "slots": 0},
+  "touchpad": {"name": "touchpad", "xbox": "-", "ps": "touchpad", "shape": "rect", "label": "none", "ps_action": "same", "variants": 3, "slots": 0},
   "hold": {"name": "HOLD label", "xbox": "-", "ps": "-", "shape": "text", "label": "word", "ps_action": "same", "variants": 0, "slots": 1},
   "controller": {
    "name": "whole controller picture (options screen)",
@@ -357,7 +357,7 @@
    "file": "assets/svg/ps/outline-blue-cross.svg",
    "sha256": "4f3816f25c324c849eef11f5c8886dafd9f1c724c19d8f188c60d22725334f80",
    "viewbox": "34x34",
-   "origin": "figma-ps",
+   "origin": "svg-set-ps",
    "used_by": [
     {"appid": "15100", "slot": "15100:AnimusTechno Regular 22_PC font (white):a", "as": "ps"},
     {"appid": "15100", "slot": "15100:AnimusText Bold_PC font:a", "as": "ps"},
@@ -382,7 +382,7 @@
    "sha256": "df2ec6dff78236af0a91e9b83ef9f134776bbb74ed4819d7a2ac69b1d4ba0331",
    "viewbox": "26x26",
    "detail": "four-dot cluster, the bottom dot filled",
-   "origin": "figma-ps",
+   "origin": "svg-set-ps",
    "used_by": [],
    "confirmed": false
   },
@@ -397,7 +397,7 @@
    "file": "assets/svg/ps/plain-cross.svg",
    "sha256": "8e80d35db647d6e4538b8ff66a7af966e88bbfdbcea1e503115f67a0980bde78",
    "viewbox": "26x26",
-   "origin": "figma-ps",
+   "origin": "svg-set-ps",
    "used_by": [
     {"appid": "15100", "slot": "15100:Conrtols_A_Map:a", "as": "ps"}
    ],
@@ -414,7 +414,7 @@
    "file": "assets/svg/xbox/a-filled.svg",
    "sha256": "f49edc022068866c3be6756a3b4718e1fa42390efa5fcbb9730fdae9ec022826",
    "viewbox": "26x26",
-   "origin": "figma-xbox",
+   "origin": "svg-set-xbox",
    "used_by": [],
    "confirmed": false
   },
@@ -429,7 +429,7 @@
    "file": "assets/svg/xbox/a-filled-green.svg",
    "sha256": "59e525f7ed65291e7301371416107f5501a38e16e7dcce2205a64110b7cb488b",
    "viewbox": "26x26",
-   "origin": "figma-xbox",
+   "origin": "svg-set-xbox",
    "used_by": [
     {"appid": "15100", "slot": "15100:AnimusText Bold_PC font:a", "as": "xbox"},
     {"appid": "15100", "slot": "15100:AnimusText PC font:a", "as": "xbox"},
@@ -448,7 +448,7 @@
    "file": "assets/svg/xbox/a-outlined.svg",
    "sha256": "7a227bf159c4673c4b8b7526460957ee03103bcca00748541534e803019189b4",
    "viewbox": "26x26",
-   "origin": "figma-xbox",
+   "origin": "svg-set-xbox",
    "used_by": [
     {"appid": "15100", "slot": "15100:AnimusTechno Regular 22_PC font (white):a", "as": "xbox"}
    ],
@@ -519,7 +519,7 @@
    "sha256": "f46a51cff472fe3e30d9829857398bf0a02388851649e81aedf1c6f85469a47c",
    "viewbox": "26x26",
    "detail": "four-dot cluster, the right dot filled",
-   "origin": "figma-ps",
+   "origin": "svg-set-ps",
    "used_by": [],
    "confirmed": false
   },
@@ -534,7 +534,7 @@
    "file": "assets/svg/ps/outline-red-circle.svg",
    "sha256": "b5eb2fe7f62430d893da569b7ab6a096014a43962cd1de4241720c8cb008d200",
    "viewbox": "34x34",
-   "origin": "figma-ps",
+   "origin": "svg-set-ps",
    "used_by": [
     {"appid": "15100", "slot": "15100:AnimusTechno Regular 22_PC font (white):b", "as": "ps"},
     {"appid": "15100", "slot": "15100:AnimusText Bold_PC font:b", "as": "ps"},
@@ -556,7 +556,7 @@
    "file": "assets/svg/ps/plain-circle.svg",
    "sha256": "fafe88cde52567c72cdfca2b67765e2421261b7332db821c5225d1d6fe414fb4",
    "viewbox": "26x26",
-   "origin": "figma-ps",
+   "origin": "svg-set-ps",
    "used_by": [
     {"appid": "15100", "slot": "15100:Conrtols_B_Map:b", "as": "ps"}
    ],
@@ -573,7 +573,7 @@
    "file": "assets/svg/xbox/b-filled.svg",
    "sha256": "acfe9587d273d8201ff4866a55cbecf8c3c78718576457af403c4973fa9ce5ce",
    "viewbox": "26x26",
-   "origin": "figma-xbox",
+   "origin": "svg-set-xbox",
    "used_by": [],
    "confirmed": false
   },
@@ -588,7 +588,7 @@
    "file": "assets/svg/xbox/b-filled-red.svg",
    "sha256": "a46a00340032b8b36146d63e5326bee243352fcec994368d9c6303fafd65293c",
    "viewbox": "26x26",
-   "origin": "figma-xbox",
+   "origin": "svg-set-xbox",
    "used_by": [
     {"appid": "15100", "slot": "15100:AnimusText Bold_PC font:b", "as": "xbox"},
     {"appid": "15100", "slot": "15100:AnimusText PC font:b", "as": "xbox"}
@@ -606,7 +606,7 @@
    "file": "assets/svg/xbox/b-outlined.svg",
    "sha256": "5e5d22f98feff7a907a882efeabd4d8a08487560cd2cc381f12b4e159e4a5953",
    "viewbox": "26x26",
-   "origin": "figma-xbox",
+   "origin": "svg-set-xbox",
    "used_by": [
     {"appid": "15100", "slot": "15100:AnimusTechno Regular 22_PC font (white):b", "as": "xbox"}
    ],
@@ -675,7 +675,7 @@
    "file": "assets/svg/ps/outline-purple-square.svg",
    "sha256": "2df2fdfbef80b32f9e1f30bd4faeaffe5a9a98810783b1d851031c1e3c30b281",
    "viewbox": "34x34",
-   "origin": "figma-ps",
+   "origin": "svg-set-ps",
    "used_by": [
     {"appid": "15100", "slot": "15100:AnimusTechno Regular 22_PC font (white):x", "as": "ps"},
     {"appid": "15100", "slot": "15100:AnimusText Bold_PC font:x", "as": "ps"},
@@ -698,7 +698,7 @@
    "sha256": "fd56764740c375a3cc25f31e4bb44509ede2abee1a7d15a93c5f2524ad97a1e2",
    "viewbox": "26x26",
    "detail": "four-dot cluster, the left dot filled",
-   "origin": "figma-ps",
+   "origin": "svg-set-ps",
    "used_by": [],
    "confirmed": false
   },
@@ -713,7 +713,7 @@
    "file": "assets/svg/ps/plain-square.svg",
    "sha256": "c9a38c068968fd87b27ed388d382ac48cf71be96b90f1ee6766377909b4e1018",
    "viewbox": "26x26",
-   "origin": "figma-ps",
+   "origin": "svg-set-ps",
    "used_by": [
     {"appid": "15100", "slot": "15100:Conrtols_X_Map:x", "as": "ps"}
    ],
@@ -730,7 +730,7 @@
    "file": "assets/svg/xbox/x-filled.svg",
    "sha256": "4a777cff6fb11e75bd48b4ad6d042aa0d8e60bdf366b4977c3023108dccab16c",
    "viewbox": "26x26",
-   "origin": "figma-xbox",
+   "origin": "svg-set-xbox",
    "used_by": [],
    "confirmed": false
   },
@@ -745,7 +745,7 @@
    "file": "assets/svg/xbox/x-filled-blue.svg",
    "sha256": "ac65faceba917e1c74b6c7d805a29beac9fff3eceeeb409e957f9647db00d24c",
    "viewbox": "26x26",
-   "origin": "figma-xbox",
+   "origin": "svg-set-xbox",
    "used_by": [
     {"appid": "15100", "slot": "15100:AnimusText Bold_PC font:x", "as": "xbox"},
     {"appid": "15100", "slot": "15100:AnimusText PC font:x", "as": "xbox"}
@@ -763,7 +763,7 @@
    "file": "assets/svg/xbox/x-outlined.svg",
    "sha256": "fda76db2d5831eed239429e48a174a11fe311cd03ebdb5329c5f0478510f11c0",
    "viewbox": "26x26",
-   "origin": "figma-xbox",
+   "origin": "svg-set-xbox",
    "used_by": [
     {"appid": "15100", "slot": "15100:AnimusTechno Regular 22_PC font (white):x", "as": "xbox"}
    ],
@@ -832,7 +832,7 @@
    "file": "assets/svg/ps/outline-green-triangle.svg",
    "sha256": "117ba6a85506a826e16ad638d6dacd2a257a7de78a79bdd548d0ea08076a61ff",
    "viewbox": "34x34",
-   "origin": "figma-ps",
+   "origin": "svg-set-ps",
    "used_by": [
     {"appid": "15100", "slot": "15100:AnimusTechno Regular 22_PC font (white):y", "as": "ps"},
     {"appid": "15100", "slot": "15100:AnimusText Bold_PC font:y", "as": "ps"},
@@ -855,7 +855,7 @@
    "sha256": "960afca254c6f3a791cbdba3f38ac32ace29e895d843ec366a25fe572d08706f",
    "viewbox": "26x26",
    "detail": "four-dot cluster, the top dot filled",
-   "origin": "figma-ps",
+   "origin": "svg-set-ps",
    "used_by": [],
    "confirmed": false
   },
@@ -870,7 +870,7 @@
    "file": "assets/svg/ps/plain-triangle.svg",
    "sha256": "69362d540bc92ad158349735384c7c9fb3c19d2d1964d14e59b8441f74a982cc",
    "viewbox": "26x26",
-   "origin": "figma-ps",
+   "origin": "svg-set-ps",
    "used_by": [
     {"appid": "15100", "slot": "15100:Conrtols_Y_Map:y", "as": "ps"}
    ],
@@ -887,7 +887,7 @@
    "file": "assets/svg/xbox/y-filled.svg",
    "sha256": "edfe4a55b0c4acf32159e77d1a168b163525e435703853eb95f3d2198aded712",
    "viewbox": "26x26",
-   "origin": "figma-xbox",
+   "origin": "svg-set-xbox",
    "used_by": [],
    "confirmed": false
   },
@@ -902,7 +902,7 @@
    "file": "assets/svg/xbox/y-filled-yellow.svg",
    "sha256": "1fef085e1c837cbecc54f06878e80463f2bbeb9bbf6d6b76f95bd59a2e9dbddc",
    "viewbox": "26x26",
-   "origin": "figma-xbox",
+   "origin": "svg-set-xbox",
    "used_by": [
     {"appid": "15100", "slot": "15100:AnimusText Bold_PC font:y", "as": "xbox"},
     {"appid": "15100", "slot": "15100:AnimusText PC font:y", "as": "xbox"}
@@ -920,7 +920,7 @@
    "file": "assets/svg/xbox/y-outlined.svg",
    "sha256": "1c1f70e10e541347ed6d3a69a2cf8957cfcb1847ff2203b1e26fb0511a5ca4f4",
    "viewbox": "26x26",
-   "origin": "figma-xbox",
+   "origin": "svg-set-xbox",
    "used_by": [
     {"appid": "15100", "slot": "15100:AnimusTechno Regular 22_PC font (white):y", "as": "xbox"}
    ],
@@ -988,7 +988,7 @@
    "file": "assets/svg/ps/outline-L1.svg",
    "sha256": "cecc4abf433ea06448c97657d21aff23227f55cef163cd8f6c56fd4741217c26",
    "viewbox": "25.75x25.75",
-   "origin": "figma-ps",
+   "origin": "svg-set-ps",
    "used_by": [],
    "confirmed": false
   },
@@ -1003,7 +1003,7 @@
    "file": "assets/svg/ps/plain-L1.svg",
    "sha256": "58c061cafdf4929bcbf5f57f59ef5fea28b990a53b17392e80e922e9bb14dfb5",
    "viewbox": "34x34",
-   "origin": "figma-ps",
+   "origin": "svg-set-ps",
    "used_by": [],
    "confirmed": false
   },
@@ -1018,7 +1018,7 @@
    "file": "assets/svg/ps/plain-rectangle-L1.svg",
    "sha256": "612ecd522f1f8cfec8ce304966dc0c0c92fd3b69d1df5e0101ed67ef04078651",
    "viewbox": "34x34",
-   "origin": "figma-ps",
+   "origin": "svg-set-ps",
    "used_by": [
     {"appid": "348710", "slot": "348710:pad layout (1,80):lb", "as": "ps"},
     {"appid": "348710", "slot": "348710:pad layout (268,148):lb", "as": "ps"}
@@ -1036,7 +1036,7 @@
    "file": "assets/svg/xbox/left-bumper.svg",
    "sha256": "7229f6cb607da8f1f4694bdd186f0348628ef4821e893034fc92e21f7b6c00df",
    "viewbox": "40.81x40.81",
-   "origin": "figma-xbox",
+   "origin": "svg-set-xbox",
    "used_by": [],
    "confirmed": false
   },
@@ -1102,7 +1102,7 @@
    "file": "assets/svg/ps/outline-R1.svg",
    "sha256": "976fede6922b17548b6deabe5aac99f21875bd1def226c49d6bbfdbc2185cc54",
    "viewbox": "25.75x25.75",
-   "origin": "figma-ps",
+   "origin": "svg-set-ps",
    "used_by": [],
    "confirmed": false
   },
@@ -1117,7 +1117,7 @@
    "file": "assets/svg/ps/plain-R1.svg",
    "sha256": "7293c353bb1b0f4ebf1f3716b538f8b27a16ee95f87e0d14b3267bc857c110d3",
    "viewbox": "34x34",
-   "origin": "figma-ps",
+   "origin": "svg-set-ps",
    "used_by": [],
    "confirmed": false
   },
@@ -1132,7 +1132,7 @@
    "file": "assets/svg/ps/plain-rectangle-R1.svg",
    "sha256": "18100c29ed83f365e81b2ee615618fb991b6cbf7625edf5da90632569d330925",
    "viewbox": "34x34",
-   "origin": "figma-ps",
+   "origin": "svg-set-ps",
    "used_by": [
     {"appid": "348710", "slot": "348710:pad layout (324,148):rb", "as": "ps"},
     {"appid": "348710", "slot": "348710:pad layout (67,80):rb", "as": "ps"}
@@ -1150,7 +1150,7 @@
    "file": "assets/svg/xbox/right-bumper.svg",
    "sha256": "f70f1f36753f3b138e8b820218dd5cc30b47a10a13c0dcb1cdc0cda9bfa6c8ad",
    "viewbox": "40.81x40.81",
-   "origin": "figma-xbox",
+   "origin": "svg-set-xbox",
    "used_by": [],
    "confirmed": false
   },
@@ -1216,7 +1216,7 @@
    "file": "assets/svg/ps/outline-L2.svg",
    "sha256": "2138362ec16d94d54d8f205b93502e1e802a445d0124d3cbb37c94962b757906",
    "viewbox": "25.079x25.079",
-   "origin": "figma-ps",
+   "origin": "svg-set-ps",
    "used_by": [],
    "confirmed": false
   },
@@ -1231,7 +1231,7 @@
    "file": "assets/svg/ps/plain-L2.svg",
    "sha256": "0c9ecfa9bdf2eb3c97526ffea047938475e111f33db020edc2ac4ab5a92f4ad5",
    "viewbox": "34x34",
-   "origin": "figma-ps",
+   "origin": "svg-set-ps",
    "used_by": [
     {"appid": "15100", "slot": "15100:Conrtols_LeftTrigger_Map:lt", "as": "ps"}
    ],
@@ -1248,7 +1248,7 @@
    "file": "assets/svg/ps/plain-rectangle-L2.svg",
    "sha256": "95bc442d2da0878d05866bc3aa05b3c61fd369e59ed2750a99a843f7849ad2c4",
    "viewbox": "34x34",
-   "origin": "figma-ps",
+   "origin": "svg-set-ps",
    "used_by": [
     {"appid": "348710", "slot": "348710:pad layout (144,76):lt", "as": "ps"}
    ],
@@ -1265,7 +1265,7 @@
    "file": "assets/svg/xbox/left-trigger.svg",
    "sha256": "b06109051fea4bcbc338af8bf76ff45c5b42d8259e7a838c85a7fc90c6a4d7f1",
    "viewbox": "37.05x37.05",
-   "origin": "figma-xbox",
+   "origin": "svg-set-xbox",
    "used_by": [],
    "confirmed": false
   },
@@ -1331,7 +1331,7 @@
    "file": "assets/svg/ps/outline-R2.svg",
    "sha256": "61cd8b2e80c6382028dfad6187849ab52cc4ccb13aaaa9c0e995c84687488462",
    "viewbox": "25.079x25.079",
-   "origin": "figma-ps",
+   "origin": "svg-set-ps",
    "used_by": [],
    "confirmed": false
   },
@@ -1346,7 +1346,7 @@
    "file": "assets/svg/ps/plain-R2.svg",
    "sha256": "e2c1ababee6d5d68ef8d87dbe4ea36cfb7c8328304f7528b58d576ac78682f11",
    "viewbox": "34x34",
-   "origin": "figma-ps",
+   "origin": "svg-set-ps",
    "used_by": [
     {"appid": "15100", "slot": "15100:Conrtols_RightTrigger_Map:rt", "as": "ps"}
    ],
@@ -1363,7 +1363,7 @@
    "file": "assets/svg/ps/plain-rectangle-R2.svg",
    "sha256": "1848ad3732410b09440377cde65df553af8d66816b0722ae7615151764c73206",
    "viewbox": "34x34",
-   "origin": "figma-ps",
+   "origin": "svg-set-ps",
    "used_by": [
     {"appid": "348710", "slot": "348710:pad layout (212,76):rt", "as": "ps"}
    ],
@@ -1380,7 +1380,7 @@
    "file": "assets/svg/xbox/right-trigger.svg",
    "sha256": "2d2d241c5fd675ed0cb5d7bd4fd85f35102be1ce474dc2b14201a7ad5090a12b",
    "viewbox": "37.05x37.05",
-   "origin": "figma-xbox",
+   "origin": "svg-set-xbox",
    "used_by": [],
    "confirmed": false
   },
@@ -1396,7 +1396,7 @@
    "sha256": "677c0520fc276cdd84d3f165f5f06423d8a1cafe56f549059f02627cf60c8f0b",
    "viewbox": "24x24",
    "detail": "L3 in a ring",
-   "origin": "figma-ps",
+   "origin": "svg-set-ps",
    "used_by": [],
    "confirmed": false
   },
@@ -1412,7 +1412,7 @@
    "sha256": "2c481892bb23c8d181fc22c2bdabaac29afc0406620b4f88b73ecb914e6a7c09",
    "viewbox": "29x29",
    "detail": "press symbol (arrow towards the cap)",
-   "origin": "figma-ps",
+   "origin": "svg-set-ps",
    "used_by": [
     {"appid": "348710", "slot": "348710:pad layout (4,140):l3", "as": "ps"}
    ],
@@ -1430,7 +1430,7 @@
    "sha256": "d2a726e08c6c86cc05817f424c0902ecb4c519797ac72330c8f399bbf010ea09",
    "viewbox": "34x34",
    "detail": "L3 in a ring",
-   "origin": "figma-ps",
+   "origin": "svg-set-ps",
    "used_by": [],
    "confirmed": false
   },
@@ -1446,7 +1446,7 @@
    "sha256": "7be6a7de17a2847328c07e805e993556eb8f759e931b9cae4ad5b4a9adf8b0cc",
    "viewbox": "38x38",
    "detail": "press symbol (arrow towards the cap)",
-   "origin": "figma-ps",
+   "origin": "svg-set-ps",
    "used_by": [],
    "confirmed": false
   },
@@ -1462,7 +1462,7 @@
    "sha256": "a98c0b47819e2f69aafa62936b8be8769ea6150fc5375e7d75295ec374b4f518",
    "viewbox": "34x34",
    "detail": "press symbol (arrow towards the cap)",
-   "origin": "figma-ps",
+   "origin": "svg-set-ps",
    "used_by": [],
    "confirmed": false
   },
@@ -1478,7 +1478,7 @@
    "sha256": "5716356bfefa1635103483601306e8e4b0d11b199a68e1dccb79444aa3c3b8e9",
    "viewbox": "38x38",
    "detail": "press symbol (arrow towards the cap)",
-   "origin": "figma-ps",
+   "origin": "svg-set-ps",
    "used_by": [],
    "confirmed": false
   },
@@ -1494,7 +1494,7 @@
    "sha256": "3e6cd30ccb17c42b4e82afa92962e33bc714fd4835b5d2c698df1b2af6e2b9f7",
    "viewbox": "36x36",
    "detail": "stick press (L on a cap)",
-   "origin": "figma-xbox",
+   "origin": "svg-set-xbox",
    "used_by": [],
    "confirmed": false
   },
@@ -1510,7 +1510,7 @@
    "sha256": "f710e8c72c04cbc2031b5d5060bb700214e8fbe9d97d5de18716f73b7a84b159",
    "viewbox": "36x36",
    "detail": "stick press (L on a cap)",
-   "origin": "figma-xbox",
+   "origin": "svg-set-xbox",
    "used_by": [],
    "confirmed": false
   },
@@ -1526,7 +1526,7 @@
    "sha256": "719d90dc3416a212606ec4884f011d6d6521f4398cf7c36fd8ada7ddeb35ff2a",
    "viewbox": "29x29",
    "detail": "press symbol (arrow towards the cap)",
-   "origin": "figma-ps",
+   "origin": "svg-set-ps",
    "used_by": [
     {"appid": "348710", "slot": "348710:pad layout (72,140):r3", "as": "ps"}
    ],
@@ -1544,7 +1544,7 @@
    "sha256": "1c5d12086c37732f99b972b708bfca79ff1809147bc778aaf2e603a7c547a3d1",
    "viewbox": "24x24",
    "detail": "R3 in a ring",
-   "origin": "figma-ps",
+   "origin": "svg-set-ps",
    "used_by": [],
    "confirmed": false
   },
@@ -1560,7 +1560,7 @@
    "sha256": "4f6c935fa77a5ac090799070a329eb71cd2173237f0163c5a540da4c9413991a",
    "viewbox": "34x34",
    "detail": "R3 in a ring",
-   "origin": "figma-ps",
+   "origin": "svg-set-ps",
    "used_by": [],
    "confirmed": false
   },
@@ -1576,7 +1576,7 @@
    "sha256": "f0a76e929d45331a569f3c8dc069d812d19f675ad91d698e55fab75d6c975050",
    "viewbox": "38x38",
    "detail": "press symbol (arrow towards the cap)",
-   "origin": "figma-ps",
+   "origin": "svg-set-ps",
    "used_by": [],
    "confirmed": false
   },
@@ -1592,7 +1592,7 @@
    "sha256": "18bba863c10a4563bcde94575c273ce45b993e78734de1083104c263e367a4b5",
    "viewbox": "34x34",
    "detail": "press symbol (arrow towards the cap)",
-   "origin": "figma-ps",
+   "origin": "svg-set-ps",
    "used_by": [],
    "confirmed": false
   },
@@ -1608,7 +1608,7 @@
    "sha256": "5b4547560f01fe735ef0d080ab4fd89b37117cb08ecee5a1c5b69bbee871f3a3",
    "viewbox": "38x38",
    "detail": "press symbol (arrow towards the cap)",
-   "origin": "figma-ps",
+   "origin": "svg-set-ps",
    "used_by": [],
    "confirmed": false
   },
@@ -1624,7 +1624,7 @@
    "sha256": "eb3aa2aeaf1686fc45ca659e4644ed959d0ad8e53be23d1281e7be30822e522a",
    "viewbox": "36x36",
    "detail": "stick press (R on a cap)",
-   "origin": "figma-xbox",
+   "origin": "svg-set-xbox",
    "used_by": [],
    "confirmed": false
   },
@@ -1640,7 +1640,7 @@
    "sha256": "14791dd8151c67d8b64759693f769d28e24f302ea007022f100fdfe33ec27385",
    "viewbox": "36x36",
    "detail": "stick press (R on a cap)",
-   "origin": "figma-xbox",
+   "origin": "svg-set-xbox",
    "used_by": [],
    "confirmed": false
   },
@@ -1656,7 +1656,7 @@
    "sha256": "41d4d0a35d26dd0a35669c254dbe877813f0fa9647e0b035b047d08650df34d6",
    "viewbox": "38x38",
    "detail": "stick in a ring with arrows left and right",
-   "origin": "figma-ps",
+   "origin": "svg-set-ps",
    "used_by": [],
    "confirmed": false
   },
@@ -1672,7 +1672,7 @@
    "sha256": "ddb4dfb8aad216d35afcd424e4d5292f9d99bc0e9f015ad61490cbedca24dd31",
    "viewbox": "24x24",
    "detail": "L in a ring, outline",
-   "origin": "figma-ps",
+   "origin": "svg-set-ps",
    "used_by": [],
    "confirmed": false
   },
@@ -1688,7 +1688,7 @@
    "sha256": "93fc3ab964dfc895f96fa5924d6f9d9b68dde81c2e07b5b24142125fc3b00db9",
    "viewbox": "34x34",
    "detail": "L in a double ring, filled",
-   "origin": "figma-ps",
+   "origin": "svg-set-ps",
    "used_by": [
     {"appid": "15100", "slot": "15100:Conrtols_LeftJoystick_Map:lstick", "as": "ps"}
    ],
@@ -1706,7 +1706,7 @@
    "sha256": "d042a5eef6f4c53c0b505b82510925782fff3cde8df9dff02da8d56103a76702",
    "viewbox": "26x26",
    "detail": "L in a double ring",
-   "origin": "figma-xbox",
+   "origin": "svg-set-xbox",
    "used_by": [],
    "confirmed": false
   },
@@ -1722,7 +1722,7 @@
    "sha256": "959bca0695a13c6cd96436826224f3627cfd70448df1ebde9834cfa538d2e354",
    "viewbox": "35.965x35.965",
    "detail": "stick with four direction arrows",
-   "origin": "figma-xbox",
+   "origin": "svg-set-xbox",
    "used_by": [],
    "confirmed": false
   },
@@ -1738,7 +1738,7 @@
    "sha256": "2d60b2648ca74c1677fbd25c5a7d72aba1b76fc7e131705f0ea10996a51b8f06",
    "viewbox": "30.982x30.982",
    "detail": "stick with an arrow in that direction",
-   "origin": "figma-xbox",
+   "origin": "svg-set-xbox",
    "used_by": [],
    "confirmed": false
   },
@@ -1754,7 +1754,7 @@
    "sha256": "1eb3b4287cf7a1298bc70043b4eb3d22355d6a52c74220260d006b8ac07af372",
    "viewbox": "30.982x30.982",
    "detail": "stick with an arrow in that direction",
-   "origin": "figma-xbox",
+   "origin": "svg-set-xbox",
    "used_by": [],
    "confirmed": false
   },
@@ -1770,7 +1770,7 @@
    "sha256": "1ed3d0b0b5921df8c58803ecc12da83131cc0e23142c09edda701cd74d4a9d63",
    "viewbox": "31.232x31.232",
    "detail": "stick with an arrow in that direction",
-   "origin": "figma-xbox",
+   "origin": "svg-set-xbox",
    "used_by": [],
    "confirmed": false
   },
@@ -1786,7 +1786,7 @@
    "sha256": "f56c437b9dda60852c4d97a70dd670962e3624e2addca6aba14036a00764a8b0",
    "viewbox": "31.232x31.232",
    "detail": "stick with an arrow in that direction",
-   "origin": "figma-xbox",
+   "origin": "svg-set-xbox",
    "used_by": [],
    "confirmed": false
   },
@@ -1802,7 +1802,7 @@
    "sha256": "b1e7c8c937574516456e9fc91a248ed089d57715ea05604e033d83e3430331f5",
    "viewbox": "38x38",
    "detail": "stick in a ring with arrows left and right",
-   "origin": "figma-ps",
+   "origin": "svg-set-ps",
    "used_by": [],
    "confirmed": false
   },
@@ -1818,7 +1818,7 @@
    "sha256": "fe8d6fb60dfda7114a9b86d513ac0882e4f202224da6d36a225b7c2fbc1221d8",
    "viewbox": "24x24",
    "detail": "R in a ring, outline",
-   "origin": "figma-ps",
+   "origin": "svg-set-ps",
    "used_by": [],
    "confirmed": false
   },
@@ -1834,7 +1834,7 @@
    "sha256": "885878680c4519c2e4fb0e9f7b58d869c63d40bbf00835ee42d813a4078fdc52",
    "viewbox": "34x34",
    "detail": "R in a double ring, filled",
-   "origin": "figma-ps",
+   "origin": "svg-set-ps",
    "used_by": [
     {"appid": "15100", "slot": "15100:Conrtols_RightJoystick_Map:rstick", "as": "ps"}
    ],
@@ -1852,7 +1852,7 @@
    "sha256": "455bab03b6645ae8c4466873c1b7d1e10f3003143378cc96f836dc1b93d2f9bf",
    "viewbox": "26x26",
    "detail": "R in a double ring",
-   "origin": "figma-xbox",
+   "origin": "svg-set-xbox",
    "used_by": [],
    "confirmed": false
   },
@@ -1868,7 +1868,7 @@
    "sha256": "48352677ef636fbcd25ba1a1dd194209ace1ed9e49e3f98eef5ecf08e88202f2",
    "viewbox": "35.965x35.965",
    "detail": "stick with four direction arrows",
-   "origin": "figma-xbox",
+   "origin": "svg-set-xbox",
    "used_by": [],
    "confirmed": false
   },
@@ -1884,7 +1884,7 @@
    "sha256": "a3e691bcd3663f4fb315e1abf270f3ac324965673efbe52eee65782b75ef36ff",
    "viewbox": "30.982x30.982",
    "detail": "stick with an arrow in that direction",
-   "origin": "figma-xbox",
+   "origin": "svg-set-xbox",
    "used_by": [],
    "confirmed": false
   },
@@ -1900,7 +1900,7 @@
    "sha256": "31fe60e60d8db5d210003a77fa72002a46f3d8f12738ab40320acbb763ff7085",
    "viewbox": "30.982x30.982",
    "detail": "stick with an arrow in that direction",
-   "origin": "figma-xbox",
+   "origin": "svg-set-xbox",
    "used_by": [],
    "confirmed": false
   },
@@ -1916,7 +1916,7 @@
    "sha256": "9051b1253a8c134078f9b12fe094adadff7755e8158d96c4adf98aee19bd5087",
    "viewbox": "31.232x31.232",
    "detail": "stick with an arrow in that direction",
-   "origin": "figma-xbox",
+   "origin": "svg-set-xbox",
    "used_by": [],
    "confirmed": false
   },
@@ -1932,7 +1932,7 @@
    "sha256": "af71d00cb093c4cdfed5bcfcfbfe3aa09706c82a1363cefcd905f5fc459209d8",
    "viewbox": "31.232x31.232",
    "detail": "stick with an arrow in that direction",
-   "origin": "figma-xbox",
+   "origin": "svg-set-xbox",
    "used_by": [],
    "confirmed": false
   },
@@ -1964,7 +1964,7 @@
    "file": "assets/svg/xbox/dpad.svg",
    "sha256": "51064a9ad9f659abad9de2394b0eb660a94817d267798a5b7990ce71bd200a78",
    "viewbox": "26x26",
-   "origin": "figma-xbox",
+   "origin": "svg-set-xbox",
    "used_by": [],
    "confirmed": false
   },
@@ -1997,7 +1997,7 @@
    "sha256": "923e72953a8390b147e0c42c7098eee48e7cdf128bf1844e6828abfbd71abc40",
    "viewbox": "28x28",
    "detail": "d-pad with the up arm marked",
-   "origin": "figma-ps",
+   "origin": "svg-set-ps",
    "used_by": [],
    "confirmed": false
   },
@@ -2013,7 +2013,23 @@
    "sha256": "34dbcc9f7a18dd95d83a3d8b831c55e3ded0b076543d944bec6cf9b9d8bbdb47",
    "viewbox": "33.5x33.5",
    "detail": "d-pad with the up arm marked",
-   "origin": "figma-ps",
+   "origin": "svg-set-ps",
+   "used_by": [],
+   "confirmed": false
+  },
+  {
+   "id": "dpad_up.svg.ps-touch-top",
+   "role": "dpad_up",
+   "kind": "vector",
+   "size": "vector",
+   "width": null,
+   "height": null,
+   "tags": {"style": "ps", "shape": "d-pad", "shading": "flat", "label": "none", "background": "transparent", "colour": "mono-light"},
+   "file": "assets/svg/ps/touch-top.svg",
+   "sha256": "064de52e8ad6e8fddda27884dfc5e4eb2c71d3c687d5c04ccf2413ea485b7c65",
+   "viewbox": "22x22",
+   "detail": "d-pad arm shape with an up arrow (a further d-pad variant; named touch-* in the set)",
+   "origin": "svg-set-ps",
    "used_by": [],
    "confirmed": false
   },
@@ -2029,7 +2045,7 @@
    "sha256": "48d20f1aa90647c408b875836d5ef7846fe67ec57ca59ff8445e638cafa32ca8",
    "viewbox": "26x26",
    "detail": "d-pad outline with one arm filled",
-   "origin": "figma-xbox",
+   "origin": "svg-set-xbox",
    "used_by": [],
    "confirmed": false
   },
@@ -2062,7 +2078,7 @@
    "sha256": "6798f525bd63e5fb9a4db94b16abc16738c9f8f75c5a325dcd9e621779e5915a",
    "viewbox": "28x28",
    "detail": "d-pad with the down arm marked",
-   "origin": "figma-ps",
+   "origin": "svg-set-ps",
    "used_by": [],
    "confirmed": false
   },
@@ -2078,7 +2094,23 @@
    "sha256": "07e6765523ad2a626fbe7d97b45bd08f4386426a0a42fe04277871fea80bf33a",
    "viewbox": "33.5x33.5",
    "detail": "d-pad with the down arm marked",
-   "origin": "figma-ps",
+   "origin": "svg-set-ps",
+   "used_by": [],
+   "confirmed": false
+  },
+  {
+   "id": "dpad_down.svg.ps-touch-bottom",
+   "role": "dpad_down",
+   "kind": "vector",
+   "size": "vector",
+   "width": null,
+   "height": null,
+   "tags": {"style": "ps", "shape": "d-pad", "shading": "flat", "label": "none", "background": "transparent", "colour": "mono-light"},
+   "file": "assets/svg/ps/touch-bottom.svg",
+   "sha256": "81299148fbb2d7f7bc3c199a6384fe1953f7393cef0f29bb3bd9dd7079006623",
+   "viewbox": "22x22",
+   "detail": "d-pad arm shape with a down arrow (a further d-pad variant; named touch-* in the set)",
+   "origin": "svg-set-ps",
    "used_by": [],
    "confirmed": false
   },
@@ -2094,7 +2126,7 @@
    "sha256": "26eacc8a2aa4332964304da5166db19e9aca303019400723558e37649ebd7c65",
    "viewbox": "26x26",
    "detail": "d-pad outline with one arm filled",
-   "origin": "figma-xbox",
+   "origin": "svg-set-xbox",
    "used_by": [],
    "confirmed": false
   },
@@ -2127,7 +2159,7 @@
    "sha256": "b2274b00a10193f76a226a5f1d60dd0039bff8efd2a37377c75e5355351435d5",
    "viewbox": "28x28",
    "detail": "d-pad with the left arm marked",
-   "origin": "figma-ps",
+   "origin": "svg-set-ps",
    "used_by": [],
    "confirmed": false
   },
@@ -2143,7 +2175,23 @@
    "sha256": "9f8d9b2f8bd6495c9b44be3d8113012b5d3230f3d3aefcfcc783299f28339fbc",
    "viewbox": "33.5x33.5",
    "detail": "d-pad with the left arm marked",
-   "origin": "figma-ps",
+   "origin": "svg-set-ps",
+   "used_by": [],
+   "confirmed": false
+  },
+  {
+   "id": "dpad_left.svg.ps-touch-left",
+   "role": "dpad_left",
+   "kind": "vector",
+   "size": "vector",
+   "width": null,
+   "height": null,
+   "tags": {"style": "ps", "shape": "d-pad", "shading": "flat", "label": "none", "background": "transparent", "colour": "mono-light"},
+   "file": "assets/svg/ps/touch-left.svg",
+   "sha256": "99db68d830e5f22d64f9c22b9dd058bdd6ce16fd9898d058e02dd5e8e5ef636f",
+   "viewbox": "22x22",
+   "detail": "d-pad arm shape with a left arrow (a further d-pad variant; named touch-* in the set)",
+   "origin": "svg-set-ps",
    "used_by": [],
    "confirmed": false
   },
@@ -2159,7 +2207,7 @@
    "sha256": "6ced12a73bdfcec018f3056ee20ba5336b45c3b3e84da0d84a2d77abf9762922",
    "viewbox": "26x26",
    "detail": "d-pad outline with one arm filled",
-   "origin": "figma-xbox",
+   "origin": "svg-set-xbox",
    "used_by": [],
    "confirmed": false
   },
@@ -2192,7 +2240,7 @@
    "sha256": "5756413e43314e4f77ae26c5a24cb8e48cec9577b648576a912fc57c569f3292",
    "viewbox": "28x28",
    "detail": "d-pad with the right arm marked",
-   "origin": "figma-ps",
+   "origin": "svg-set-ps",
    "used_by": [],
    "confirmed": false
   },
@@ -2208,7 +2256,23 @@
    "sha256": "a21c1350afc627761d0fbf3e1163f3c7e2d97d52d0c06b03c6684e8d2fa2f878",
    "viewbox": "33.5x33.5",
    "detail": "d-pad with the right arm marked",
-   "origin": "figma-ps",
+   "origin": "svg-set-ps",
+   "used_by": [],
+   "confirmed": false
+  },
+  {
+   "id": "dpad_right.svg.ps-touch-right",
+   "role": "dpad_right",
+   "kind": "vector",
+   "size": "vector",
+   "width": null,
+   "height": null,
+   "tags": {"style": "ps", "shape": "d-pad", "shading": "flat", "label": "none", "background": "transparent", "colour": "mono-light"},
+   "file": "assets/svg/ps/touch-right.svg",
+   "sha256": "b74ffa7be8d101828df49b4f4932ee2e01738a09f3279ca2a90cf8a3f9dd9b93",
+   "viewbox": "22x22",
+   "detail": "d-pad arm shape with a right arrow (a further d-pad variant; named touch-* in the set)",
+   "origin": "svg-set-ps",
    "used_by": [],
    "confirmed": false
   },
@@ -2224,7 +2288,7 @@
    "sha256": "fded7390916eb4caf875104391b31bacc7cdb4a89cf9b6432c8bebaa142d8741",
    "viewbox": "26x26",
    "detail": "d-pad outline with one arm filled",
-   "origin": "figma-xbox",
+   "origin": "svg-set-xbox",
    "used_by": [],
    "confirmed": false
   },
@@ -2274,7 +2338,7 @@
    "sha256": "97492e6e76361270597b96cd08b283bb2c5268c08687885b79f79fb258a6a1ce",
    "viewbox": "34.469x34.469",
    "detail": "OPTIONS word above a pill",
-   "origin": "figma-ps",
+   "origin": "svg-set-ps",
    "used_by": [
     {"appid": "348710", "slot": "348710:pad layout (136,144):start", "as": "ps"}
    ],
@@ -2292,7 +2356,7 @@
    "sha256": "926a49afe7432c659513c88ff2e6036f844526306faf907adca76fe09dfca7b6",
    "viewbox": "26.188x26.188",
    "detail": "OPTIONS word above a pill",
-   "origin": "figma-ps",
+   "origin": "svg-set-ps",
    "used_by": [],
    "confirmed": false
   },
@@ -2308,7 +2372,7 @@
    "sha256": "0fe04a7e6db6acd3b75bd479e9e72b98db54f422890042a817214b247956dfc1",
    "viewbox": "26x26",
    "detail": "three lines in a disc",
-   "origin": "figma-xbox",
+   "origin": "svg-set-xbox",
    "used_by": [],
    "confirmed": false
   },
@@ -2341,7 +2405,7 @@
    "sha256": "0941b6f09cbc3ce6ed0ee34cc123f0a574d756a4a6602b76389868d2a072deec",
    "viewbox": "28.428x28.428",
    "detail": "SHARE word above a pill",
-   "origin": "figma-ps",
+   "origin": "svg-set-ps",
    "used_by": [
     {"appid": "348710", "slot": "348710:pad layout (208,144):select", "as": "ps"}
    ],
@@ -2359,7 +2423,7 @@
    "sha256": "baea6b08e493cf59ecbcba483bb594a96a58bfd786ba8983714ce788e6b18234",
    "viewbox": "26x26",
    "detail": "two overlapping windows in a disc",
-   "origin": "figma-xbox",
+   "origin": "svg-set-xbox",
    "used_by": [],
    "confirmed": false
   },
@@ -2374,7 +2438,7 @@
    "file": "assets/svg/ps/outline-PS.svg",
    "sha256": "9cf0cd2010a608626e208f4875c916e3e5298fa4c1000a49e5cf04b427749d94",
    "viewbox": "24x24",
-   "origin": "figma-ps",
+   "origin": "svg-set-ps",
    "used_by": [],
    "confirmed": false
   },
@@ -2389,7 +2453,7 @@
    "file": "assets/svg/ps/plain-big-PS.svg",
    "sha256": "907a9589a084cb586095bd05cd77175f09a2fefe3bc7ca7ffd30730e52d0d9e2",
    "viewbox": "33.998x33.998",
-   "origin": "figma-ps",
+   "origin": "svg-set-ps",
    "used_by": [],
    "confirmed": false
   },
@@ -2404,7 +2468,7 @@
    "file": "assets/svg/ps/plain-small-PS.svg",
    "sha256": "e81e39bb5d393b505bfe9b914159496240660ac71d6226d13cfa790cf5245ffb",
    "viewbox": "22x22",
-   "origin": "figma-ps",
+   "origin": "svg-set-ps",
    "used_by": [],
    "confirmed": false
   },
@@ -2420,7 +2484,7 @@
    "sha256": "9b746164f30e25abe79908a53a6684992a2f978200198328f94c49ec36423f37",
    "viewbox": "37x37",
    "detail": "touchpad with a dot grid",
-   "origin": "figma-ps",
+   "origin": "svg-set-ps",
    "used_by": [],
    "confirmed": false
   },
@@ -2436,7 +2500,7 @@
    "sha256": "68a2e5f09f9b018267ee2bbf7b270301b9f58b6355d596f4fdb021c41a2ca915",
    "viewbox": "34x34",
    "detail": "touchpad with a dot grid",
-   "origin": "figma-ps",
+   "origin": "svg-set-ps",
    "used_by": [],
    "confirmed": false
   },
@@ -2452,71 +2516,7 @@
    "sha256": "16713998e6c4b120b9a0f0c7d9b1b453befd82753ccf2f46f21c04868e12e1ca",
    "viewbox": "31x31",
    "detail": "touchpad with a dot grid",
-   "origin": "figma-ps",
-   "used_by": [],
-   "confirmed": false
-  },
-  {
-   "id": "touchpad.svg.ps-touch-bottom",
-   "role": "touchpad",
-   "kind": "vector",
-   "size": "vector",
-   "width": null,
-   "height": null,
-   "tags": {"style": "ps", "shape": "rect", "shading": "flat", "label": "none", "background": "transparent", "colour": "mono-light"},
-   "file": "assets/svg/ps/touch-bottom.svg",
-   "sha256": "81299148fbb2d7f7bc3c199a6384fe1953f7393cef0f29bb3bd9dd7079006623",
-   "viewbox": "22x22",
-   "detail": "touchpad swipe/zone with a direction arrow (role is a best guess from the name)",
-   "origin": "figma-ps",
-   "used_by": [],
-   "confirmed": false
-  },
-  {
-   "id": "touchpad.svg.ps-touch-left",
-   "role": "touchpad",
-   "kind": "vector",
-   "size": "vector",
-   "width": null,
-   "height": null,
-   "tags": {"style": "ps", "shape": "rect", "shading": "flat", "label": "none", "background": "transparent", "colour": "mono-light"},
-   "file": "assets/svg/ps/touch-left.svg",
-   "sha256": "99db68d830e5f22d64f9c22b9dd058bdd6ce16fd9898d058e02dd5e8e5ef636f",
-   "viewbox": "22x22",
-   "detail": "touchpad swipe/zone with a direction arrow (role is a best guess from the name)",
-   "origin": "figma-ps",
-   "used_by": [],
-   "confirmed": false
-  },
-  {
-   "id": "touchpad.svg.ps-touch-right",
-   "role": "touchpad",
-   "kind": "vector",
-   "size": "vector",
-   "width": null,
-   "height": null,
-   "tags": {"style": "ps", "shape": "rect", "shading": "flat", "label": "none", "background": "transparent", "colour": "mono-light"},
-   "file": "assets/svg/ps/touch-right.svg",
-   "sha256": "b74ffa7be8d101828df49b4f4932ee2e01738a09f3279ca2a90cf8a3f9dd9b93",
-   "viewbox": "22x22",
-   "detail": "touchpad swipe/zone with a direction arrow (role is a best guess from the name)",
-   "origin": "figma-ps",
-   "used_by": [],
-   "confirmed": false
-  },
-  {
-   "id": "touchpad.svg.ps-touch-top",
-   "role": "touchpad",
-   "kind": "vector",
-   "size": "vector",
-   "width": null,
-   "height": null,
-   "tags": {"style": "ps", "shape": "rect", "shading": "flat", "label": "none", "background": "transparent", "colour": "mono-light"},
-   "file": "assets/svg/ps/touch-top.svg",
-   "sha256": "064de52e8ad6e8fddda27884dfc5e4eb2c71d3c687d5c04ccf2413ea485b7c65",
-   "viewbox": "22x22",
-   "detail": "touchpad swipe/zone with a direction arrow (role is a best guess from the name)",
-   "origin": "figma-ps",
+   "origin": "svg-set-ps",
    "used_by": [],
    "confirmed": false
   },
