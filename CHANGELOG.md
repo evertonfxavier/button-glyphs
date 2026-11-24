@@ -7,6 +7,8 @@ Add your line under **Unreleased** in the pull request; maintainers move it into
 
 ## [Unreleased]
 
+## [0.3.8] - 2026-11-24
+
 ### Fixed
 - *Assassin's Creed*: a power cut between the two writes that repoint an entry (the index slot and the size in its name
   record), or while the new data was being written, could leave the file in a state the plugin did not recognise, so
@@ -91,7 +93,8 @@ First published release.
 - A background watcher that re-applies the chosen style after a game update or "Verify integrity of game files".
 - Automatic GitHub releases with a zip and a `.sha256` file when the version in `package.json` changes.
 
-[Unreleased]: https://github.com/evertonfxavier/button-glyphs/compare/v0.3.7...HEAD
+[Unreleased]: https://github.com/evertonfxavier/button-glyphs/compare/v0.3.8...HEAD
+[0.3.8]: https://github.com/evertonfxavier/button-glyphs/compare/v0.3.7...v0.3.8
 [0.3.7]: https://github.com/evertonfxavier/button-glyphs/compare/v0.3.6...v0.3.7
 [0.3.6]: https://github.com/evertonfxavier/button-glyphs/compare/v0.3.5...v0.3.6
 [0.3.5]: https://github.com/evertonfxavier/button-glyphs/compare/v0.3.4...v0.3.5
