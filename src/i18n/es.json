@@ -1,0 +1,65 @@
+{
+  "style.label": "Estilo",
+  "style.original": "Original",
+  "style.ps": "PS",
+  "style.xbox": "Xbox",
+
+  "dot.full": "Completo",
+  "dot.partial": "Parcial",
+  "dot.error": "No disponible",
+  "dot.ingame": "En el juego",
+  "dot.none": "Sin soporte",
+  "dot.aria": "Soporte: {label}",
+
+  "status.attention": "Requiere atención: {names}",
+  "status.listError": "No se pudieron leer los juegos: {detail}",
+  "status.backendError": "Backend inaccesible: {detail}",
+
+  "current.unsupportedTitle": "Sin soporte aún",
+  "current.unsupportedLine1": "Aún no cambia los botones de este juego.",
+  "current.partialNote": "Parcialmente confirmado: algunas pantallas pueden seguir mostrando botones de Xbox.",
+  "current.ingameTitle": "Ajuste en el juego",
+  "current.ingameLine": "Tiene su propia opción de botones Xbox/PS en los ajustes.",
+  "current.keepNote": "Se conservan los archivos originales. Elige Original para deshacer.",
+  "current.lastChange": "{event} · build {build}",
+
+  "apply.progress": "Aplicando {style}… mantén el juego cerrado",
+  "apply.restoring": "Restaurando el Original… mantén el juego cerrado",
+  "apply.done": "{style} aplicado",
+  "apply.restored": "Original restaurado",
+  "apply.failed": "No se pudo aplicar: {detail}",
+  "apply.failedShort": "No se pudo aplicar",
+
+  "games.label": "Juego",
+  "games.reading": "Leyendo tu biblioteca…",
+  "games.empty": "No se encontraron juegos",
+
+  "updates.title": "Actualizaciones",
+  "updates.note": "Se reaplica tras actualizar el juego.",
+  "updates.check": "Comprobar ahora",
+  "updates.checking": "Comprobando…",
+  "updates.upToDate": "Todo al día",
+  "updates.failed": "Falló la comprobación: {detail}",
+
+  "details.title": "Detalles",
+  "details.summary": "{supported} de {total} juegos · v{version}",
+  "details.summaryNoVersion": "{supported} de {total} juegos",
+
+  "event.applied": "{style} aplicado",
+  "event.reapplied": "{style} reaplicado",
+  "event.restored": "Original restaurado",
+  "event.updated": "Juego actualizado",
+  "event.kept": "{style} conservado",
+
+  "code.file_missing": "No se encontró {file}",
+  "code.running": "Juego en ejecución. Se aplica al cerrarlo",
+  "code.updating": "Steam está actualizando este juego",
+  "code.will_apply": "Se aplicará {style}",
+  "code.will_improve": "Se aplicará {style} mejorado",
+  "code.will_restore": "Se restaurará {style}",
+  "code.active": "{style} activo",
+  "code.cannot_read": "No se puede leer {file}: {reason}",
+  "code.unsupported_build": "Esta versión del juego no es compatible: {detail}",
+  "code.start_game_once": "Abre el juego una vez para activarlo",
+  "code.original_kept": "Original: el ajuste propio del juego"
+}

@@ -1,10 +1,10 @@
+import { t } from "../i18n";
 import type { Style } from "../model";
 
-export const STYLE_OPTIONS: { data: Style; label: string }[] = [
-  { data: "original", label: "Original" },
-  { data: "ps", label: "PlayStation" },
-  { data: "xbox", label: "Xbox" },
-];
+export const STYLES: Style[] = ["original", "ps", "xbox"];
 
-export const styleLabel = (style?: Style): string =>
-  STYLE_OPTIONS.find((o) => o.data === style)?.label ?? "Original";
+export const styleLabel = (style?: Style | string): string =>
+  style === "ps" || style === "xbox" ? t(style === "ps" ? "style.ps" : "style.xbox") : t("style.original");
+
+export const styleOptions = (): { data: Style; label: string }[] =>
+  STYLES.map((style) => ({ data: style, label: styleLabel(style) }));

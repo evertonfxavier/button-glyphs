@@ -29,6 +29,16 @@ class SupportedGamesTests(unittest.TestCase):
             self.assertIn(profile.name, text)
             self.assertIn(str(appid), text)
 
+    def test_in_game_section_lists_every_entry_with_its_report(self):
+        from button_glyphs import ingame
+        text = (ROOT / "SUPPORTED_GAMES.md").read_text()
+        self.assertIn("## Games with a built-in option", text)
+        self.assertIn("**In game**", text)
+        for e in ingame.load():
+            self.assertIn(e["name"], text)
+            self.assertIn("store.steampowered.com/app/%s" % e["appid"], text)
+            self.assertIn("reported by %s on %s, not verified by Button Glyphs" % (e["reported_by"], e["reported_on"]), text)
+
     def test_page_without_summary_is_rejected(self):
         import tempfile
         with tempfile.TemporaryDirectory() as tmp:

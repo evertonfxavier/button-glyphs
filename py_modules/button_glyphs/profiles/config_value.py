@@ -34,10 +34,11 @@ class ConfigValueProfile:
     config_level = True
 
     def __init__(self, appid, name, save, section, key, values, value_pattern, builds, roles,
-                 notes="", revision=1, original_hint=""):
+                 notes="", revision=1, original_hint="", support="partial"):
         self.appid = appid
         self.name = name
         self.revision = revision      # bump when the output changes, so applied games get redone
+        self.support = support        # "full" (confirmed in game) or "partial": shown in the UI
         self.file = save              # relative to <library>/steamapps/compatdata/<appid>/pfx
         self.section = section        # INI section that holds the key
         self.key = key

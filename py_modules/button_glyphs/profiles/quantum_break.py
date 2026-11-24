@@ -20,6 +20,7 @@ from .region_glyphs import RegionGlyphProfile
 
 PROFILE = RegionGlyphProfile(
     appid="474960",
+    support="full",
     name="Quantum Break",
     file="data/ep999-000.rmdp",
     revision=2,

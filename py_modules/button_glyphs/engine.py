@@ -13,7 +13,7 @@ import struct
 import threading
 import time
 
-from . import image, steam
+from . import image, ingame, steam
 from . import entries
 from . import region_patch
 from . import files_patch
@@ -69,7 +69,7 @@ class IconLoader:
 
 class Engine:
     def __init__(self, home, settings_dir, runtime_dir, glyph_dir, version="dev", logger=None,
-                 profiles=None, proc_root="/proc"):
+                 profiles=None, proc_root="/proc", ingame_games=None):
         self.home = home
         self.config_path = os.path.join(settings_dir, "config.json")
         self.backup_root = os.path.join(runtime_dir, "backups")
@@ -78,9 +78,19 @@ class Engine:
         self.log = logger
         self.profiles = PROFILES if profiles is None else profiles
         self.proc_root = proc_root
+        self.ingame_games = self._load_ingame() if ingame_games is None else ingame_games
         self.lock = threading.RLock()
         os.makedirs(settings_dir, exist_ok=True)
         os.makedirs(self.backup_root, exist_ok=True)
+
+    def _load_ingame(self):
+        """Games with a built-in button option (listed only, never touched); a bad file must not break the listing."""
+        try:
+            return ingame.by_appid()
+        except (OSError, ValueError):
+            if self.log:
+                self.log.exception("cannot read the list of in-game games")
+            return {}
 
     # ------------------------------------------------------------------ config
 
@@ -137,6 +147,13 @@ class Engine:
                 }
                 if profile:
                     game.update(self._status(app, profile, cfg, cmdlines))
+                    game["support"] = getattr(profile, "support", "partial")
+                elif appid in self.ingame_games:
+                    entry = self.ingame_games[appid]
+                    game["support"] = "ingame"
+                    how = " ".join(x for x in (entry["where"], entry["note"]) if x)
+                    if how:
+                        game["how"] = how
                 games.append(game)
             games.sort(key=lambda g: (not g["supported"], g["name"].lower()))
             return games
@@ -167,24 +184,29 @@ class Engine:
             "original_hint": getattr(profile, "original_hint", ""),
         }
         if not os.path.exists(path):
-            out.update(state="error", message="%s not found" % profile.file)
+            out.update(state="error", message="%s not found" % profile.file,
+                       code="file_missing", args={"file": profile.file})
         elif steam.is_running(app, cmdlines):
-            out.update(state="running", message="Game is running; changes apply when it closes")
+            out.update(state="running", message="Game is running; changes apply when it closes",
+                       code="running")
         elif not steam.is_ready(app):
-            out.update(state="updating", message="Steam is updating this game")
+            out.update(state="updating", message="Steam is updating this game", code="updating")
         elif gcfg.get("error"):
             out.update(state="error", message=gcfg["error"])
         elif rows is not None and not all(r[4] for r in rows):
-            out.update(state="pending", message="%s will be applied" % STYLE_LABEL[desired])
+            out.update(state="pending", message="%s will be applied" % STYLE_LABEL[desired],
+                       code="will_apply", args={"style": desired})
         elif rows is None and applied != desired:
-            out.update(state="pending", message="%s will be applied" % STYLE_LABEL[desired])
+            out.update(state="pending", message="%s will be applied" % STYLE_LABEL[desired],
+                       code="will_apply", args={"style": desired})
         elif trailer and trailer.get("revision", 1) != profile.revision:
             out.update(state="pending", message="Improved %s glyphs will be applied"
-                       % STYLE_LABEL[desired])
+                       % STYLE_LABEL[desired], code="will_improve", args={"style": desired})
         elif gcfg.get("error"):
             out.update(state="error", message=gcfg["error"])
         else:
-            out.update(state="ok", message="%s glyphs active" % STYLE_LABEL[applied])
+            out.update(state="ok", message="%s glyphs active" % STYLE_LABEL[applied],
+                       code="active", args={"style": applied})
         return out
 
     # ------------------------------------------------------------------ actions
@@ -360,25 +382,30 @@ class Engine:
             "original_hint": getattr(profile, "original_hint", ""),
         }
         if not os.path.exists(path):
-            out.update(state="error", message="%s not found" % profile.file)
+            out.update(state="error", message="%s not found" % profile.file,
+                       code="file_missing", args={"file": profile.file})
             return out
         try:
             rows = region_patch.plan(profile, app["install_path"], want)
         except OSError as exc:
-            out.update(state="error", message="cannot read %s: %s" % (profile.file, exc))
+            out.update(state="error", message="cannot read %s: %s" % (profile.file, exc),
+                       code="cannot_read", args={"file": profile.file, "reason": str(exc)})
             return out
         current = region_patch.applied_style(rows)
         out["applied"] = profile.native_style if current == "original" else current
         if steam.is_running(app, cmdlines):
-            out.update(state="running", message="Game is running; changes apply when it closes")
+            out.update(state="running", message="Game is running; changes apply when it closes",
+                       code="running")
         elif not steam.is_ready(app):
-            out.update(state="updating", message="Steam is updating this game")
+            out.update(state="updating", message="Steam is updating this game", code="updating")
         elif gcfg.get("error"):                    # an error outranks "pending" (else it hides forever)
             out.update(state="error", message=gcfg["error"])
         elif not all(r[3] for r in rows):
-            out.update(state="pending", message="%s will be applied" % STYLE_LABEL[desired])
+            out.update(state="pending", message="%s will be applied" % STYLE_LABEL[desired],
+                       code="will_apply", args={"style": desired})
         else:
-            out.update(state="ok", message="%s glyphs active" % STYLE_LABEL[desired])
+            out.update(state="ok", message="%s glyphs active" % STYLE_LABEL[desired],
+                       code="active", args={"style": desired})
         return out
 
     def _sync_regions(self, app, profile, gcfg, reason, logs):
@@ -451,7 +478,8 @@ class Engine:
         except Exception as exc:                   # one game's trouble must never fail the whole listing
             if self.log:
                 self.log.exception("status of %s: cannot read its files", app["appid"])
-            out.update(state="error", message="cannot read %s: %s" % (profile.file, exc))
+            out.update(state="error", message="cannot read %s: %s" % (profile.file, exc),
+                       code="cannot_read", args={"file": profile.file, "reason": str(exc)})
             return out
         out["applied"] = files_patch.applied_style(rows, profile.native_style, profile.patch_styles[0])
         refusal = files_patch.check(rows, want)
@@ -460,9 +488,10 @@ class Engine:
         notice = files_patch.differs(rows, touched)
         todo = [r for r in rows if not files_patch.is_ok(r, want)]
         if steam.is_running(app, cmdlines):
-            out.update(state="running", message="Game is running; changes apply when it closes")
+            out.update(state="running", message="Game is running; changes apply when it closes",
+                       code="running")
         elif not steam.is_ready(app):
-            out.update(state="updating", message="Steam is updating this game")
+            out.update(state="updating", message="Steam is updating this game", code="updating")
         elif gcfg.get("error"):                    # an error outranks "pending" (else it hides forever)
             out.update(state="error", message=gcfg["error"])
         elif refusal:
@@ -473,13 +502,17 @@ class Engine:
             out.update(state="error" if touched else "ok", message=notice)
         elif todo and want == "original":
             out.update(state="pending", message="%s will be restored"
-                       % ("Original" if desired == "original" else STYLE_LABEL[desired] + " glyphs"))
+                       % ("Original" if desired == "original" else STYLE_LABEL[desired] + " glyphs"),
+                       code="will_restore", args={"style": desired})
         elif todo and all(r.state == files_patch.STALE for r in todo):
-            out.update(state="pending", message="Improved %s glyphs will be applied" % STYLE_LABEL[desired])
+            out.update(state="pending", message="Improved %s glyphs will be applied" % STYLE_LABEL[desired],
+                       code="will_improve", args={"style": desired})
         elif todo:
-            out.update(state="pending", message="%s will be applied" % STYLE_LABEL[desired])
+            out.update(state="pending", message="%s will be applied" % STYLE_LABEL[desired],
+                       code="will_apply", args={"style": desired})
         else:
-            out.update(state="ok", message="%s glyphs active" % STYLE_LABEL[desired])
+            out.update(state="ok", message="%s glyphs active" % STYLE_LABEL[desired],
+                       code="active", args={"style": desired})
         return out
 
     def _marker_restore_pending(self, appid):
@@ -766,28 +799,36 @@ class Engine:
         # a game that was never configured is not in error because its save is not there yet
         configured = desired != "original" or rec is not None
         if steam.is_running(app, cmdlines):
-            out.update(state="running", message="Game is running; changes apply when it closes")
+            out.update(state="running", message="Game is running; changes apply when it closes",
+                       code="running")
         elif not steam.is_ready(app):
-            out.update(state="updating", message="Steam is updating this game")
+            out.update(state="updating", message="Steam is updating this game", code="updating")
         elif problem and configured:
             out.update(state="error", message=problem)
         elif problem:
             out.update(state="ok", message=("Start the game once to enable this"
                                             if problem.startswith("Save file not found")
                                             else "Not available yet: " + problem))
+            if problem.startswith("Save file not found"):
+                out.update(code="start_game_once")
         elif build:
-            out.update(state="error", message="this game version is not supported yet: " + build[0])
+            out.update(state="error", message="this game version is not supported yet: " + build[0],
+                       code="unsupported_build", args={"detail": build[0]})
         elif gcfg.get("error"):
             out.update(state="error", message=gcfg["error"])
         elif desired != "original" and value != profile.values[desired]:
-            out.update(state="pending", message="%s will be applied" % STYLE_LABEL[desired])
+            out.update(state="pending", message="%s will be applied" % STYLE_LABEL[desired],
+                       code="will_apply", args={"style": desired})
         elif (desired == "original" and rec is not None and value != rec["original_value"]
               and value in self._ours(profile, rec)):
-            out.update(state="pending", message="Original will be restored")
+            out.update(state="pending", message="Original will be restored",
+                       code="will_restore", args={"style": "original"})
         elif desired == "original":
-            out.update(state="ok", message="Original: the game keeps its own setting")
+            out.update(state="ok", message="Original: the game keeps its own setting",
+                       code="original_kept")
         else:
-            out.update(state="ok", message="%s glyphs active" % STYLE_LABEL[desired])
+            out.update(state="ok", message="%s glyphs active" % STYLE_LABEL[desired],
+                       code="active", args={"style": desired})
         return out
 
     def _sync_config(self, app, profile, gcfg, reason, logs):

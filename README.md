@@ -52,7 +52,7 @@ That is all. Start the game and look at the prompts.
 ## Supported games
 
 The list of games, what each one changes and how sure we are about it lives in **[SUPPORTED_GAMES.md](SUPPORTED_GAMES.md)**
-(it is generated from the code, so it is always up to date).
+(it is generated from the code, so it is always up to date). Games that already have an Xbox/PlayStation option in their own settings are listed there too (a blue **In game** dot in the plugin); Button Glyphs does not change them.
 
 Every game stores its prompts differently, so each one needs its own *profile*. Yours is missing?
 [Request it](https://github.com/evertonfxavier/button-glyphs/issues/new?template=game_request.yml) or

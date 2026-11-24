@@ -1,0 +1,65 @@
+{
+  "style.label": "Style",
+  "style.original": "Original",
+  "style.ps": "PS",
+  "style.xbox": "Xbox",
+
+  "dot.full": "Full",
+  "dot.partial": "Partial",
+  "dot.error": "Unavailable",
+  "dot.ingame": "In game",
+  "dot.none": "No support",
+  "dot.aria": "Support: {label}",
+
+  "status.attention": "Needs attention: {names}",
+  "status.listError": "Could not read games: {detail}",
+  "status.backendError": "Backend not reachable: {detail}",
+
+  "current.unsupportedTitle": "No support yet",
+  "current.unsupportedLine1": "Can't change this game's prompts yet.",
+  "current.partialNote": "Partly confirmed: some screens may still show Xbox buttons.",
+  "current.ingameTitle": "Set in the game",
+  "current.ingameLine": "It has its own Xbox/PS button option in its settings.",
+  "current.keepNote": "Original files are kept. Pick Original to undo.",
+  "current.lastChange": "{event} · build {build}",
+
+  "apply.progress": "Applying {style}… keep the game closed",
+  "apply.restoring": "Restoring Original… keep the game closed",
+  "apply.done": "{style} applied",
+  "apply.restored": "Original restored",
+  "apply.failed": "Could not apply: {detail}",
+  "apply.failedShort": "Could not apply",
+
+  "games.label": "Game",
+  "games.reading": "Reading your library…",
+  "games.empty": "No games found",
+
+  "updates.title": "Updates",
+  "updates.note": "Re-applied after game updates.",
+  "updates.check": "Check now",
+  "updates.checking": "Checking…",
+  "updates.upToDate": "All up to date",
+  "updates.failed": "Check failed: {detail}",
+
+  "details.title": "Details",
+  "details.summary": "{supported} of {total} games · v{version}",
+  "details.summaryNoVersion": "{supported} of {total} games",
+
+  "event.applied": "{style} applied",
+  "event.reapplied": "{style} re-applied",
+  "event.restored": "Original restored",
+  "event.updated": "Game updated",
+  "event.kept": "{style} kept",
+
+  "code.file_missing": "{file} not found",
+  "code.running": "Game is running. Applied on close",
+  "code.updating": "Steam is updating this game",
+  "code.will_apply": "{style} will be applied",
+  "code.will_improve": "Better {style} will be applied",
+  "code.will_restore": "{style} will be restored",
+  "code.active": "{style} active",
+  "code.cannot_read": "Cannot read {file}: {reason}",
+  "code.unsupported_build": "This game version is not supported: {detail}",
+  "code.start_game_once": "Start the game once to enable",
+  "code.original_kept": "Original: the game's own setting"
+}

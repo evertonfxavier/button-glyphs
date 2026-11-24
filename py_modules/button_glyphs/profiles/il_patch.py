@@ -16,9 +16,10 @@ class IlPatchProfile:
     kind = "il-patch"
 
     def __init__(self, appid, name, file, roles, pattern, edits, anchors=(), notes="",
-                 revision=1, original_hint=""):
+                 revision=1, original_hint="", support="partial"):
         self.appid = appid
         self.revision = revision      # bump when the output changes, so applied files get redone
+        self.support = support        # "full" (confirmed in game) or "partial": shown in the UI
         self.name = name
         self.file = file              # path relative to the game's install dir
         self.roles = roles            # [(role, label)] shown under the style preview

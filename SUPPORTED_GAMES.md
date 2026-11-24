@@ -16,6 +16,8 @@ Nobody can confirm a visual change without looking at the game, so the list is h
 | 🟡 **partly confirmed** | Some screens were seen in game; the rest is verified by tests and renders only |
 | ⚪ **unconfirmed** | Verified by tests and on the real files, but nobody has reported the result in game yet. [Be the first](https://github.com/evertonfxavier/button-glyphs/issues/new?template=in_game_report.yml&title=%5BIn-game+report%5D+) |
 
+Games the plugin does not change but that already let you pick Xbox or PlayStation buttons in their own settings are marked **In game** (blue dot in the plugin), see [below](#games-with-a-built-in-option).
+
 Whatever the level, the plugin checks the game files before changing anything, and **Original** puts them back exactly as Steam installed them (see [how safe is it?](docs/faq.md#is-it-safe-for-my-games)).
 
 ## At a glance
@@ -110,6 +112,14 @@ The in-game prompts of the tooltips and the menus - A/B/X/Y, the D-pad, LB/RB, L
 - **Links:** [Steam store](https://store.steampowered.com/app/389170) · [technical notes](docs/games/389170-songs-for-a-hero.md) · [report how it looks in game](https://github.com/evertonfxavier/button-glyphs/issues/new?template=in_game_report.yml&title=%5BIn-game+report%5D+Songs+for+a+Hero+-+Definitive+Edition)
 
 </details>
+
+## Games with a built-in option
+
+These games already have an Xbox / PlayStation button option in their own settings, so Button Glyphs does not change them (the plugin marks them with a blue **In game** dot). Each entry is a report: Button Glyphs has not verified it.
+
+- **Digimon Story Time Stranger** ([1984270](https://store.steampowered.com/app/1984270)): reported by the project owner on 2026-11-24, not verified by Button Glyphs.
+
+Know another one? [Tell us](https://github.com/evertonfxavier/button-glyphs/issues/new?template=game_request.yml&title=%5BIn-game+option%5D+).
 
 ## Not on the list?
 

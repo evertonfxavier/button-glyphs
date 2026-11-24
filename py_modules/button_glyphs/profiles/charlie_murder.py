@@ -31,6 +31,7 @@ LDC_I4_0, LDC_I4_1 = 0x16, 0x17
 
 PROFILE = IlPatchProfile(
     appid="405290",
+    support="full",
     name="Charlie Murder",
     file="CharlieMurder.exe",
     revision=1,

@@ -1,29 +1,56 @@
 import { toaster } from "@decky/api";
+import { Router } from "@decky/ui";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { listGames, pingBackend, recheck, setStyle } from "../api";
-import { actionText, errorMessage, parseGames, styleLabel } from "../lib";
+import { t } from "../i18n";
+import { errorMessage, orderGames, parseGames, pickCurrent, styleLabel } from "../lib";
 import type { Game, Style } from "../model";
 
 const POLL_MS = 10_000;
 
-// Remembered while Decky stays loaded, so reopening the panel keeps the same game.
+// Kept while Decky stays loaded: reopening the panel shows the last list at once and refreshes behind it.
 let lastSelected = "";
+let cachedGames: Game[] = [];
+let cachedVersion = "";
+let everLoaded = false;
+
+/** The Steam app that is running now, or undefined (the store is only partly typed and may be missing). */
+const runningAppid = (): string | undefined => {
+  try {
+    const id = Router?.MainRunningAppID;
+    return id ? String(id) : undefined;
+  } catch {
+    return undefined;
+  }
+};
+
+const without = <T,>(map: Record<string, T>, key: string): Record<string, T> => {
+  const next = { ...map };
+  delete next[key];
+  return next;
+};
 
 export function useButtonGlyphs() {
-  const [games, setGames] = useState<Game[]>([]);
-  const [loaded, setLoaded] = useState(false);
+  const [games, setGames] = useState<Game[]>(cachedGames);
+  const [loaded, setLoaded] = useState(everLoaded);
   const [busy, setBusy] = useState(false);
   const [working, setWorking] = useState<Record<string, Style>>({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [listError, setListError] = useState("");
-  const [output, setOutput] = useState("");
-  const [pluginVersion, setPluginVersion] = useState("");
+  const [backendError, setBackendError] = useState("");
+  const [checkResult, setCheckResult] = useState<{ ok: boolean; text: string } | null>(null);
+  const [pluginVersion, setPluginVersion] = useState(cachedVersion);
   const [selectedAppid, setSelectedAppid] = useState(lastSelected);
   const mounted = useRef(true);
+  const inflight = useRef(false);
+  const again = useRef(false);
+  const picked = useRef(false);
 
-  const supported = useMemo(() => games.filter((g) => g.supported), [games]);
+  const ordered = useMemo(() => orderGames(games), [games]);
+  const supported = useMemo(() => ordered.filter((g) => g.supported), [ordered]);
   const selected = useMemo(
-    () => games.find((g) => g.appid === selectedAppid) ?? supported[0] ?? games[0],
-    [games, supported, selectedAppid]
+    () => games.find((g) => g.appid === selectedAppid) ?? pickCurrent(games, undefined, ""),
+    [games, selectedAppid]
   );
 
   const selectGame = useCallback((appid: string) => {
@@ -31,20 +58,47 @@ export function useButtonGlyphs() {
     setSelectedAppid(appid);
   }, []);
 
+  // First list of this mount: start on the running game if it is supported, else on the remembered one.
+  useEffect(() => {
+    if (picked.current || !games.length) return;
+    picked.current = true;
+    const first = pickCurrent(games, runningAppid(), lastSelected);
+    if (first) selectGame(first.appid);
+  }, [games, selectGame]);
+
   const notify = useCallback((title: string, body: string) => {
-    toaster.toast({ title, body });
+    try {
+      toaster.toast({ title, body });
+    } catch {
+      // a toast is a courtesy; never let it break an apply
+    }
   }, []);
 
-  const load = useCallback(async () => {
+  const load: () => Promise<void> = useCallback(async () => {
+    if (inflight.current) {
+      again.current = true; // the backend holds a lock while it applies: one more read after this one, no queue
+      return;
+    }
+    inflight.current = true;
     try {
       const result = parseGames(await listGames());
       if (!mounted.current) return;
-      setGames(result.games);
-      setListError(result.ok ? "" : result.error || "Could not list games");
+      if (result.ok) {
+        cachedGames = result.games;
+        setGames(result.games);
+      }
+      setListError(result.ok ? "" : result.error || "unknown error");
     } catch (error) {
       if (mounted.current) setListError(errorMessage(error));
+    } finally {
+      inflight.current = false;
     }
+    everLoaded = true;
     if (mounted.current) setLoaded(true);
+    if (again.current && mounted.current) {
+      again.current = false;
+      await load();
+    }
   }, []);
 
   useEffect(() => {
@@ -52,9 +106,13 @@ export function useButtonGlyphs() {
     void (async () => {
       try {
         const pong = await pingBackend();
-        if (pong?.version) setPluginVersion(pong.version);
+        if (pong?.version && mounted.current) {
+          cachedVersion = pong.version;
+          setPluginVersion(pong.version);
+        }
+        if (mounted.current) setBackendError("");
       } catch (error) {
-        setListError(`Backend not reachable: ${errorMessage(error)}`);
+        if (mounted.current) setBackendError(errorMessage(error));
       }
       await load();
     })();
@@ -68,27 +126,22 @@ export function useButtonGlyphs() {
   const chooseStyle = useCallback(
     async (game: Game, style: Style) => {
       if (style === game.style) return;
+      setErrors((e) => without(e, game.appid));
       setWorking((w) => ({ ...w, [game.appid]: style }));
-      setOutput(`${game.name}: applying ${styleLabel(style)}…`);
       try {
         const result = await setStyle(game.appid, style);
-        setOutput(`${game.name}\n${actionText(result)}`);
         if (!result.ok) {
-          notify("Button Glyphs", result.errors?.[0] || "Could not apply");
+          const detail = result.errors?.[0] || t("apply.failedShort");
+          setErrors((e) => ({ ...e, [game.appid]: detail }));
+          notify(game.name, t("apply.failedShort"));
         } else if (result.changed) {
-          notify(game.name, `${styleLabel(style)} button glyphs applied`);
-        } else if (result.logs?.length) {
-          notify(game.name, result.logs[result.logs.length - 1]);
+          notify(game.name, style === "original" ? t("apply.restored") : t("apply.done", { style: styleLabel(style) }));
         }
       } catch (error) {
-        setOutput(`${game.name}: ${errorMessage(error)}`);
-        notify("Button Glyphs", errorMessage(error));
+        setErrors((e) => ({ ...e, [game.appid]: errorMessage(error) }));
+        notify(game.name, t("apply.failedShort"));
       }
-      setWorking((w) => {
-        const next = { ...w };
-        delete next[game.appid];
-        return next;
-      });
+      setWorking((w) => without(w, game.appid));
       await load();
     },
     [load, notify]
@@ -96,27 +149,32 @@ export function useButtonGlyphs() {
 
   const checkNow = useCallback(async () => {
     setBusy(true);
-    setOutput("Checking games…");
+    setCheckResult(null);
     try {
       const result = await recheck();
-      setOutput(actionText(result));
-      notify("Button Glyphs", result.ok ? "Everything is up to date" : result.errors[0]);
+      setCheckResult(
+        result.ok
+          ? { ok: true, text: t("updates.upToDate") }
+          : { ok: false, text: t("updates.failed", { detail: result.errors?.[0] ?? "?" }) }
+      );
     } catch (error) {
-      setOutput(errorMessage(error));
+      setCheckResult({ ok: false, text: t("updates.failed", { detail: errorMessage(error) }) });
     }
     await load();
     setBusy(false);
-  }, [load, notify]);
+  }, [load]);
 
   return {
-    games,
+    games: ordered,
     supported,
     selected,
     loaded,
     busy,
     working,
+    errors,
     listError,
-    output,
+    backendError,
+    checkResult,
     pluginVersion,
     selectGame,
     chooseStyle,

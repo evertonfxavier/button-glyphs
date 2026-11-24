@@ -177,3 +177,13 @@ That is a valid result. Open an issue titled *"[Not feasible] <game>"* with: how
 
 ## Getting help
 Stuck on a step? [Open a discussion-style issue](https://github.com/evertonfxavier/button-glyphs/issues/new/choose) and say which step. Half-finished work is welcome: say what you have, and someone can continue from there.
+
+## A game that already has a Xbox/PS option
+
+Some games let you pick Xbox or PlayStation buttons in their own settings. They need no profile and the plugin never touches them.
+Add ONE entry to [`py_modules/button_glyphs/ingame_games.json`](../py_modules/button_glyphs/ingame_games.json) and nothing else:
+`appid` (digits), `name`, `reported_by`, `reported_on` (ISO date), and optionally `where` (the menu path) and `note`. Then run
+`python3 tools/gen_supported_games.py` (it adds the game to the "Games with a built-in option" section of `SUPPORTED_GAMES.md`).
+The plugin shows these games with a blue "In game" dot. Verify by hand before you add one: start the game, open its settings and check
+the option really switches the prompts; write who saw it in `reported_by`. A game that gets a plugin profile must be removed from this
+file (a test fails if a game is in both).

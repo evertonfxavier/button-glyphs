@@ -6,6 +6,8 @@
 
 Sources of truth - never edit the generated parts by hand:
   * button_glyphs.profiles.PROFILES      which games exist, their styles, the files they touch
+  * button_glyphs/ingame_games.json     games that already have an Xbox/PS option in their own settings (listed, never
+                                         touched; the plugin reads the same file)
   * docs/games/<appid>-*.md              the "Summary" and "Support level" rows of "At a glance",
                                          and every "- NOT verified:" line
 The READMEs deliberately do NOT list games (the list will grow long): they link to SUPPORTED_GAMES.md.
@@ -125,12 +127,19 @@ def collect(root=ROOT):
     return games
 
 
+def collect_ingame(root=ROOT):
+    from button_glyphs import ingame
+    path = root / "py_modules" / "button_glyphs" / "ingame_games.json"
+    return sorted(ingame.load(str(path)), key=lambda e: e["name"].lower())
+
+
 def issue_link(template, title):
     return "%s/issues/new?template=%s&title=%s" % (REPO_URL, template, urllib.parse.quote_plus(title))
 
 
 def render_supported_games(root=ROOT):
     games = collect(root)
+    ingame_games = collect_ingame(root)
     out = [
         "# Supported games",
         "",
@@ -153,6 +162,9 @@ def render_supported_games(root=ROOT):
         "| %s **partly confirmed** | Some screens were seen in game; the rest is verified by tests and renders only |" % LEVELS["partly confirmed"]["icon"],
         "| %s **unconfirmed** | Verified by tests and on the real files, but nobody has reported the result in game yet. "
         "[Be the first](%s) |" % (LEVELS["unconfirmed"]["icon"], issue_link("in_game_report.yml", "[In-game report] ")),
+        "",
+        "Games the plugin does not change but that already let you pick Xbox or PlayStation buttons in their own settings "
+        "are marked **In game** (blue dot in the plugin), see [below](#games-with-a-built-in-option).",
         "",
         "Whatever the level, the plugin checks the game files before changing anything, and **Original** puts them back "
         "exactly as Steam installed them (see [how safe is it?](docs/faq.md#is-it-safe-for-my-games)).",
@@ -192,6 +204,24 @@ def render_supported_games(root=ROOT):
             "",
         ]
     out += [
+        "## Games with a built-in option",
+        "",
+        "These games already have an Xbox / PlayStation button option in their own settings, so Button Glyphs does not "
+        "change them (the plugin marks them with a blue **In game** dot). Each entry is a report: Button Glyphs has not "
+        "verified it.",
+        "",
+    ]
+    for e in ingame_games:
+        line = "- **%s** ([%s](https://store.steampowered.com/app/%s)): reported by %s on %s, not verified by Button Glyphs." % (
+            e["name"], e["appid"], e["appid"], e["reported_by"], e["reported_on"])
+        extra = " ".join(x for x in (e["where"], e["note"]) if x)
+        out.append(line + (" " + extra if extra else ""))
+    if not ingame_games:
+        out.append("_None yet._")
+    out += [
+        "",
+        "Know another one? [Tell us](%s)." % issue_link("game_request.yml", "[In-game option] "),
+        "",
         "## Not on the list?",
         "",
         "- **Request it:** [open a game request](%s). Include how the prompts look today and whether the game is online." % issue_link("game_request.yml", "[Game request] "),

@@ -57,6 +57,18 @@ def tree_state(root):
 # Fields that legitimately differ between two probes of the same state: how long the probe took and the machine's uptime
 # (the latter only exists on Linux, which is why a macOS run never showed the difference and the CI did).
 VOLATILE = ("seconds", "uptime_s")
+# ... and the free space of the disk the fixture lives on: another process writing between two probes changes it.
+VOLATILE_NESTED = (("fs", "free_bytes"),)
+
+
+def strip_volatile(res):
+    """The probe result without the fields that legitimately move between two runs of the same state."""
+    res = json.loads(json.dumps(res))
+    for key in VOLATILE:
+        res.pop(key, None)
+    for outer, inner in VOLATILE_NESTED:
+        (res.get(outer) or {}).pop(inner, None)
+    return res
 
 
 class FakeDeck(unittest.TestCase):
@@ -431,10 +443,7 @@ class RemoteProbeTest(FakeDeck):
         self.assertEqual(done.returncode, 0, done.stderr)
         remote = dp.parse_result(done.stdout)
         direct = self.probe()
-        for res in (remote, direct):
-            for key in VOLATILE:                                      # the machine's own clock moves between two runs
-                res.pop(key, None)
-        self.assertEqual(remote, json.loads(json.dumps(direct)))
+        self.assertEqual(strip_volatile(remote), strip_volatile(direct))     # clock and free space move between two runs
         self.assertEqual(len(done.stdout.strip().splitlines()), 1)               # ONE JSON object
 
     def test_only_the_clock_fields_differ_between_two_probes_of_the_same_state(self):
@@ -448,8 +457,27 @@ class RemoteProbeTest(FakeDeck):
             a = json.loads(json.dumps(dp.remote_probe(self.req, steam, uptime_file=up1, **kw)))
             b = json.loads(json.dumps(dp.remote_probe(self.req, steam, uptime_file=up2, **kw)))
         self.assertEqual((a["uptime_s"], b["uptime_s"]), (100.5, 101.91))
-        differing = {k for k in a if a[k] != b.get(k)}
-        self.assertLessEqual(differing, set(VOLATILE))
+        self.assertEqual(strip_volatile(a), strip_volatile(b))                 # nothing else varies with the clock
+
+    def test_free_space_moving_between_two_probes_is_the_only_filesystem_difference(self):
+        """Regression: another process writing to the host disk changed fs.free_bytes between two runs and failed a comparison."""
+        real = os.statvfs
+        calls = {"n": 0}
+
+        def statvfs(path):
+            st = real(path)
+            calls["n"] += 1
+            factor = 1 if calls["n"] % 2 else 2                      # a different amount of free space on every other call
+
+            class V:
+                f_bavail, f_frsize, f_blocks = st.f_bavail // factor, st.f_frsize, st.f_blocks
+            return V
+        with mock.patch.object(steam, "MEDIA_ROOT", self.media), mock.patch("os.statvfs", statvfs):
+            kw = dict(home=self.home, proc_root=self.proc, mountinfo=self.mountinfo, media_root=self.media)
+            a = json.loads(json.dumps(dp.remote_probe(self.req, steam, **kw)))
+            b = json.loads(json.dumps(dp.remote_probe(self.req, steam, **kw)))
+        self.assertNotEqual(a["fs"]["free_bytes"], b["fs"]["free_bytes"])          # the difference really happened
+        self.assertEqual(strip_volatile(a), strip_volatile(b))                     # ... and is the only one
 
     def test_a_remote_failure_is_still_one_json_object(self):
         script = dp.build_script(self.req, steam_source="raise RuntimeError('boom')")

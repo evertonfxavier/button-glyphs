@@ -32,9 +32,10 @@ class ForgeGlyphProfile:
     kind = "forge-glyphs"
 
     def __init__(self, appid, name, file, datafile, textures, roles, styles, notes="",
-                 revision=1, original_hint="", extra_targets=None):
+                 revision=1, original_hint="", support="partial", extra_targets=None):
         self.appid = appid
         self.revision = revision    # bump when the output changes, so applied files get redone
+        self.support = support        # "full" (confirmed in game) or "partial": shown in the UI
         self.name = name
         self.file = file            # path relative to the game's install dir
         self.datafile = datafile    # forge entry holding the textures

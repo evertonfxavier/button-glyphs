@@ -34,7 +34,9 @@ never opens a backup, writes a marker or decides when to run.
 
 ### Profile contracts (what the engine calls)
 - Common attributes: `appid`, `name`, `kind`, `file` (relative to the install dir), `roles`
-  `[(role, label)]` (shown under the preview), `revision`, `notes`, `original_hint`, and the
+  `[(role, label)]` (sent to the UI, no longer drawn there), `revision`, `notes`, `original_hint`, `support`
+  (`"full"` when the game's page says *confirmed*, else `"partial"`; the UI's dot colour, kept in step with
+  `docs/games/<appid>-*.md` by `tests/test_ui_i18n.py`), and the
   styles it supports (`styles` dict for icon sets, `patch_styles` for region profiles).
 - **whole-file**: `check(path) -> [problems]` on an original file; `patch(path, style, load_icon)`
   modifies a copy in place.
@@ -119,3 +121,20 @@ Only when no existing one fits (see skill `choosing-patch-strategy`): add a prof
 the same attributes, give the engine a flag and a `_status_*` / `_sync_*` pair that keeps the
 invariants of skill `patch-safety-invariants`, add synthetic-fixture tests, and document the
 layout here.
+
+## UI (`src/`)
+One panel, never replaced by a loading screen: an inline status line (only when something needs attention), a **legend** of
+the dots, the **game select** (a `DropdownItem` whose options are every installed game, supported first, each with its dot; the
+menu's own focus highlight shows which game the cursor is on), then for the selected game the **style select** with its status
+as description and the last change, or a neutral "no support yet" note (tone is only the dot; no coloured borders); then **updates** and **details**. The default current game
+is the running one if supported (`Router.MainRunningAppID`), else the last one used, else the first supported.
+- **Dots**: green = `support: "full"`, yellow = `"partial"`, red = the game has a profile but its `state` is `error`
+  (for example an unsupported build), hollow grey = no profile, blue = no profile but the game has its own Xbox/PS option (`support: "ingame"`, from
+  `button_glyphs/ingame_games.json`, optional `how` line; the plugin only lists it). Never colour alone: the legend and each dot's label carry it.
+- **Language**: `src/i18n/{en,pt-BR,es}.json`, `t(key, vars)` with English fallback. Resolved once per mount from Steam
+  (`LocalizationManager.m_rgLocalesToUse[0]`, then `SteamClient.Settings.GetCurrentLanguage()`), then `navigator.language`;
+  Steam names (`brazilian`, `latam`, `spanish`) and any `pt*` / `es*` map to pt-BR / es, everything else to English.
+- **Status text**: the engine adds a stable `code` (+ `args`) next to its English `message` (list: `status_codes.py`); the UI
+  translates `code.<code>`. The stored last-change sentence is recognised by shape (`eventRef` in `src/lib/messages.ts`).
+- The games list is cached at module level, so reopening the panel renders at once and refreshes behind it. Applying shows a
+  spinner and a short line under the select (select disabled) and a toast when done; errors show inline in red.

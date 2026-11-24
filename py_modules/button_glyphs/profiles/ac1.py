@@ -66,6 +66,7 @@ def _area_target(file, entry):
 
 PROFILE = ForgeGlyphProfile(
     appid="15100",
+    support="partial",
     name="Assassin's Creed",
     file="DataPC.forge",
     revision=3,

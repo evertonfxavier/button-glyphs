@@ -55,7 +55,7 @@ Só isso. Abra o jogo e olhe os botões.
 ## Jogos suportados
 
 A lista de jogos, o que cada um muda e o quanto temos certeza fica em **[SUPPORTED_GAMES.md](SUPPORTED_GAMES.md)**
-(em inglês; é gerada a partir do código, então está sempre em dia).
+(em inglês; é gerada a partir do código, então está sempre em dia). Jogos que já têm opção de botões Xbox/PlayStation nas próprias configurações também aparecem lá (ponto azul **No jogo** no plugin); o Button Glyphs não altera esses jogos.
 
 Cada jogo guarda os botões de um jeito, então cada um precisa do seu próprio *perfil*. Falta o seu?
 [Peça aqui](https://github.com/evertonfxavier/button-glyphs/issues/new?template=game_request.yml) ou

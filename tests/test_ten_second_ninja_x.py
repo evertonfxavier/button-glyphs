@@ -204,7 +204,8 @@ class ApplyTest(Base):
         self.assertEqual(st["roles"], [l for _, l in self.profile.roles])
         self.assertFalse(st["has_backup"])
         self.assertEqual(set(st), {"appid", "name", "supported", "buildid", "style", "applied", "state",
-                                   "message", "last_event", "has_backup", "roles", "original_hint"})
+                                   "message", "last_event", "has_backup", "roles", "original_hint",
+                                   "support", "code"})
 
     def test_full_cycle_changes_only_the_value_bytes(self):
         before = read(self.save)

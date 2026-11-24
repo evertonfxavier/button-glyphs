@@ -21,6 +21,7 @@ pnpm install
 | `pnpm test` | The same, through pnpm |
 | `npx tsc --noEmit -p .` | Type-check the UI |
 | `pnpm run build` | Build the UI into `dist/` |
+| `pnpm run test:ui` | Pure UI logic (language mapping, dots, game order, message lookup) with node's built-in runner, no dependencies |
 | `pnpm run build:zip` | Build `out/button-glyphs-vX.Y.Z.zip` (the file users install) |
 | `pnpm run glyphs` | Re-render the icon PNGs and `src/generated/glyphs.ts` from `assets/svg/` |
 | `pnpm run brand` | Re-render the logo and the social preview from `assets/logo.svg` |
@@ -32,7 +33,7 @@ pnpm install
 | Path | What |
 |------|------|
 | `main.py` | Decky entry point: callables for the UI and a background watcher (every minute) |
-| `src/` | The React UI: game select, style select, preview, status |
+| `src/` | The React UI: legend, game select (status dots inside the options), style select + status, updates, details; `src/i18n/` has the English, pt-BR and Spanish catalogs |
 | `py_modules/button_glyphs/engine.py` | State, status, apply and restore, choosing the strategy per game |
 | `py_modules/button_glyphs/entries.py` | Strategy: append a new archive entry and repoint the index |
 | `py_modules/button_glyphs/region_patch.py` | Strategy: rewrite fixed byte ranges in place |
@@ -134,6 +135,6 @@ Things to know:
 
 ## Conventions
 
-- Code, identifiers, docs and UI strings are in English. A short Portuguese README exists for users; keep it in step when the English one changes.
+- Code, identifiers and docs are in English. UI text lives in `src/i18n/en.json` (the source) with `pt-BR.json` and `es.json` beside it: add a key to all three (`tests/test_ui_i18n.py` fails on a missing key, a different `{placeholder}` set or an empty string), use `t("key", {name})`, and keep proper names (PS, Xbox, Original) as they are. A new status the engine reports gets a `code` (+ `args`) in `engine.py`, an entry in `button_glyphs/status_codes.py` and a `code.<code>` key in the three files; the UI falls back to the English `message` for a code it does not know. A short Portuguese README exists for users; keep it in step when the English one changes.
 - Module docstrings explain *why* (format facts, the failure a rule prevents), not what the next line does.
 - Small, focused commits; messages in the imperative (`Add Quantum Break profile`). The pull-request template lists what reviewers check.

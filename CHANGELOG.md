@@ -7,6 +7,25 @@ Add your line under **Unreleased** in the pull request; maintainers move it into
 
 ## [Unreleased]
 
+### Changed
+- New panel layout: a short legend of the status dots, then one "Game" select (every installed game, supported first, a
+  status dot inside each option so the highlighted game is always visible), then the style select (Original, PS, Xbox) with
+  its status. There is no list of games at the end of the panel and no button preview.
+- Status dots inside the game select: green = fully supported, yellow = partly confirmed (Assassin's Creed), red = unavailable
+  (for example this installed build is not supported), hollow grey = no support. Each line of the select also shows the style
+  chosen for that game.
+- Changes no longer replace the panel with "Scanning your library...": the list is kept between openings and refreshed behind
+  the scenes, and applying a style shows its progress under the style select.
+- Notes under the controls (no support yet, partly confirmed, unavailable, errors) are plain text with a small status dot: no
+  coloured borders or boxes, with a gap above and the same inset as the other rows.
+- Shorter texts and more even spacing throughout; the panel starts on the game that is running, if it is supported.
+
+### Added
+- The panel follows Steam's language: English (default), Brazilian Portuguese and Spanish.
+- Games that already have an Xbox/PlayStation option in their own settings are marked with a blue "In game" dot (the plugin never
+  changes them): the select shows "Set in the game" for them, and SUPPORTED_GAMES.md lists them. First entry: Digimon Story Time
+  Stranger (reported by the project owner, not verified by Button Glyphs).
+
 ## [0.3.10] - 2026-11-24
 
 ### Fixed

@@ -56,6 +56,7 @@ LAYOUTS = {
 
 PROFILE = DxtRegionProfile(
     appid="348710",
+    support="full",
     name="Saint Seiya: Soldiers' Soul",
     file="localize.cpk",
     regions=TEXTURES,

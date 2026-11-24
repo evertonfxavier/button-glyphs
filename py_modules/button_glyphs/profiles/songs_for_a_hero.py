@@ -39,6 +39,7 @@ FILES = [entry(t) for t in TEXTURES if t["key"] in ART]
 
 PROFILE = XnbPictureProfile(
     appid="389170",
+    support="full",
     name="Songs for a Hero - Definitive Edition",
     content_dir=CONTENT,
     files=FILES,

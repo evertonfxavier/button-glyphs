@@ -17,6 +17,7 @@ from .config_value import ConfigValueProfile
 
 PROFILE = ConfigValueProfile(
     appid="435790",
+    support="full",
     name="10 Second Ninja X",
     save="drive_c/users/steamuser/AppData/Local/_10_Second_Ninja_X_Test/asyncsavegroup/10SNX.sav",
     section="storyfile",

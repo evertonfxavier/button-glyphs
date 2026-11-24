@@ -1,7 +1,7 @@
 export { GlyphsPanel } from "./GlyphsPanel";
-export { StatusBanner } from "./StatusBanner";
+export { StatusLine } from "./StatusLine";
 export { GamesSection } from "./GamesSection";
 export { LibrarySection } from "./LibrarySection";
 export { DetailsSection } from "./DetailsSection";
-export { GlyphPreview } from "./GlyphPreview";
-export { StatusCard } from "./StatusCard";
+export { StatusDot } from "./StatusDot";
+export { StatusNote } from "./StatusNote";

@@ -30,7 +30,7 @@ class XnbPictureProfile:
     files_level = True
 
     def __init__(self, appid, name, content_dir, files, roles, native_style, notes="",
-                 revision=1, original_hint="", styles=("ps",), pictures=None):
+                 revision=1, original_hint="", support="partial", styles=("ps",), pictures=None):
         self.appid = appid
         self.name = name
         self.file = content_dir           # the folder the files live in, relative to the install dir
@@ -38,6 +38,7 @@ class XnbPictureProfile:
         self.roles = roles
         self.native_style = native_style  # the style the game already shows ("xbox")
         self.revision = revision
+        self.support = support        # "full" (confirmed in game) or "partial": shown in the UI
         self.notes = notes
         self.original_hint = original_hint
         self.patch_styles = tuple(styles)

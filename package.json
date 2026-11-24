@@ -15,7 +15,8 @@
     "glyphs": "node scripts/render-glyphs.mjs",
     "brand": "node scripts/render-brand.mjs",
     "watch": "rollup -c -w",
-    "test": "python3 -m unittest discover -s tests"
+    "test": "python3 -m unittest discover -s tests",
+    "test:ui": "node --test tests/ui/*.test.mjs"
   },
   "keywords": ["decky", "decky-plugin", "steam-deck", "controller", "glyphs"],
   "author": "Everton Xavier",

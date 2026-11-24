@@ -168,6 +168,18 @@ class EngineTest(unittest.TestCase):
     def game_status(self):
         return next(g for g in self.eng.list_games() if g["appid"] == "15100")
 
+    def test_status_carries_a_translatable_code_next_to_the_english_message(self):
+        st = self.game_status()
+        self.assertEqual((st["state"], st["code"], st["args"]), ("ok", "active", {"style": "original"}))
+        self.assertEqual(st["support"], "partial")      # a profile that does not say otherwise
+        self.assertTrue(self.eng.set_style("15100", "ps")["ok"])
+        st = self.game_status()
+        self.assertEqual((st["code"], st["args"], st["message"]), ("active", {"style": "ps"}, "PlayStation glyphs active"))
+        os.makedirs(os.path.join(self.proc, "4242"))
+        with open(os.path.join(self.proc, "4242", "cmdline"), "wb") as f:
+            f.write(os.path.dirname(self.game).encode() + b"/AssassinsCreed_Dx9.exe\0")
+        self.assertEqual(self.game_status()["code"], "running")
+
     def test_apply_switch_and_restore(self):
         result = self.eng.set_style("15100", "ps")
         self.assertTrue(result["ok"], result)
@@ -306,6 +318,7 @@ class CharlieMurderTest(unittest.TestCase):
     def test_original_is_automatic(self):
         self.assertEqual(self.stores(), (0x17, 0x16))
         self.assertIn("DualShock", self.status()["original_hint"])
+        self.assertEqual(self.status()["support"], "full")    # confirmed in game (its page says so)
 
     def test_ps_forces_playstation_for_every_pad(self):
         self.assertTrue(self.eng.set_style("405290", "ps")["ok"])
