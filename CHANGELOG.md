@@ -12,7 +12,8 @@ Add your line under **Unreleased** in the pull request; maintainers move it into
   hash mismatch (it now recognises the plugin's own files by the render ledger and checks that the backups still equal the
   pinned originals); Steam's `TargetBuildID` of 0 ("no update target") was read as a pending update; and a plugin without
   the Decky `root` flag was assumed to run as root. A saved-value game is no longer reported as "pending" because its pinned
-  file never changes.
+  file never changes. A probe test that compared two runs also compared the machine's uptime, which moves between runs on
+  Linux, so the CI failed (a Mac never showed it).
 
 ## [0.3.9] - 2026-11-24
 

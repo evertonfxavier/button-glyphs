@@ -54,6 +54,11 @@ def tree_state(root):
     return out
 
 
+# Fields that legitimately differ between two probes of the same state: how long the probe took and the machine's uptime
+# (the latter only exists on Linux, which is why a macOS run never showed the difference and the CI did).
+VOLATILE = ("seconds", "uptime_s")
+
+
 class FakeDeck(unittest.TestCase):
     """~/ with a Steam library on a fake SD card, the game installed on it, a plugin install, a fake /proc."""
 
@@ -427,9 +432,24 @@ class RemoteProbeTest(FakeDeck):
         remote = dp.parse_result(done.stdout)
         direct = self.probe()
         for res in (remote, direct):
-            res.pop("seconds")
+            for key in VOLATILE:                                      # the machine's own clock moves between two runs
+                res.pop(key, None)
         self.assertEqual(remote, json.loads(json.dumps(direct)))
         self.assertEqual(len(done.stdout.strip().splitlines()), 1)               # ONE JSON object
+
+    def test_only_the_clock_fields_differ_between_two_probes_of_the_same_state(self):
+        """Regression: the CI failed because two probes read /proc/uptime at different moments."""
+        up1, up2 = os.path.join(self.root, "up1"), os.path.join(self.root, "up2")
+        for path, value in ((up1, "100.50 10.0"), (up2, "101.91 10.0")):
+            with open(path, "w") as f:
+                f.write(value)
+        with mock.patch.object(steam, "MEDIA_ROOT", self.media):
+            kw = dict(home=self.home, proc_root=self.proc, mountinfo=self.mountinfo, media_root=self.media)
+            a = json.loads(json.dumps(dp.remote_probe(self.req, steam, uptime_file=up1, **kw)))
+            b = json.loads(json.dumps(dp.remote_probe(self.req, steam, uptime_file=up2, **kw)))
+        self.assertEqual((a["uptime_s"], b["uptime_s"]), (100.5, 101.91))
+        differing = {k for k in a if a[k] != b.get(k)}
+        self.assertLessEqual(differing, set(VOLATILE))
 
     def test_a_remote_failure_is_still_one_json_object(self):
         script = dp.build_script(self.req, steam_source="raise RuntimeError('boom')")
