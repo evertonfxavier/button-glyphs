@@ -92,6 +92,20 @@ class RepoHealthTests(unittest.TestCase):
             self.assertTrue((ROOT / ".github" / "ISSUE_TEMPLATE" / n).exists())
             self.assertIn("template=" + n, (ROOT / "README.md").read_text() + (ROOT / "SUPPORTED_GAMES.md").read_text())
 
+    def test_every_tool_compiles_and_mentioned_tools_exist(self):
+        tools = sorted((ROOT / "tools").glob("*.py"))
+        self.assertTrue(tools)
+        for tool in tools:
+            compile(tool.read_text(), str(tool), "exec")
+        # tools named in the docs and in the agentic set must live in this repository
+        names = set()
+        scan = [ROOT / "CLAUDE.md", ROOT.parent / "CLAUDE.md"] + markdown_files() + sorted((ROOT.parent / ".claude").rglob("*.md"))
+        for md in scan:
+            if md.exists():
+                names.update(re.findall(r"\btools/([a-z_]+\.py)", md.read_text()))
+        missing = sorted(n for n in names if not (ROOT / "tools" / n).exists())
+        self.assertEqual(missing, [])
+
 
 if __name__ == "__main__":
     unittest.main()
