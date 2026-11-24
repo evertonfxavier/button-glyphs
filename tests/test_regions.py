@@ -265,7 +265,8 @@ class RegionsTest(unittest.TestCase):
         os.makedirs(mask_dir)
         src = os.path.join(ROOT, "py_modules", "button_glyphs", "masks")
         for n in os.listdir(src):
-            shutil.copy(os.path.join(src, n), mask_dir)
+            if os.path.isfile(os.path.join(src, n)):             # masks/sfh/ etc. are folders of per-game art
+                shutil.copy(os.path.join(src, n), mask_dir)
         with open(os.path.join(mask_dir, "cross.png"), "r+b") as f:
             f.truncate(40)
         self.profile.masks = MaskLoader(mask_dir)

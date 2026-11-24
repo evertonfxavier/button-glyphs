@@ -16,6 +16,7 @@ import time
 from . import image, steam
 from . import entries
 from . import region_patch
+from . import files_patch
 from .trailer import TRAILER_MAGIC, read_trailer, write_trailer  # noqa: F401  (re-exported)
 from .profiles import PROFILES
 from .profiles.config_value import MAX_FILE as MAX_SAVE, ConfigValueError
@@ -143,6 +144,8 @@ class Engine:
     def _status(self, app, profile, cfg, cmdlines):
         if getattr(profile, "region_level", False):
             return self._status_regions(app, profile, cfg, cmdlines)
+        if getattr(profile, "files_level", False):
+            return self._status_files(app, profile, cfg, cmdlines)
         if getattr(profile, "config_level", False):
             return self._status_config(app, profile, cfg, cmdlines)
         gcfg = cfg["games"].get(app["appid"], {})
@@ -206,7 +209,8 @@ class Engine:
             cfg = self.load_config()
             for appid, gcfg in cfg["games"].items():
                 if appid in self.profiles and (gcfg.get("style", "original") != "original"
-                                               or self._restore_pending(appid, gcfg)):
+                                               or self._restore_pending(appid, gcfg)
+                                               or self._files_restore_pending(appid)):
                     results.append(self.sync(appid, reason=reason))
         return results
 
@@ -251,6 +255,8 @@ class Engine:
     def _sync_file(self, app, profile, gcfg, reason, logs):
         if getattr(profile, "region_level", False):
             return self._sync_regions(app, profile, gcfg, reason, logs)
+        if getattr(profile, "files_level", False):
+            return self._sync_files(app, profile, gcfg, reason, logs)
         if getattr(profile, "config_level", False):
             return self._sync_config(app, profile, gcfg, reason, logs)
         if getattr(profile, "entry_level", False):
@@ -419,6 +425,127 @@ class Engine:
             logs.append(gcfg["last_event"])
         self._info("%s: %s applied to %d region(s) (%s)", appid, desired,
                    len(todo), reason)
+        return True
+
+    # ------------------------------------------------------------------ files-level strategy
+
+    def _files_backup_dir(self, appid):
+        return os.path.join(self.backup_root, appid, "files")
+
+    def _status_files(self, app, profile, cfg, cmdlines):
+        gcfg = cfg["games"].get(app["appid"], {})
+        desired = gcfg.get("style", "original")
+        want = self._effective(profile, desired)
+        backup_dir = self._files_backup_dir(app["appid"])
+        out = {
+            "style": desired,
+            "applied": desired,
+            "has_backup": os.path.isdir(backup_dir),
+            "last_event": gcfg.get("last_event", ""),
+            "roles": [label for _, label in profile.roles],
+            "original_hint": getattr(profile, "original_hint", ""),
+        }
+        try:
+            rows = files_patch.plan(profile, app["install_path"], backup_dir)
+        except Exception as exc:                   # one game's trouble must never fail the whole listing
+            if self.log:
+                self.log.exception("status of %s: cannot read its files", app["appid"])
+            out.update(state="error", message="cannot read %s: %s" % (profile.file, exc))
+            return out
+        out["applied"] = files_patch.applied_style(rows, profile.native_style, profile.patch_styles[0])
+        refusal = files_patch.check(rows, want)
+        # has this plugin handled the game before? (backups, or a recorded apply in the config)
+        touched = out["has_backup"] or bool(gcfg.get("applied_buildid") or gcfg.get("last_event"))
+        notice = files_patch.differs(rows, touched)
+        todo = [r for r in rows if not files_patch.is_ok(r, want)]
+        if steam.is_running(app, cmdlines):
+            out.update(state="running", message="Game is running; changes apply when it closes")
+        elif not steam.is_ready(app):
+            out.update(state="updating", message="Steam is updating this game")
+        elif gcfg.get("error"):                    # an error outranks "pending" (else it hides forever)
+            out.update(state="error", message=gcfg["error"])
+        elif refusal:
+            out.update(state="error", message=refusal)
+        elif notice:                               # files that are not ours and not the supported build:
+            # an error if we may have left art behind, else a notice (an "ok" with a message, like the
+            # config strategy's "Start the game once": the status model has no separate notice level)
+            out.update(state="error" if touched else "ok", message=notice)
+        elif todo and want == "original":
+            out.update(state="pending", message="%s will be restored"
+                       % ("Original" if desired == "original" else STYLE_LABEL[desired] + " glyphs"))
+        elif todo and all(r.state == files_patch.STALE for r in todo):
+            out.update(state="pending", message="Improved %s glyphs will be applied" % STYLE_LABEL[desired])
+        elif todo:
+            out.update(state="pending", message="%s will be applied" % STYLE_LABEL[desired])
+        else:
+            out.update(state="ok", message="%s glyphs active" % STYLE_LABEL[desired])
+        return out
+
+    def _files_restore_pending(self, appid):
+        """A loose-files game set to Original whose files still hold our drawing (the game was
+        running when Original was chosen): the watcher finishes the restore."""
+        profile = self.profiles[appid]
+        if not getattr(profile, "files_level", False):
+            return False
+        app = steam.installed_apps(self.home).get(appid)
+        if not app or not steam.is_ready(app):
+            return False
+        try:
+            rows = files_patch.plan(profile, app["install_path"], self._files_backup_dir(appid))
+        except Exception:                          # the watcher must go on with the other games
+            if self.log:
+                self.log.exception("watcher: cannot read the files of %s", appid)
+            return False
+        return any(r.state in (files_patch.PATCHED, files_patch.STALE) for r in rows)
+
+    def _sync_files(self, app, profile, gcfg, reason, logs):
+        """Bring every loose file of the profile to the chosen style, one whole file at a time.
+
+        The files carry no marker, so their state is read from SHA-256 (files_patch.py). Order:
+        plan -> check ALL files (any missing/unknown file refuses the whole run, nothing written)
+        -> preflight of the bundled art -> backups of every pristine file (verified) -> render all
+        -> replace each file atomically. Undo writes the verified backups back in reverse order.
+        A file that holds an older drawing of ours is rebuilt from its backup, never from itself.
+        """
+        appid = app["appid"]
+        desired = gcfg.get("style", "original")
+        want = self._effective(profile, desired)
+        install = app["install_path"]
+        backup_dir = self._files_backup_dir(appid)
+        files_patch.clean_temps(profile, install, backup_dir)
+        rows = files_patch.plan(profile, install, backup_dir)
+        if all(files_patch.is_ok(r, want) for r in rows):
+            logs.append("%s already applied" % STYLE_LABEL[desired])
+            return False
+
+        refusal = files_patch.check(rows, want)
+        if refusal:
+            raise RuntimeError(refusal)
+        if want == "original":
+            files_patch.revert(profile, install, backup_dir, rows)
+            gcfg["last_event"] = "Original restored"
+            logs.append("original restored")
+            gcfg["applied_buildid"] = app["buildid"]
+            return True
+
+        preflight = getattr(profile, "preflight", None)
+        if preflight:                              # bundled art unusable -> fail before any write
+            preflight()
+        files_patch.ensure_backups(profile, install, backup_dir, rows)
+        files_patch.apply(profile, install, backup_dir, rows, want)
+
+        previous = gcfg.get("applied_buildid")
+        gcfg["applied_buildid"] = app["buildid"]
+        if reason == "user":
+            gcfg["last_event"] = "%s applied" % STYLE_LABEL[desired]
+            logs.append("%s applied" % STYLE_LABEL[desired])
+        else:
+            note = ("build %s -> %s" % (previous, app["buildid"])
+                    if previous and previous != app["buildid"] else "build %s" % app["buildid"])
+            gcfg["last_event"] = "%s re-applied (%s)" % (STYLE_LABEL[desired], note)
+            logs.append(gcfg["last_event"])
+        self._info("%s: %s applied to %d file(s) (%s)", appid, desired,
+                   sum(1 for r in rows if not files_patch.is_ok(r, want)), reason)
         return True
 
     # ------------------------------------------------------------------ entry-level strategy

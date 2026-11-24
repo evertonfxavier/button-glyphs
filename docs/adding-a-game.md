@@ -31,6 +31,7 @@ the technique the profile uses to change them. There are five so far:
 | **In-place raw regions** | Raw (uncompressed) textures sit at fixed offsets inside one giant file | [Quantum Break](games/474960-quantum-break.md) (56 GB archive) | `RegionGlyphProfile` |
 | **In-place DXT regions** | The same, but the textures are DXT-compressed (DDS) inside a container | [Saint Seiya](games/348710-saint-seiya.md) | `DxtRegionProfile` |
 | **Config value** | The game already contains both sets and stores the choice as a value in a save/config file | [10 Second Ninja X](games/435790-10-second-ninja-x.md) (one INI key in the save) | `ConfigValueProfile` |
+| **Loose files** | Every prompt is a tiny loose file with no spare byte for a marker; the state is read from SHA-256 | [Songs for a Hero](games/389170-songs-for-a-hero.md) (24 XNB textures) | `XnbPictureProfile` |
 
 How to choose, in order (stop at the first yes):
 

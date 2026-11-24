@@ -43,6 +43,8 @@ STRATEGY = {
                "Only the changed parts are backed up, not the whole archive.",
     "dxt-regions": "Rewrites the button textures **in place** inside a very large archive (same size, nothing moves). "
                    "Only the changed parts are backed up, not the whole archive.",
+    "loose-files": "Replaces the game's small button-art files **one by one**, each written safely as a whole. The "
+                   "original of every file is kept, and **Original** gives back the exact bytes Steam installed.",
 }
 STYLE_NAME = {"original": "Original", "ps": "PlayStation", "xbox": "Xbox"}
 
@@ -104,6 +106,8 @@ def styles_of(profile):
 def files_of(profile):
     if getattr(profile, "config_level", False):
         return "one value in the game's save file `%s` (inside its Proton prefix)" % os.path.basename(profile.file)
+    if getattr(profile, "files_level", False):
+        return "%d small texture files under `%s/`" % (len(profile.files), profile.file)
     if getattr(profile, "entry_level", False):
         files = [t["file"] for t in profile.targets()]
         return "`%s` and %d other archive%s" % (files[0], len(files) - 1, "" if len(files) == 2 else "s")

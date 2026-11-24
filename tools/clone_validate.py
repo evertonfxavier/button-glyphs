@@ -50,6 +50,8 @@ def sha256(path, chunk=1 << 20):
 
 
 def profile_files(profile):
+    if getattr(profile, "files_level", False):
+        return [e["file"] for e in profile.files]
     if getattr(profile, "entry_level", False):
         return [t["file"] for t in profile.targets()]
     return [profile.file]

@@ -126,8 +126,82 @@ def running_install_paths(proc_root="/proc"):
     return cmdlines
 
 
+MEDIA_ROOT = "/run/media"   # where the Deck mounts SD cards: /run/media/<user>/<label> (older: /run/media/<label>)
+
+
+def _media_aliases(path):
+    """Other names of the same mounted library under MEDIA_ROOT (`<user>/<label>` and `<label>`).
+
+    Only a path that really lives under MEDIA_ROOT and has a `steamapps` folder is looked at, and an
+    alias counts only if it exists and is the very same folder as the mount we started from, so a
+    different volume of the same name is never taken for it.
+    """
+    root = MEDIA_ROOT.rstrip("/") + "/"
+    if not path.startswith(root):
+        return []
+    parts = path[len(root):].split("/")
+    if "steamapps" not in parts:
+        return []
+    cut = parts.index("steamapps")
+    mount, tail = parts[:cut], "/".join(parts[cut:])
+    if len(mount) == 2:                                    # <user>/<label>  ->  <label>
+        others = [[mount[1]]]
+    elif len(mount) == 1:                                  # <label>  ->  <user>/<label> for each folder here
+        try:
+            users = sorted(os.listdir(root))
+        except OSError:
+            users = []
+        others = [[u, mount[0]] for u in users if u != mount[0]]
+    else:
+        return []
+    home = root + "/".join(mount)
+    found = []
+    for other in others:
+        candidate = root + "/".join(other)
+        try:
+            if os.path.isdir(candidate) and os.path.samefile(candidate, home):
+                found.append(candidate + "/" + tail)
+        except OSError:
+            continue
+    return found
+
+
+def install_forms(install_path):
+    """Every name the install folder may be running under, each with a trailing '/'.
+
+    The path as Steam reports it (always first, as before), its realpath, and the mount aliases of
+    either. Only ever adds names: it can make `is_running` see more, never less. Names are compared
+    exactly as they are (no Unicode normalisation) on both sides.
+    """
+    path = install_path.rstrip("/")
+    names = [path]
+    try:
+        # Cheap and hang-proof: only the install path itself, MEDIA_ROOT (local) and paths named like our own
+        # volume under it are touched; no folder of any mounted volume is ever listed.
+        if path:
+            real = os.path.realpath(path)
+            if real != path:
+                names.append(real)
+        for base in list(names):
+            for alias in _media_aliases(base):
+                if alias not in names:
+                    names.append(alias)
+    except (OSError, ValueError):
+        pass                                               # the plain form is always there; never fail the guard
+    return [n + "/" for n in names]
+
+
 def is_running(app, cmdlines):
-    path = app["install_path"].rstrip("/") + "/"
-    # Proton passes Windows-style paths too (Z:\home\deck\...)
-    win = "Z:" + path.replace("/", "\\")
-    return any(path in c or win in c for c in cmdlines)
+    """True when a process runs from the game's folder (under any of its names) or is its Steam launcher.
+
+    Proton passes Windows-style paths too (Z:\\home\\deck\\...), and the launcher's command line
+    carries `AppId=<appid>` as a token of its own (never a part of a longer number).
+    """
+    forms = install_forms(app["install_path"])
+    wins = ["Z:" + f.replace("/", "\\") for f in forms]
+    appid = str(app.get("appid", ""))
+    token = re.compile(r"(?<!\S)AppId=%s(?!\S)" % re.escape(appid)) if appid.isdigit() else None
+    for c in cmdlines:
+        if any(f in c for f in forms) or any(w in c for w in wins) or (token and token.search(c)):
+            return True
+    return False
