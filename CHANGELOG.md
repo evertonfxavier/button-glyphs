@@ -7,6 +7,8 @@ Add your line under **Unreleased** in the pull request; maintainers move it into
 
 ## [Unreleased]
 
+## [0.3.11] - 2026-11-24
+
 ### Changed
 - New panel layout: a short legend of the status dots, then one "Game" select (every installed game, supported first, a
   status dot inside each option so the highlighted game is always visible), then the style select (Original, PS, Xbox) with
@@ -130,7 +132,8 @@ First published release.
 - A background watcher that re-applies the chosen style after a game update or "Verify integrity of game files".
 - Automatic GitHub releases with a zip and a `.sha256` file when the version in `package.json` changes.
 
-[Unreleased]: https://github.com/evertonfxavier/button-glyphs/compare/v0.3.10...HEAD
+[Unreleased]: https://github.com/evertonfxavier/button-glyphs/compare/v0.3.11...HEAD
+[0.3.11]: https://github.com/evertonfxavier/button-glyphs/compare/v0.3.10...v0.3.11
 [0.3.10]: https://github.com/evertonfxavier/button-glyphs/compare/v0.3.9...v0.3.10
 [0.3.9]: https://github.com/evertonfxavier/button-glyphs/compare/v0.3.8...v0.3.9
 [0.3.8]: https://github.com/evertonfxavier/button-glyphs/compare/v0.3.7...v0.3.8
