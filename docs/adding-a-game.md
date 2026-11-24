@@ -57,6 +57,8 @@ du -sh "<install dir>"/*                # where the bytes are
 file <some file>; xxd -l 64 <some file> # what format is it? (magic bytes)
 strings -n 8 <exe> | grep -i -E "xbox|playstation|ps3|controller|gamepad|button"
 ```
+Start with the triage, which does most of this in one read-only pass and prints a short JSON (engine, containers, texture formats, ranked prompt-like files, Xbox/PS/Switch variant sets, strategy leads): `python3 tools/triage_game.py <install dir>` on a copy, or `python3 tools/triage_game.py --appid <id>` for the Deck (see [development.md](development.md#triage-a-game-before-the-recon)). Its lines are leads, not conclusions: confirm them on the real files.
+
 Write down: the engine, the archive formats and sizes, anything with `button`, `pad`, `controller`, `hud`, `icon`, `prompt` in its name,
 and whether PlayStation art is already present. Search the web for existing icon mods and input fixes: a mod tells you *which files* hold the art
 (never copy a mod's files, and check its licence).

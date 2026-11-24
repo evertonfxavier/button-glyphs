@@ -7,6 +7,12 @@ Add your line under **Unreleased** in the pull request; maintainers move it into
 
 ## [Unreleased]
 
+### Added
+- Maintainer tool `tools/triage_game.py`: a read-only, bounded triage of a game's install folder (a local path, or `--appid`
+  through the Deck) that reports the engine with evidence, containers by magic, texture formats, ranked prompt-like files,
+  Xbox/PlayStation/Switch variant sets and strategy leads. It recognises 17 engines and container families and is meant to run
+  before the recon.
+
 ## [0.3.8] - 2026-11-24
 
 ### Fixed

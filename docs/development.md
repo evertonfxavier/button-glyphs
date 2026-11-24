@@ -105,6 +105,19 @@ Which probes a kind runs is in the tool's docstring (the config-value kind has n
 
 `deck_probe.py` is one file with two modes. The remote part is a stdlib-only, read-only program that the host sends on stdin of `deck.sh 'python3 -'` (so no game path is on a command line). It reports the Steam library spelling and the appmanifest, the filesystem and mount options (journaled or not), free space, owner and mode, the SHA-256 of every pinned file or region range against the table, the processes that mention the game and whether the plugin's own `steam.is_running` sees them, the installed plugin and its config (only styles and last events), the backups' size and leftover `*.button-glyphs.tmp` files. It exits 0 (no FAIL), 1 (a FAIL) or 2 (Deck unreachable).
 
+## Triage a game before the recon
+
+`tools/triage_game.py` is a read-only, bounded first look at an install folder. It turns the first hour of a recon into one JSON and 25 lines:
+
+```bash
+python3 tools/triage_game.py <install dir> [--json out.json] [--max-files N] [--keywords a,b] [--time-budget S] [--probe-kb KB]
+python3 tools/triage_game.py --appid <id> [--json out.json]     # the Deck must be awake: .claude/scripts/deck.sh --check
+```
+
+It reports the install size and file counts, the extension histogram (top 25 by count and by bytes), engine verdicts with their evidence and a confidence (Unity, Unreal, GameMaker, MonoGame/XNA/FNA, Godot, RPG Maker, Ren'Py, Electron/NW.js, Source, id Tech, Remedy Northlight, Ubisoft Scimitar/Anvil, CRI CPK, Dimps EMB, Bethesda, Frostbite, or `unknown`), the .NET/Mono/IL2CPP runtime, containers by magic bytes (largest first), texture formats of a sample (DDS fourcc/DXGI, PNG, TGA, KTX, XNB surface format), an entropy hint for the largest archives ("likely encrypted or compressed", nothing more), the top 60 prompt-like paths (keyword score, then small pictures in UI folders; every folder keeps its best few), names inside archives that can be listed without decompressing (CPK TOC, forge name table, zip central directory, the `.xml` next to an `.rmdp`), whether Xbox/PS/Switch variant sets exist by filename, input-layer files (`xinput`, SDL, Steam Input), config files with a button/controller key, and strategy leads with "what to check next". Every conclusion is worded as a lead ("likely", "possible", "check").
+
+Safety: it never writes, never follows a symlink (links are counted and listed), never hashes or reads a file whole. A file is opened for 64 bytes of magic; the few extras have constants in the file (512 bytes of header for a sample of textures and for the ranked candidates, 4 KB of the first bytes of the three largest containers, config files up to 256 KB, an archive index up to `--probe-kb`). The walk stops at `--max-files` entries (default 200000) and at `--time-budget` seconds (default 60) and then says `truncated`. In host mode the Deck gets the same code on stdin of `deck.sh 'python3 -'` with a JSON request that holds the appid and the limits, never a game path (exit 2 when the Deck is unreachable). `tests/test_triage_game.py` proves the bounds with spies on every write primitive and every byte read. Saves and the Proton prefix are outside the install folder and are not read.
+
 ## Releases
 
 Releases are automatic: **every push to `main` is released**, so the release never lags behind the code. CI runs the tests, builds the zip and publishes it as `vX.Y.Z` (with a `.sha256` and generated notes). The version is decided by `scripts/ci_version.py`:
