@@ -7,6 +7,8 @@ Add your line under **Unreleased** in the pull request; maintainers move it into
 
 ## [Unreleased]
 
+## [0.3.9] - 2026-11-24
+
 ### Added
 - Maintainer tool `tools/triage_game.py`: a read-only, bounded triage of a game's install folder (a local path, or `--appid`
   through the Deck) that reports the engine with evidence, containers by magic, texture formats, ranked prompt-like files,
@@ -99,7 +101,8 @@ First published release.
 - A background watcher that re-applies the chosen style after a game update or "Verify integrity of game files".
 - Automatic GitHub releases with a zip and a `.sha256` file when the version in `package.json` changes.
 
-[Unreleased]: https://github.com/evertonfxavier/button-glyphs/compare/v0.3.8...HEAD
+[Unreleased]: https://github.com/evertonfxavier/button-glyphs/compare/v0.3.9...HEAD
+[0.3.9]: https://github.com/evertonfxavier/button-glyphs/compare/v0.3.8...v0.3.9
 [0.3.8]: https://github.com/evertonfxavier/button-glyphs/compare/v0.3.7...v0.3.8
 [0.3.7]: https://github.com/evertonfxavier/button-glyphs/compare/v0.3.6...v0.3.7
 [0.3.6]: https://github.com/evertonfxavier/button-glyphs/compare/v0.3.5...v0.3.6
