@@ -7,6 +7,13 @@ Add your line under **Unreleased** in the pull request; maintainers move it into
 
 ## [Unreleased]
 
+### Fixed
+- `tools/deck_probe.py`, first run on a real Deck, had three false results: a game the plugin had patched was reported as a
+  hash mismatch (it now recognises the plugin's own files by the render ledger and checks that the backups still equal the
+  pinned originals); Steam's `TargetBuildID` of 0 ("no update target") was read as a pending update; and a plugin without
+  the Decky `root` flag was assumed to run as root. A saved-value game is no longer reported as "pending" because its pinned
+  file never changes.
+
 ## [0.3.9] - 2026-11-24
 
 ### Added

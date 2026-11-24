@@ -105,8 +105,10 @@ def _inside(real, base):
     return real == base or real.startswith(base.rstrip(os.sep) + os.sep)
 
 
-def _hash_exact(path, size, expected, deadline):
-    """('match'|'differ'|'unreadable'|'timeout', detail): at most size+1 bytes are read, never through a link."""
+def _hash_exact(path, size, expected, deadline, actual=None):
+    """('match'|'differ'|'unreadable'|'timeout', detail): at most size+1 bytes are read, never through a link.
+
+    `actual`, when given, receives the digest of a file that read completely (to recognise our own renders)."""
     flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0)
     try:
         fd = os.open(path, flags)
@@ -128,6 +130,8 @@ def _hash_exact(path, size, expected, deadline):
         os.close(fd)
     if size + 1 - left != size:
         return "differ", "the file changed while it was read"
+    if actual is not None:
+        actual["sha256"] = h.hexdigest()
     return ("match" if h.hexdigest() == expected else "differ"), ""
 
 
@@ -155,9 +159,12 @@ def inspect_file(install, base_real, rel, size, sha, deadline):
     elif size is not None and st.st_size != size:
         row.update(state="differ", detail="size %d, pinned %d" % (st.st_size, size))
     else:
-        row["state"], detail = _hash_exact(path, size, sha, deadline)
+        actual = {}
+        row["state"], detail = _hash_exact(path, size, sha, deadline, actual)
         if detail:
             row["detail"] = detail
+        if row["state"] == "differ" and actual.get("sha256"):
+            row["actual"] = actual["sha256"]
     return row
 
 
@@ -279,6 +286,40 @@ def _loader_user(proc_root):
             except (OSError, ValueError):
                 continue
     return None
+
+
+LEDGER_LINE = re.compile(rb"([0-9a-f]{64}) [0-9]+")
+
+
+def ledger_hashes(backup_dir, limit=1 << 20):
+    """SHA-256s in the plugin's render ledger (renders.log): what the plugin itself wrote. Read-only, bounded;
+    a torn last line is ignored exactly as the plugin ignores it."""
+    try:
+        with open(os.path.join(backup_dir, "renders.log"), "rb") as f:
+            raw = f.read(limit)
+    except OSError:
+        return set()
+    return {m.group(1).decode("ascii") for m in (LEDGER_LINE.fullmatch(l) for l in raw.split(b"\n")[:-1]) if m}
+
+
+def backup_shas(backup_dir, max_files=200, max_bytes=16 << 20):
+    """{sha256 of each *.orig backup}: the originals the plugin kept (read-only, bounded, regular files only)."""
+    found = set()
+    try:
+        names = sorted(n for n in os.listdir(backup_dir) if n.endswith(".orig"))[:max_files]
+    except OSError:
+        return found
+    for name in names:
+        path = os.path.join(backup_dir, name)
+        try:
+            st = os.lstat(path)
+            if not stat.S_ISREG(st.st_mode) or st.st_size > max_bytes:
+                continue
+            with open(path, "rb") as f:
+                found.add(hashlib.sha256(f.read(max_bytes + 1)).hexdigest())
+        except OSError:
+            continue
+    return found
 
 
 def _read_json(path, limit=1 << 20):
@@ -449,6 +490,21 @@ def remote_probe(req, steam, home=None, proc_root="/proc", mountinfo="/proc/self
                            for a, g in sorted(((cfg or {}).get("games") or {}).items()) if isinstance(g, dict)}
         bdir = os.path.join(home, "homebrew", "data", req["plugin"], "backups", appid)
         plugin["backups"] = dict(tree_size(bdir), exists=os.path.isdir(bdir)) if os.path.isdir(bdir) else {"exists": False}
+        try:
+            plugin["config_owner"] = _owner(os.lstat(cfg_path))["user"]
+        except (OSError, TypeError, KeyError):
+            plugin["config_owner"] = None
+        fdir = os.path.join(bdir, "files")
+        ledger = ledger_hashes(fdir)
+        plugin["ledger"] = {"hashes": len(ledger)}
+        pinned_shas = {f["sha256"] for f in req.get("files", []) if f.get("sha256")}
+        kept = backup_shas(fdir)
+        plugin["backup_originals"] = {"files": len(kept), "pinned_match": len(kept & pinned_shas)}
+        for row in out["files"]["rows"]:                      # a differing file whose hash the plugin recorded is OURS
+            if row.get("state") == "differ" and row.get("actual") in ledger:
+                row["state"] = "patched"
+                row["detail"] = "its hash is in the plugin's render ledger"
+        out["files"]["patched"] = sum(1 for r in out["files"]["rows"] if r["state"] == "patched")
     out["plugin"] = plugin
     out["seconds"] = round(time.time() - started, 2)
     return out
@@ -531,7 +587,10 @@ def judge(res, req, local_version=None):
     add(PASS, "install", "%s: build %s, installdir %r, library %s" % (
         steam.get("name"), steam.get("buildid"), steam.get("installdir"), steam.get("library")))
     flags = steam.get("StateFlags")
-    if flags != 4 or (steam.get("TargetBuildID") and steam.get("TargetBuildID") != steam.get("buildid")):
+    target = str(steam.get("TargetBuildID") or "").strip()
+    if target in ("0",):                                    # Steam writes 0 for "no update target"
+        target = ""
+    if flags != 4 or (target and target != str(steam.get("buildid"))):
         add(WARN, "steam state", "StateFlags %s, TargetBuildID %s (an update or verification is pending; the plugin defers)"
             % (flags, steam.get("TargetBuildID") or "-"))
     else:
@@ -542,10 +601,23 @@ def judge(res, req, local_version=None):
     # hashes
     rows = res.get("files", {}).get("rows", [])
     pinned = [r for r in rows if r.get("state") != "present"]
-    bad = [r for r in pinned if r["state"] != "match"]
+    patched = [r for r in pinned if r["state"] == "patched"]
+    bad = [r for r in pinned if r["state"] not in ("match", "patched")]
     if req.get("files") and any(f.get("sha256") for f in req["files"]):
         total = sum(1 for f in req["files"] if f.get("sha256"))
-        if bad:
+        if not bad and patched:
+            kept = (res.get("plugin") or {}).get("backup_originals") or {}
+            style = ((res.get("plugin") or {}).get("game") or {}).get("style")
+            note = "%d original, %d patched by the plugin (hash in its render ledger); originals kept in backups: %s" % (
+                total - len(patched), len(patched),
+                "%d/%d" % (kept.get("pinned_match", 0), len(patched)) if kept else "unknown")
+            if style == "original":
+                add(WARN, "hashes", note + "; the config says Original, so the watcher will restore them")
+            elif kept and kept.get("pinned_match", 0) < len(patched):
+                add(WARN, "hashes", note + "; some backups do not match the pinned originals")
+            else:
+                add(PASS, "hashes", note)
+        elif bad:
             add(FAIL, "hashes", "%d of %d pinned file(s) do not match: %s" % (
                 len(bad), total, "; ".join("%s %s%s" % (r["file"], r["state"], " (%s)" % r["detail"] if r.get("detail") else "")
                                            for r in bad[:4])))
@@ -605,7 +677,11 @@ def judge(res, req, local_version=None):
     loader = res.get("loader") or {}
     users = {k.split(":")[0] for k in owners}
     if owners:
-        who = loader.get("user") or res.get("me")
+        flags = (res.get("plugin") or {}).get("flags") or []
+        if "root" in flags or "_root" in flags:               # Decky runs a plugin as root only when it asks for it
+            who = "root"
+        else:
+            who = (res.get("plugin") or {}).get("config_owner") or res.get("me") or loader.get("user")
         if who and users and users != {who}:
             add(WARN, "owner", "files are owned by %s, the plugin runs as %s: a rewritten file would change owner (%s)" % (
                 ", ".join(sorted(users)), who, "; ".join("%s x%d" % kv for kv in sorted(owners.items()))))
@@ -644,7 +720,8 @@ def judge(res, req, local_version=None):
             add(FAIL, "plugin state", "the plugin recorded an error for this game: %s" % game["error"])
         elif reg is not None and style != "original" and reg.get("marked", 0) == 0:
             add(WARN, "plugin state", "style %s is chosen but no region carries the marker: pending (the watcher will apply it)" % style)
-        elif style != "original" and rows and not bad and any(f.get("sha256") for f in req.get("files", [])):
+        elif (style != "original" and rows and not bad and not patched and not req.get("save")      # a saved-value game changes the save, never the pinned file
+          and any(f.get("sha256") for f in req.get("files", []))):
             add(WARN, "plugin state", "style %s is chosen but every file is still the pinned original: pending" % style)
         else:
             add(PASS, "plugin state", "style %s, last event %r" % (style, game.get("last_event", "")))

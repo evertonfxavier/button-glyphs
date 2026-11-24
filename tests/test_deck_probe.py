@@ -289,6 +289,88 @@ class RemoteProbeTest(FakeDeck):
         shutil.rmtree(os.path.join(self.home, "homebrew", "plugins"))
         self.assertFalse(self.probe()["plugin"]["installed"])
 
+    def ledger(self, *hashes, torn=b""):
+        bdir = os.path.join(self.home, "homebrew", "data", PLUGIN, "backups", APPID, "files")
+        os.makedirs(bdir, exist_ok=True)
+        with open(os.path.join(bdir, "renders.log"), "wb") as f:
+            f.write("".join("%s 1\n" % h for h in hashes).encode() + torn)
+        return bdir
+
+    def patch_file(self, entry):
+        path = os.path.join(self.install, *entry["file"].split("/"))
+        size = os.path.getsize(path)                              # the plugin keeps every file's length
+        data = (b"patched-by-the-plugin-" + entry["key"].encode()).ljust(size, b"\0")[:size]
+        self.put(entry["file"], data)
+        return sha(data)
+
+    def keep_original(self, bdir, e):
+        """The backup the plugin keeps of a file's original bytes (replaces the fixture's placeholder)."""
+        from test_files_patch import DRAWN, original_xnb
+        w, h = next((w, h) for k, w, h in DRAWN if k == e["key"])
+        data = original_xnb(e["key"], w, h)
+        with open(os.path.join(bdir, e["key"].replace("/", "_") + ".orig"), "wb") as f:
+            f.write(data)
+        return data
+
+    def test_a_file_the_plugin_wrote_is_recognised_by_its_ledger_hash(self):
+        e = self.entries[0]
+        digest = self.patch_file(e)
+        bdir = self.ledger(digest)
+        os.unlink(os.path.join(bdir, "Tooltip_A.orig"))            # drop the fixture's placeholder
+        self.keep_original(bdir, e)
+        res = self.probe()
+        row = self.rows(res)[e["file"]]
+        self.assertEqual(row["state"], "patched")
+        self.assertEqual(res["files"]["patched"], 1)
+        self.assertEqual(res["plugin"]["ledger"], {"hashes": 1})
+        lines = {l[1]: l for l in dp.judge(res, self.req, local_version=dp.local_version())}
+        self.assertEqual(lines["hashes"][0], "PASS")
+        self.assertIn("1 patched", lines["hashes"][2])
+        self.assertEqual(lines["plugin state"][0], "PASS")           # style ps and the file IS patched: nothing pending
+
+    def test_a_changed_file_that_is_not_in_the_ledger_is_a_fail_and_a_torn_line_does_not_count(self):
+        e = self.entries[0]
+        digest = self.patch_file(e)
+        self.ledger(torn=("%s 1" % digest).encode())              # no newline: the plugin ignores it too
+        res = self.probe()
+        self.assertEqual(self.rows(res)[e["file"]]["state"], "differ")
+        self.assertEqual(self.rows(res)[e["file"]]["actual"], digest)
+        lines = {l[1]: l for l in dp.judge(res, self.req)}
+        self.assertEqual(lines["hashes"][0], "FAIL")
+
+    def test_backups_equal_to_the_pinned_originals_are_counted(self):
+        e = self.entries[0]
+        digest = self.patch_file(e)
+        bdir = self.ledger(digest)
+        original = next(f["sha256"] for f in self.req["files"] if f["file"] == e["file"])
+        os.unlink(os.path.join(bdir, "Tooltip_A.orig"))
+        self.assertEqual(sha(self.keep_original(bdir, e)), original)
+        res = self.probe()
+        self.assertEqual(res["plugin"]["backup_originals"]["pinned_match"], 1)
+        lines = {l[1]: l for l in dp.judge(res, self.req)}
+        self.assertIn("originals kept in backups: 1/1", lines["hashes"][2])
+        self.assertEqual(lines["hashes"][0], "PASS")
+
+    def test_a_backup_that_is_not_the_pinned_original_is_not_counted_and_warns(self):
+        e = self.entries[0]
+        digest = self.patch_file(e)
+        self.ledger(digest)                                        # the fixture's 100-byte placeholder backup stays
+        res = self.probe()
+        self.assertEqual(res["plugin"]["backup_originals"], {"files": 1, "pinned_match": 0})
+        lines = {l[1]: l for l in dp.judge(res, self.req)}
+        self.assertEqual(lines["hashes"][0], "WARN")
+        self.assertIn("do not match the pinned originals", lines["hashes"][2])
+
+    def test_a_plugin_without_the_root_flag_is_judged_by_who_owns_its_config(self):
+        pdir = os.path.join(self.home, "homebrew", "plugins", PLUGIN)
+        with open(os.path.join(pdir, "plugin.json"), "w") as f:
+            json.dump({"name": PLUGIN, "flags": [], "author": "x"}, f)
+        res = self.probe()
+        self.assertEqual(res["plugin"]["flags"], [])
+        self.assertTrue(res["plugin"]["config_owner"])
+        lines = {l[1]: l for l in dp.judge(res, self.req)}
+        self.assertEqual(lines["owner"][0], "PASS")
+
     def test_pending_style_with_original_files_is_flagged(self):
         lines = {l[1]: l for l in dp.judge(self.probe(), self.req, local_version=dp.local_version())}
         self.assertEqual(lines["plugin state"][0], "WARN")                       # style ps chosen, files still the pinned ones
@@ -559,10 +641,52 @@ class JudgeTest(unittest.TestCase):
     def test_healthy(self):
         self.assertEqual({v for v in self.levels(self.base()).values()}, {"PASS"})
 
-    def test_owner_other_than_the_plugin_user_warns(self):
+    def test_a_plugin_that_asks_for_root_and_leaves_deck_owned_files_warns(self):
+        res = self.base()
+        res["plugin"]["flags"] = ["root"]
+        self.assertEqual(self.levels(res)["owner"], "WARN")
+
+    def test_a_plugin_without_the_root_flag_runs_as_the_user_even_when_the_loader_is_root(self):
+        """Decky itself runs as root; a plugin runs as root only with the flag. Files the plugin rewrote are deck-owned."""
         res = self.base()
         res["loader"] = {"uid": 0, "user": "root"}
+        res["plugin"]["flags"] = []
+        res["plugin"]["config_owner"] = "deck"
+        self.assertEqual(self.levels(res)["owner"], "PASS")
+        res["plugin"]["config_owner"] = "root"               # the plugin's own files are root-owned: it IS root
         self.assertEqual(self.levels(res)["owner"], "WARN")
+
+    def test_steam_writes_target_build_zero_when_nothing_is_pending(self):
+        res = self.base()
+        res["steam"]["TargetBuildID"] = "0"
+        self.assertEqual(self.levels(res)["steam state"], "PASS")
+        res["steam"]["TargetBuildID"] = "7099999"
+        self.assertEqual(self.levels(res)["steam state"], "WARN")
+
+    def test_patched_rows_are_the_plugins_work_not_a_mismatch(self):
+        res = self.base()
+        res["files"]["rows"][0]["state"] = "patched"
+        res["plugin"]["game"] = {"style": "ps"}
+        res["plugin"]["backup_originals"] = {"files": 1, "pinned_match": 1}
+        self.assertEqual(self.levels(res)["hashes"], "PASS")
+        res["plugin"]["backup_originals"] = {"files": 1, "pinned_match": 0}   # the saved originals are not the pinned ones
+        self.assertEqual(self.levels(res)["hashes"], "WARN")
+        res["plugin"]["backup_originals"] = {"files": 1, "pinned_match": 1}
+        res["plugin"]["game"] = {"style": "original"}                         # patched but the config says Original
+        self.assertEqual(self.levels(res)["hashes"], "WARN")
+
+    def test_a_saved_value_game_keeps_its_pinned_file_so_nothing_is_pending(self):
+        res = self.base()
+        res["plugin"]["game"] = {"style": "ps"}
+        req = self.req()
+        self.assertEqual({l[1]: l[0] for l in dp.judge(res, req, "1")}["plugin state"], "WARN")   # a file game: still original
+        req["save"] = "saves/game.sav"                                                            # a saved-value game
+        self.assertEqual({l[1]: l[0] for l in dp.judge(res, req, "1")}["plugin state"], "PASS")
+
+    def test_a_differing_row_that_is_not_ours_is_still_a_fail(self):
+        res = self.base()
+        res["files"]["rows"][0]["state"] = "differ"
+        self.assertEqual(self.levels(res)["hashes"], "FAIL")
 
     def test_space_levels(self):
         res = self.base()
