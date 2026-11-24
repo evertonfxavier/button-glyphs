@@ -58,7 +58,7 @@ jobs:
         run: bash scripts/ci-build-zip.sh
 
       - name: Upload plugin ZIP artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: button-glyphs-plugin-zip
           path: |
@@ -80,7 +80,7 @@ jobs:
           test "$(unzip -p "$PLUGIN_ZIP" 'Button Glyphs/package.json' | node -p "JSON.parse(require('fs').readFileSync(0,'utf8')).version")" = "${{ steps.meta.outputs.version }}"
 
       - name: Upload extracted folder
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: button-glyphs-plugin
           path: out/extracted/
