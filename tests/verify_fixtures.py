@@ -111,6 +111,53 @@ def config_fixture(base, value="525.000000"):
     return src
 
 
+# ---- add-file overlay (a Croteam-style game; the pins are computed from the deterministic fixture)
+OVERLAY_APPID, HD_APPID = "204340", "41010"
+
+
+def _pins(arg, name, build, entries_for, **kw):
+    pins = os.path.join(str(arg), name)
+    if not os.path.isdir(pins):
+        build(pins, **kw)
+    return entries_for(pins)
+
+
+def overlay_profiles(arg):
+    """arg = {"base": folder, "vehicle": "gro" | "loose"}-ish string 'folder|vehicle' (the crash child rebuilds it)."""
+    import overlay_fixture as of
+    base, _, vehicle = str(arg).partition("|")
+    art = os.path.join(base, "art")
+    if not os.path.isdir(art):
+        of.make_art(art)
+    entries = _pins(base, "pins", of.build_game, of.entries_for)
+    return {OVERLAY_APPID: of.make_profile(entries, art, vehicle=vehicle or "gro")}
+
+
+def overlay_fixture(base):
+    """The user's 'copies': the game's root archives (what verify_profile.py is given as <dir>)."""
+    import overlay_fixture as of
+    src = os.path.join(str(base), "overlay-src")
+    of.build_game(src)
+    return src
+
+
+def hd_profiles(arg):
+    import hd_fixture as hf
+    base, _, vehicle = str(arg).partition("|")
+    art = os.path.join(base, "hd-art")
+    if not os.path.isdir(art):
+        hf.make_art(art)
+    entries = _pins(base, "hd-pins", hf.build_game, hf.entries_for)
+    return {HD_APPID: hf.make_profile(entries, art, vehicle=vehicle or "gro")}
+
+
+def hd_fixture(base):
+    import hd_fixture as hf
+    src = os.path.join(str(base), "hd-src")
+    hf.build_game(src)
+    return os.path.join(src, *hf.MOUNT.split("/"))              # the mount folder itself: the other accepted shape
+
+
 def _write(path, data):
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, "wb") as f:

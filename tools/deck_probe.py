@@ -35,6 +35,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "py_modules"))
 
+from button_glyphs import overlay_patch  # noqa: E402
+
 # ===== REMOTE BEGIN (self-contained; this text is what runs on the Deck) =====
 import hashlib
 import json
@@ -558,6 +560,13 @@ def build_request(profile, appid, plugin="Button Glyphs"):
         req["save"] = profile.file
     elif getattr(profile, "entry_level", False):
         req["files"] = [{"file": t["file"], "size": None, "sha256": None} for t in profile.targets()]
+    elif getattr(profile, "overlay_level", False):
+        # the game's own archives are only checked for presence (no whole-archive hash: 1-4 GB); our added file's
+        # absence is a normal state, so it is not asked for as a "profile file"
+        mount = "" if profile.mount in ("", ".") else profile.mount.rstrip("/") + "/"
+        req["files"] = [{"file": mount + name, "size": size, "sha256": None} for name, size in profile.load_order]
+        req["folders"] = [] if not mount else [mount.rstrip("/")]
+        req["apply_bytes"] = overlay_patch.estimate_bytes(profile)       # what the apply writes, not the archives' sizes
     else:
         req["files"] = [{"file": profile.file, "size": None, "sha256": None}]
     return req
@@ -660,6 +669,8 @@ def judge(res, req, local_version=None):
         add(FAIL, "filesystem", "mounted read-only")
     # space
     need = sum(f.get("size") or 0 for f in req.get("files", [])) + sum(r["size"] for r in req.get("regions", []))
+    if req.get("apply_bytes") is not None:                  # the add-file overlay writes its own file only, never the game's archives
+        need = req["apply_bytes"]
     free = fs.get("free_bytes")
     if free is not None:
         if free < need + MIN_FREE:

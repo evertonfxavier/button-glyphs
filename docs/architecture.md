@@ -12,6 +12,7 @@ Engine (engine.py)  ── config.json (homebrew/settings/Button Glyphs)
    ├─ entry_level    entries.py               append new entry, repoint slot    (AC1)
    ├─ region_level   region_patch.py          in-place regions + backups        (Quantum Break, Saint Seiya)
    ├─ files_level    files_patch.py           tiny loose files, atomic, no marker (Songs for a Hero)
+   ├─ overlay_level  overlay_patch.py         ADD one archive/files that the game loads last (Serious Sam 2, Serious Sam HD)
    └─ config_level   engine._sync_config      one value in a save/config file   (10 Second Ninja X)
    ▼
 Profile (profiles/<game>.py)  = pure knowledge of one game: where the art is, how to redraw it
@@ -30,6 +31,7 @@ never opens a backup, writes a marker or decides when to run.
 | `region_level` | `RegionGlyphProfile` | raw BGRA textures at fixed offsets in a giant file | only the changed regions (`backups/<appid>/regions/`) | 44-byte marker in the DDS reserved bytes | Quantum Break |
 | `region_level` | `DxtRegionProfile` | DXT5 DDS files at fixed offsets (CPK/EMB) | only the changed regions | same DDS marker | Saint Seiya |
 | `files_level` | `XnbPictureProfile` | many tiny loose files (XNB textures of 0.7-2.7 KB) with no spare byte for a marker | the whole original file, each (`backups/<appid>/files/`), verified by SHA-256 | none: state is read from SHA-256 (original / patched / stale / orphan / unknown) | Songs for a Hero |
+| `overlay_level` | `OverlayGlyphProfile` | the engine mounts every archive of the game folder in sorted order and a later entry of the same name wins (Croteam `.gro`) | none: no game file is ever written, so there is nothing to back up (`backups/<appid>/overlay/` holds only the ledger and a folder journal) | none: state is read from SHA-256 of OUR added file(s) (original = absent / patched / stale / unknown) | Serious Sam 2, Serious Sam HD (First and Second Encounter) |
 | `config_level` | `ConfigValueProfile` | the game already has both sets and stores the choice as one value in a save/config file (outside the game folder) | whole save, once, before the first change (`backups/<appid>/<file>.orig`) | the value itself; the value found before our first change is recorded in config (`original_value`) | 10 Second Ninja X |
 
 ### Profile contracts (what the engine calls)
@@ -48,6 +50,10 @@ never opens a backup, writes a marker or decides when to run.
   `file` of the profile is just the folder), `native_style`, `patch_styles`,
   `render(original_bytes, entry, style) -> bytes` (same length, same first `header` bytes) and
   `preflight()` (the bundled art loads and has the right size, or a clear error before any write).
+- **overlay-level**: `entries` (`{key, path, size, sha256, gro, ...}`: the originals it replaces, pinned), `mount`, `archive`,
+  `vehicle` (`"gro"` = one added archive, `"loose"` = the same entries as loose files), `native_style`, `patch_styles`,
+  `outputs(style, originals) -> {path: bytes}` (each proven to decode to the intended picture) and `preflight()`. Per-entry
+  builders (`RoundSymbol`, `WholePicture`) live in `profiles/overlay_glyphs.py`; another Croteam game is a table plus builders.
 - **config-level**: `values` (`{style: text}`), `find_saves(libraries)` (the Proton prefix is searched
   in every Steam library), `locate(data) -> (offset, value)` (raises `ConfigValueError` unless the
   key is exactly once, in its section, in the expected number format), `style_of(value)`,
@@ -82,6 +88,38 @@ never opens a backup, writes a marker or decides when to run.
   `os.replace`, fsync of the folder, read back). Undo: verified backups back in reverse order, each checked against the
   pinned hash. A crash leaves every file whole (original or drawn); the next sync finishes, or Original restores. An
   Original chosen while the game ran is finished by `sync_all` (`_files_restore_pending`).
+- **Add-file overlay** (nothing of the game is written, so exact undo = delete our file): `overlay_patch.plan` classifies every
+  file the vehicle writes as `missing` (original), `patched` (= today's output, built from the game's own pinned originals),
+  `stale` (its hash is in the ledger `backups/<appid>/overlay/renders.log`: an older drawing, rebuilt, never edited), or
+  `unknown` (a file with our name that we did not write, also a folder/symlink/oversize file, also a loose file that would
+  shadow an entry: a style is refused with nothing written, Original leaves it alone and says `foreign_file`). Files of the
+  vehicle NOT in use are checked the same way (a vehicle switch removes our old artefact last). Reads: the `.gro` folder is
+  listed, every archive except ours is opened once (central directories only), each pinned entry is read at most `size` bytes
+  from the archive that wins it and SHA-256 checked; any difference is an unknown build (nothing written). Order: plan ->
+  art preflight -> build and prove every output in memory (decode back, zip CRC) -> room -> ledger (fsynced) -> loose only:
+  folder journal `dirs.log` then folders -> each file atomically (temp + fsync + `os.replace` + fsync of the folder, read
+  back). Undo: remove our files in reverse order (each re-hashed first), then the journaled folders that are empty. A cut
+  leaves a prefix ("half"): the next sync finishes or Original removes it. Original reads nothing from the game (a game
+  update never blocks it); with a lost ledger a file equal to today's output is still recognised as ours. The watcher
+  (`_overlay_restore_pending`) reacts only to files whose hash is in the ledger or to our empty journaled folders.
+- **Overlay: an update, ownership, waiting**: when the pins no longer match (a game update) and a file of ours is PROVEN ours
+  (ledger / build record), the sync removes it by the Original path (hash re-checked, reverse order, crash-safe) and reports
+  `unsupported_build` saying so: built from the old originals and loaded last it would keep overriding the new ones; a file we
+  cannot prove ours is left alone, and a plain read failure removes nothing. As root (Decky) every file and folder we create in
+  the game folder is handed to the game folder's owner with a neighbouring file's mode, on the TEMP file before the rename
+  (`files_patch.write_atomic(prepare=...)`); the ledger lives in the plugin's own folder and is not touched. The watcher waits 10
+  minutes after ANY failed apply (build, full disk, OSError); the room is checked from the pinned sizes before anything is built.
+- **Overlay status is cheap**: `overlay_patch.plan` never builds. For a style it checks the central directories of the game's `.gro` files
+  (size + CRC-32 + winning archive of every pinned entry; parsed once per archive, cached while (size, mtime, ctime, inode) are
+  unchanged), computes the build **fingerprint** (SHA-256 of the pins, the parameters of every builder, the bytes of the bundled
+  pictures, the revision and the source of the drawing / encoding / writing code) and compares our file's SHA-256 with
+  `backups/<appid>/overlay/builds.log` (`<fingerprint> <style> <sha256>`, written with the ledger BEFORE the first write). A match is
+  `patched`; in the ledger without a match is `stale`; neither is `unknown`. Anything that cannot be proven cheaply (an unreadable
+  picture, a lost record) is stale or unknown, never patched. The full SHA-256 check of the originals, the in-memory build and the
+  decode-back proof (`build_plan`) run only in the apply path and when a file with our name needs adopting (the watcher tries that
+  once: a failed build leaves the error and `overlay_retry_after`, so the watcher waits 10 minutes; an explicit choice retries at
+  once; a cut or a full disk during the WRITE is retried by the next tick). HD games (DXT encode of a 512x512 pad and a 12 MB atlas
+  cost seconds) therefore cost milliseconds per status poll.
 - **Entry, region and single-file games set to Original** are also finished by `sync_all` when a file still carries OUR
   marker (`_marker_restore_pending`: entries patched/half/partial, regions patched/writing, our trailer): a power cut
   inside Original or a game that was running then. Unknown, strange or missing files never trigger it; an idle tick
@@ -115,6 +153,15 @@ never opens a backup, writes a marker or decides when to run.
 | Settings / backups | `~/homebrew/settings/Button Glyphs/config.json`, `~/homebrew/data/Button Glyphs/backups/<appid>/` |
 | Logs | `~/homebrew/logs/Button Glyphs/*.log` |
 | Steam libraries | `~/.local/share/Steam/steamapps/{common,compatdata}` (+ SD / extra drives via `libraryfolders.vdf`) |
+
+## Verification kit
+`tools/verify_profile.py <appid> <dir of real copies>` knows the overlay (`OverlayKind` in `tools/verify_worlds.py`): `<dir>` holds the
+game's root `.gro` archives (or the install-relative tree); worlds clone them; the units are the added file(s) (and the folders the
+loose vehicle creates); the whole-tree map hashes each archive once per world. Probes: cycle (originals byte-identical, our file gone),
+power cuts as an exception and as a hard `os._exit` at write / replace / **remove** events, running guard, Steam verify (our file
+deleted), new build, unknown build (a bit flipped inside a pinned entry's data), foreign file / link / folder / 3 GB sparse file with our
+name (and a loose file that would hide an entry), damaged art, ledger and build-record loss, timings (including `status` and the idle
+tick), visual sheets. `tools/clone_validate.py` and `tools/deck_probe.py` (presence of the game's archives only) support it too.
 
 ## Adding a strategy
 Only when no existing one fits (see skill `choosing-patch-strategy`): add a profile class with

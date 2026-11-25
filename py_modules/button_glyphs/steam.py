@@ -191,17 +191,41 @@ def install_forms(install_path):
     return [n + "/" for n in names]
 
 
+def _windows_forms(forms):
+    """Case-insensitive patterns for the Windows-style names Proton prints, for ANY drive letter and either slash.
+
+    Wine maps `Z:` to the root of the filesystem, but a Steam library (or an SD card) is also mapped to a letter of its
+    own (`S:\\steamapps\\common\\<install dir>\\Bin\\Game.exe`), so the drive letter is not known: every form of the
+    install folder is matched with `<letter>:` in front, and so is its `steamapps\\common\\<install dir>\\` tail (the path
+    relative to the library root). Only ever adds names: `is_running` keeps every earlier match.
+    """
+    out = []
+    for f in forms:
+        parts = [p for p in f.split("/") if p]
+        if not parts:
+            continue
+        out.append(re.compile(r"[A-Za-z]:[\\/]+" + r"[\\/]+".join(re.escape(p) for p in parts) + r"[\\/]", re.I))
+        if "steamapps" in parts:
+            tail = parts[parts.index("steamapps"):]
+            if len(tail) >= 3 and tail[1].lower() == "common":
+                out.append(re.compile(r"[A-Za-z]:[\\/]+" + r"[\\/]+".join(re.escape(p) for p in tail) + r"[\\/]", re.I))
+    return out
+
+
 def is_running(app, cmdlines):
     """True when a process runs from the game's folder (under any of its names) or is its Steam launcher.
 
-    Proton passes Windows-style paths too (Z:\\home\\deck\\...), and the launcher's command line
-    carries `AppId=<appid>` as a token of its own (never a part of a longer number).
+    Proton passes Windows-style paths too (Z:\\home\\deck\\..., or `S:\\steamapps\\common\\<dir>\\...` for a library
+    mapped to its own drive letter: any letter, either slash, any case), and the launcher's command line carries
+    `AppId=<appid>` as a token of its own (never a part of a longer number).
     """
     forms = install_forms(app["install_path"])
     wins = ["Z:" + f.replace("/", "\\") for f in forms]
+    drives = _windows_forms(forms)
     appid = str(app.get("appid", ""))
     token = re.compile(r"(?<!\S)AppId=%s(?!\S)" % re.escape(appid)) if appid.isdigit() else None
     for c in cmdlines:
-        if any(f in c for f in forms) or any(w in c for w in wins) or (token and token.search(c)):
+        if (any(f in c for f in forms) or any(w in c for w in wins) or any(d.search(c) for d in drives)
+                or (token and token.search(c))):
             return True
     return False

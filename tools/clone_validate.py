@@ -99,6 +99,11 @@ def validate(appid, src_dir, styles=None, profiles=None, glyph_dir=None, keep=Fa
             return {"ok": False, "steps": [],
                     "problems": ["build %s is not pinned by the profile (use --buildid)" % buildid]}
         files = [profile.builds[buildid]["file"], profile.file]
+    elif getattr(profile, "overlay_level", False):
+        # the game's own archives are the files to prove untouched; the profile ADDS its own file(s), so the
+        # folder listing must also be identical after Original (checked below)
+        files = sorted(n for n in os.listdir(src_dir) if n.lower().endswith(".gro")
+                       and n.lower() != profile.archive.lower() and (src_dir / n).is_file())
     else:
         files = profile_files(profile)
     missing = [f for f in files if not (src_dir / f).is_file()]
@@ -121,6 +126,7 @@ def validate(appid, src_dir, styles=None, profiles=None, glyph_dir=None, keep=Fa
             paths[profile.file] = prefix / profile.file
         for f in files:
             clone(src_dir / f, paths[f])
+        listing = sorted(os.listdir(game)) if getattr(profile, "overlay_level", False) else None
         before = {f: sha256(paths[f]) for f in files}
         size0 = {f: os.path.getsize(paths[f]) for f in files}
         log("cloned %d file(s), %.1f MB" % (len(files), sum(size0.values()) / 1e6))
@@ -154,6 +160,8 @@ def validate(appid, src_dir, styles=None, profiles=None, glyph_dir=None, keep=Fa
         for f in files:
             if after[f] != before[f]:
                 report["problems"].append("NOT identical after 'original': %s" % f)
+        if listing is not None and sorted(os.listdir(game)) != listing:
+            report["problems"].append("the game folder listing differs after 'original' (a file we added was left)")
         log("undo: %d/%d file(s) byte-identical to the originals" % (
             sum(after[f] == before[f] for f in files), len(files)))
         if keep:

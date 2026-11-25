@@ -10,6 +10,7 @@ Kinds (picked from the profile's flags, the same ones the engine dispatches on):
   entries  `entry_level`   forge archives, new entry appended + index   (Assassin's Creed)
   il       (none)          a few bytes of one executable, trailer       (Charlie Murder)
   config   `config_level`  one value in a save inside the Proton prefix (10 Second Ninja X)
+  overlay  `overlay_level` an ADDED archive / loose files the game loads last; no game file is written (Serious Sam)
 
 This module is stdlib only. It holds no game bytes: everything it builds lives in the temp folder.
 """
@@ -24,6 +25,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import zipfile
 from pathlib import Path
 from unittest import mock
 
@@ -33,7 +35,7 @@ sys.path.insert(0, str(ROOT / "py_modules"))
 sys.path.insert(0, str(TOOLS))
 
 import clone_validate  # noqa: E402
-from button_glyphs import engine, entries, files_patch, region_patch, steam  # noqa: E402
+from button_glyphs import engine, entries, files_patch, overlay_patch, region_patch, steam  # noqa: E402
 from button_glyphs.forge import ALIGN  # noqa: E402
 
 GLYPHS = ROOT / "py_modules" / "button_glyphs" / "glyphs"
@@ -167,6 +169,35 @@ class CachedProfile:
         self._base = base
         self._cache = {}
         self.render_calls = 0
+        if getattr(base, "overlay_level", False) and FAST_BUILD[0]:
+            # fast mode: the harness builds the overlay (and validates the art) ONCE per fingerprint and replays the real
+            # write sequence for every world / every cut. The fingerprint covers the pins, the bundled art BYTES, the
+            # revision and the drawing / writing code, so a damaged picture or another revision is a different key.
+            self.outputs = self._outputs
+            self.preflight = self._preflight
+            self.build_calls = 0
+
+    def _outputs(self, style, originals):
+        try:
+            key = (self._base.fingerprint(style), style)
+        except Exception:
+            return self._base.outputs(style, originals)
+        hit = HARNESS_MEMO["outputs"].get(key)
+        if hit is None:
+            self.build_calls += 1
+            hit = HARNESS_MEMO["outputs"][key] = self._base.outputs(style, originals)
+        return hit
+
+    def _preflight(self):
+        try:
+            key = (self._base.fingerprint(self._base.patch_styles[0]), self._base.revision)
+        except Exception:
+            return self._base.preflight()                    # unreadable art: the real preflight says why
+        if key in HARNESS_MEMO["preflight"]:
+            return None
+        self._base.preflight()                               # raises on a damaged picture: never cached
+        HARNESS_MEMO["preflight"].add(key)
+        return None
 
     def __getattr__(self, name):
         return getattr(self._base, name)
@@ -188,6 +219,8 @@ def fresh_profile(profile, art_dir=None):
         old = getattr(profile, attr, None)
         if old is not None and hasattr(old, "cache"):
             setattr(p, attr, type(old)(art_dir or old.mask_dir))
+    if getattr(profile, "overlay_level", False):
+        p._memo = {}                                  # outputs memoised from the real art must not hide a damaged copy
     if hasattr(profile, "_icons"):
         p._icons = {}
         if art_dir:
@@ -198,7 +231,10 @@ def fresh_profile(profile, art_dir=None):
 def art_refs(profile):
     """[(folder, name)] of every PNG the profile draws from (`name` without .png, relative to its folder)."""
     refs = []
-    if getattr(profile, "files_level", False):
+    if getattr(profile, "overlay_level", False):
+        for e in profile.entries:
+            refs += [(profile.pictures.mask_dir, name) for name in profile.builders[e["key"]].art()]
+    elif getattr(profile, "files_level", False):
         folder = profile.pictures.mask_dir
         refs += [(folder, e["image"]) for e in profile.files]
     elif getattr(profile, "region_level", False) and hasattr(profile, "masks"):
@@ -263,7 +299,8 @@ class CrashInjector:
     """Makes the k-th write event in a scope die, either as an exception or as a hard `os._exit(9)`.
 
     Write events (counted in order): every `write()` on a file opened for writing under the scope, every
-    `truncate()`, and every `os.replace()` whose destination is under the scope. It patches the builtin
+    `truncate()`, every `os.replace()` whose destination is under the scope, and every `os.remove()` / `os.rmdir()` of
+    something that exists there (the add-file overlay undoes by deleting). It patches the builtin
     `open` and `os.replace`, so it sees the writes of ANY implementation (an atomic temp+rename one and a
     sloppy in-place one alike). A write of more than one disk sector is torn (the first half is written,
     flushed, then the process dies); a smaller one is atomic on a disk, so it dies just before.
@@ -332,13 +369,118 @@ class CrashInjector:
                 inj.event("replace")
             return real_replace(src, dst, *a, **kw)
 
+        real_remove, real_rmdir = os.remove, os.rmdir
+
+        def fake_remove(path, *a, **kw):
+            if inj.in_scope(path) and os.path.lexists(path):          # removing nothing is not a write
+                inj.event("remove")
+            return real_remove(path, *a, **kw)
+
+        def fake_rmdir(path, *a, **kw):
+            if inj.in_scope(path) and os.path.lexists(path):
+                inj.event("rmdir")
+            return real_rmdir(path, *a, **kw)
+
         self._stack.enter_context(mock.patch.object(builtins, "open", fake_open))
         self._stack.enter_context(mock.patch.object(os, "replace", fake_replace))
+        self._stack.enter_context(mock.patch.object(os, "remove", fake_remove))     # the overlay's undo is deletions
+        self._stack.enter_context(mock.patch.object(os, "rmdir", fake_rmdir))
         return self
 
     def __exit__(self, *exc):
         self._stack.close()
         return False
+
+
+# ----------------------------------------------------------------------------------------- the originals guard
+
+
+class OriginalsGuard:
+    """A write spy on the LOWEST primitives: no game file of a protected world may ever be opened for writing, renamed,
+    removed, truncated, chmod-ed, chown-ed or touched by any code path of the engine. It records a violation and lets the
+    call through (the harness works on clones), so the probe that ran it fails with the path named.
+
+    This is what lets the fast mode skip re-hashing gigabytes at every step: a game archive that was never opened for
+    writing cannot have changed (and the start / end of a probe are still compared byte for byte). `allow()` suspends it for
+    the harness's own deliberate damage (the unknown-build probe flips a bit in a pristine file on purpose).
+    """
+
+    WRITE_FLAGS = os.O_WRONLY | os.O_RDWR | os.O_APPEND | os.O_TRUNC | os.O_CREAT
+
+    def __init__(self):
+        self.paths = set()
+        self.violations = []
+        self._allowed = 0
+        self._stack = None
+
+    def protect(self, path):
+        self.paths.add(os.path.abspath(str(path)))
+
+    def release(self, path):
+        self.paths.discard(os.path.abspath(str(path)))
+
+    def release_under(self, root):
+        root = os.path.abspath(str(root)).rstrip("/") + "/"
+        self.paths = {p for p in self.paths if not p.startswith(root)}
+
+    @contextlib.contextmanager
+    def allow(self):
+        self._allowed += 1
+        try:
+            yield
+        finally:
+            self._allowed -= 1
+
+    def take(self):
+        out, self.violations = self.violations, []
+        return out
+
+    def _hit(self, what, *paths):
+        if self._allowed or not self.paths:
+            return
+        for p in paths:
+            if isinstance(p, (str, os.PathLike)) and os.path.abspath(os.fspath(p)) in self.paths:
+                self.violations.append("%s %s" % (what, os.path.abspath(os.fspath(p))))
+
+    def __enter__(self):
+        guard = self
+        real_open, real_osopen = builtins.open, os.open
+        real = {n: getattr(os, n) for n in ("replace", "rename", "remove", "unlink", "truncate", "chmod", "chown", "utime")}
+        self._stack = contextlib.ExitStack()
+
+        def fake_open(file, mode="r", *a, **kw):
+            if isinstance(mode, str) and any(c in mode for c in "wa+x"):
+                guard._hit("opened for writing:", file)
+            return real_open(file, mode, *a, **kw)
+
+        def fake_osopen(path, flags, *a, **kw):
+            if flags & OriginalsGuard.WRITE_FLAGS:
+                guard._hit("os.open for writing:", path)
+            return real_osopen(path, flags, *a, **kw)
+
+        def wrap(name, nargs):
+            fn = real[name]
+
+            def spy(*a, **kw):
+                guard._hit("os.%s:" % name, *a[:nargs])
+                return fn(*a, **kw)
+            return spy
+
+        self._stack.enter_context(mock.patch.object(builtins, "open", fake_open))
+        self._stack.enter_context(mock.patch.object(os, "open", fake_osopen))
+        for name, nargs in (("replace", 2), ("rename", 2), ("remove", 1), ("unlink", 1), ("truncate", 1), ("chmod", 1),
+                            ("chown", 1), ("utime", 1)):
+            self._stack.enter_context(mock.patch.object(os, name, wrap(name, nargs)))
+        return self
+
+    def __exit__(self, *exc):
+        self._stack.close()
+        return False
+
+
+GUARD = OriginalsGuard()
+FAST_BUILD = [False]             # set by verify_profile.run(): memoise the in-memory build / art preflight across worlds
+HARNESS_MEMO = {"outputs": {}, "preflight": set()}
 
 
 def forbid_writes(targets):
@@ -522,6 +664,17 @@ class Kind:
 
     def restore_unit(self, world, unit):
         raise NotImplementedError
+
+    def restorable_units(self, world, style):
+        """The units a Steam 'verify files' puts back (default: every unit the style changed)."""
+        return self.expected_changed(world, style)
+
+    def world_dropped(self, world, ctx):
+        """Called before a world's folder is deleted (the overlay kind compares its archives with the pristine copy)."""
+
+    def forget_crash_notes(self, world):
+        """After an in-process (exception) power cut: drop what the engine recorded about the failure, as a real cut records
+        nothing. Default: nothing to forget."""
 
     def corrupt_cases(self, world):
         return []
@@ -1032,11 +1185,228 @@ class ConfigKind(CopyKind):
         return [("data file byte", self.data_rel, "flip"), ("save key renamed", self.profile.file, "key")]
 
 
-KINDS = {"files": FilesKind, "regions": RegionsKind, "entries": EntriesKind, "il": IlKind, "config": ConfigKind}
+class OverlayKind(Kind):
+    """The add-file overlay: the profile ADDS file(s) next to the game's own archives and never writes a game file.
+
+    `<dir>` holds the game's root `.gro` archives (the folder the profile calls its mount, `Content/SeriousSamHD` ..., or
+    that folder's contents directly, or an install-relative tree). A world clones them; the profile's units are the file(s)
+    it adds (and, for the loose vehicle, the folders it creates), so "the untouched files stay identical" is the whole-tree
+    SHA-256 map of everything else (archives hashed once per world and re-hashed only if their size or time stamp changes).
+    """
+    name = "overlay"
+    has_art = True
+    unit_noun = "added file"
+
+    def resolve(self, src_dir):
+        src = Path(src_dir)
+        mount = self.profile.mount
+        folder = src / mount if mount not in ("", ".") and (src / mount).is_dir() else src
+        ours = self.profile.archive.lower()
+        gros = sorted((p for p in folder.iterdir() if p.is_file() and p.name.lower().endswith(".gro")
+                       and p.name.lower() != ours), key=lambda p: (p.name.lower(), p.name))
+        if not gros:
+            raise SourceError("no .gro archive in %s (expected the game's root archives, e.g. %s/*.gro)" % (folder, mount))
+        if folder == src and mount not in ("", "."):
+            self.notes.append("folder taken as the profile's %s folder" % mount)
+        self.folder = folder
+        self.files = {overlay_patch._join(mount, p.name): p for p in gros}
+        return self.files
+
+    def units(self):
+        files = overlay_patch.active_rels(self.profile)
+        if self.profile.vehicle != "loose":
+            return files
+        dirs = []
+        for rel in files:
+            parts = rel.split("/")[:-1]
+            for i in range(1, len(parts) + 1):
+                d = "/".join(parts[:i])
+                if d not in dirs:
+                    dirs.append(d)
+        return files + dirs
+
+    def pinned_bytes(self):
+        return sum(os.path.getsize(p) for p in self.files.values())
+
+    def pinned(self, src_dir):
+        total = len(self.profile.entries)
+        try:
+            overlay_patch.read_originals(self.profile, None, paths=list(self.files.values()))
+        except overlay_patch.Refusal as exc:
+            return 0, total, [exc.problem.message]
+        return total, total, []
+
+    SOURCE_HASH = {}                 # source path -> (size, mtime_ns, sha256): each pristine archive is hashed ONCE per run
+
+    def thorough(self):
+        return bool(getattr(self.args, "thorough", False))
+
+    def source_hash(self, src):
+        info = os.stat(src)
+        hit = self.SOURCE_HASH.get(str(src))
+        if hit and hit[:2] == (info.st_size, info.st_mtime_ns):
+            return hit[2]
+        digest = sha_file(src)
+        self.SOURCE_HASH[str(src)] = (info.st_size, info.st_mtime_ns, digest)
+        return digest
+
+    def materialise(self, world):
+        snap = world.__dict__.setdefault("_snap", {})
+        for rel, src in self.files.items():
+            dst = world.install / rel
+            fast_clone(src, dst)
+            info = os.stat(dst)
+            snap[str(dst)] = (info.st_size, info.st_mtime_ns, info.st_ino, str(src))
+            GUARD.protect(dst)                       # from here on no code path may write, rename or delete it
+
+    def world_dropped(self, world, ctx):
+        """Before a world's folder is deleted: stop guarding it and (fast mode) compare its archives byte for byte with the
+        pristine source, once per probe (the start and the end of a probe sequence); every other world of the probe relies on
+        the write spy plus the size / time stamp / inode snapshot. A world whose archives the harness damaged on purpose
+        (unknown-build) is exempt."""
+        snap = world.__dict__.get("_snap", {})
+        GUARD.release_under(world.install)
+        if self.thorough() or world.__dict__.get("_tampered") or not snap:
+            return
+        probe = getattr(ctx, "current_probe", None)
+        if probe in ctx.verified_probes:
+            return
+        ctx.verified_probes.add(probe)
+        for path, (size, mtime, ino, src) in snap.items():
+            if os.path.lexists(path) and sha_file(path) != self.source_hash(src):
+                ctx.integrity.append("%s: a game archive differs from the pristine copy at the end of the probe (%s)" % (
+                    probe, os.path.basename(path)))
+
+    # ---- state: everything under the install; archives compared by snapshot + the write spy in fast mode
+    def tree(self, world):
+        cache = world.__dict__.setdefault("_hash_cache", {})
+        snap = world.__dict__.get("_snap", {})
+        out, root = {}, str(world.install)
+        for base, dirs, names in os.walk(root):
+            for d in list(dirs):
+                p = os.path.join(base, d)
+                rel = os.path.relpath(p, root).replace(os.sep, "/")
+                if os.path.islink(p):
+                    out[rel] = "LINK->" + os.readlink(p)
+                    dirs.remove(d)
+                else:
+                    out[rel] = "DIR"
+            for n in names:
+                p = os.path.join(base, n)
+                rel = os.path.relpath(p, root).replace(os.sep, "/")
+                if os.path.islink(p):
+                    out[rel] = "LINK->" + os.readlink(p)
+                elif os.path.isfile(p):
+                    st = os.stat(p)
+                    key = (st.st_size, st.st_mtime_ns)
+                    hit = cache.get(p)
+                    pristine = snap.get(p)
+                    if (not self.thorough() and pristine and not world.__dict__.get("_tampered")
+                            and (st.st_size, st.st_mtime_ns, st.st_ino) == pristine[:3]):
+                        out[rel] = self.source_hash(pristine[3])        # unchanged since the clone: the source's hash
+                    elif st.st_size > (1 << 20) and hit and hit[0] == key:
+                        out[rel] = hit[1]
+                    else:
+                        out[rel] = sha_file(p)
+                        cache[p] = (key, out[rel])
+                else:
+                    out[rel] = "NONREG"
+        return out
+
+    def expected_changed(self, world, style):
+        return {u for u in self.units() if u not in world.start}
+
+    def forget_crash_notes(self, world):
+        """The overlay's watcher waits after a failed apply; an exception injected at write k is not such a failure."""
+        cfg = world.eng.load_config()
+        game = cfg["games"].get(world.appid)
+        if game is not None:
+            game.pop("error", None)
+            game.pop("overlay_retry_after", None)
+            world.eng.save_config(cfg)
+
+    def restorable_units(self, world, style):
+        """What Steam 'verify files' could take away: our files (a folder is never recreated or removed by it)."""
+        return {u for u in self.expected_changed(world, style) if u not in self.dirs()}
+
+    def restore_unit(self, world, unit):
+        if unit in self.dirs():
+            return                                   # Steam verify never recreates or removes a folder
+        path = world.install / unit
+        if os.path.lexists(path):
+            os.remove(path)
+
+    def dirs(self):
+        files = set(overlay_patch.active_rels(self.profile))
+        return [u for u in self.units() if u not in files]
+
+    def backup_dir(self, world):
+        return str(world.backup_root / "overlay")
+
+    def visual_pairs(self, world):
+        """[(unit, original bytes, our bytes)] of the textures the overlay replaced (the atlas .rsc is left out)."""
+        originals = overlay_patch.read_originals(self.profile, None, paths=list(self.files.values()))
+        ours = {}
+        if self.profile.vehicle == "gro":
+            with zipfile.ZipFile(world.install / overlay_patch.archive_rel(self.profile)) as z:
+                for e in self.profile.entries:
+                    ours[e["path"]] = z.read(e["path"])
+        else:
+            for e in self.profile.entries:
+                ours[e["path"]] = read_bytes(world.install / overlay_patch.loose_rel(self.profile, e))
+        return [(e["key"], originals[e["path"]], ours[e["path"]]) for e in self.profile.entries
+                if not e["path"].lower().endswith(".rsc")]
+
+    def check_markers(self, world, style, tree):
+        problems = []
+        bdir = self.backup_dir(world)
+        ledger = files_patch.read_ledger(bdir)
+        builds = overlay_patch.read_builds(bdir)
+        fp = self.profile.fingerprint(style)
+        for rel in overlay_patch.active_rels(self.profile):
+            digest = tree.get(rel)
+            if digest is None:
+                problems.append("%s: missing" % rel)
+                continue
+            if digest not in ledger:
+                problems.append("%s: its hash is not in the ownership ledger" % rel)
+            if (fp, digest) not in builds:
+                problems.append("%s: no build record for the current fingerprint" % rel)
+        return problems
+
+    def check_backups(self, world):
+        """The overlay keeps no copy of any game data: only the ledger, the build record and the folder journal."""
+        allowed = {files_patch.LEDGER, overlay_patch.BUILDS, overlay_patch.JOURNAL}
+        stray = [k for k in tree_of(world.backup_root) if os.path.basename(k) not in allowed] if world.backups_exist() else []
+        return ["%s: a plugin file that is neither ledger, build record nor journal" % k for k in stray]
+
+    def forbid_targets(self, world):
+        return [(overlay_patch, "apply"), (overlay_patch, "revert")]
+
+    def crash_scopes(self, world):
+        return {"install": [str(world.install)], "backup": [str(world.runtime)]}
+
+    def corrupt_cases(self, world):
+        """One bit flipped inside the first pinned entry's data in the archive that wins it (the directory still looks
+        right: only reading the entry shows it, so the cheap status says nothing and the apply must refuse)."""
+        import struct
+        e = self.profile.entries[0]
+        rel = overlay_patch._join(self.profile.mount, e["gro"])
+        path = world.install / rel
+        with zipfile.ZipFile(path) as z:
+            info = z.getinfo(next(n for n in z.namelist() if n.lower() == e["path"].lower()))
+        with open(path, "rb") as f:
+            f.seek(info.header_offset + 26)
+            nlen, xlen = struct.unpack("<HH", f.read(4))
+        return [("one bit of %s's data" % e["key"], rel, info.header_offset + 30 + nlen + xlen + 2)]
+
+
+KINDS = {"files": FilesKind, "regions": RegionsKind, "entries": EntriesKind, "il": IlKind, "config": ConfigKind,
+         "overlay": OverlayKind}
 
 
 def kind_name(profile):
-    for flag, name in (("files_level", "files"), ("region_level", "regions"),
+    for flag, name in (("files_level", "files"), ("region_level", "regions"), ("overlay_level", "overlay"),
                        ("config_level", "config"), ("entry_level", "entries")):
         if getattr(profile, flag, False):
             return name
@@ -1050,6 +1420,12 @@ def apply_corruption(world, case):
     """Make the damage of one `corrupt_cases` entry in the world's pristine files."""
     label, unit, how = case
     kind = world.kind
+    world.__dict__["_tampered"] = True                    # the harness damages this world's files ON PURPOSE
+    with GUARD.allow():
+        return _apply_corruption(world, label, unit, how, kind)
+
+
+def _apply_corruption(world, label, unit, how, kind):
     if kind.name == "regions":
         r = kind.region(unit)
         path, off = kind.archive(world), r["offset"] + how

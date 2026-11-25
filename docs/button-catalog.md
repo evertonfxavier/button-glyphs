@@ -2,7 +2,7 @@
 
 # Button catalog
 
-One searchable registry of every **distinct button** we drew or mapped for the games whose support is confirmed (6 games, 135 variants, 112 slots, 33 roles). Supporting the next game starts from the closest existing button instead of from zero.
+One searchable registry of every **distinct button** we drew or mapped for the games whose support is confirmed (6 games, 138 variants, 112 slots, 33 roles). Supporting the next game starts from the closest existing button instead of from zero.
 
 - **Search:** `python3 tools/build_button_catalog.py find --role a --size 13x13 [--style ps|xbox] [--game <appid>] [--kind vector|mask|pixel|picture]` ranks the existing variants: exact size first, then the nearest by area and aspect, then the same style/kind, and says `drop-in` or `resize/restyle needed`.
 - **Keep it in step:** after adding art or confirming a game run `python3 tools/build_button_catalog.py build`; `tests/test_button_catalog.py` fails until you do. Hand-maintained input: `catalog/sources.json`.
@@ -292,11 +292,14 @@ Only distinct art is listed. `used by` names the confirmed games whose slots use
 | `touchpad.svg.ps-outline-medium-pad` | vector | vector | ps, rect, outline, none, transparent, mono-light | `svg/ps/outline-medium-pad.svg` | library | svg-set-ps |
 | `touchpad.svg.ps-outline-small-pad` | vector | vector | ps, rect, outline, none, transparent, mono-light | `svg/ps/outline-small-pad.svg` | library | svg-set-ps |
 
-### `controller` - whole controller picture (options screen) (Xbox Xbox pad / PS DualSense) - 1 distinct
+### `controller` - whole controller picture (options screen) (Xbox Xbox pad / PS DualSense) - 4 distinct
 
 | Variant | Kind | Size | Look (style, shape, shading, label, colour, bg) | File | Used by | Origin |
 |---------|------|------|------|------|---------|--------|
 | `controller.picture.controller-dualsense-704x450` | picture | 704x450 | ps, picture, line-art, none, transparent, mono-light | `masks/controller_dualsense.png` | QB | owner-line-art |
+| `controller.picture.serious-ds3-hd-fe-512-512x512` | picture | 512x512 | ps, picture, line-art, word, transparent, mono-light | `masks/serious/ds3-hd-fe-512.png` | library | owner-ds3-art |
+| `controller.picture.serious-ds3-hd-tse-512-512x512` | picture | 512x512 | ps, picture, line-art, word, transparent, mono-light | `masks/serious/ds3-hd-tse-512.png` | library | owner-ds3-art |
+| `controller.picture.serious-ds3-sam2-1024-1024x1024` | picture | 1024x1024 | ps, picture, unknown, word, transparent, mono-dark | `masks/serious/ds3-sam2-1024.png` | library | owner-ds3-art |
 
 ## Slots per game
 
@@ -492,7 +495,7 @@ Strategy `loose-files`, page [389170-songs-for-a-hero.md](games/389170-songs-for
 | `home` | guide / PS button | Guide | PS | 3 | 0 |
 | `touchpad` | touchpad | - | touchpad | 3 | 0 |
 | `hold` | HOLD label | - | - | 0 | 1 |
-| `controller` | whole controller picture (options screen) | Xbox pad | DualSense | 1 | 1 |
+| `controller` | whole controller picture (options screen) | Xbox pad | DualSense | 4 | 1 |
 
 A game's own role names are aliases: `empty` = `b` (AC1 empty-hand glyph (B)); `head` = `y` (AC1 eagle-vision glyph (Y)); `legs` = `a` (AC1 legs glyph (A)); `ls` = `lstick` (AC1 / older name of the left stick); `options` = `start` (PlayStation name of start); `rs` = `rstick` (AC1 / older name of the right stick); `share` = `select` (PlayStation name of select); `weapon` = `x` (AC1 weapon-hand glyph (X)).
 
@@ -579,3 +582,4 @@ A game's own role names are aliases: `empty` = `b` (AC1 empty-hand glyph (B)); `
 - `montserrat-ofl`: label text set in Montserrat Bold (SIL OFL 1.1, py_modules/button_glyphs/masks/OFL-Montserrat.txt) by tools/qb_build.py
 - `owner-pixel-art`: the project owner's own PlayStation pixel art (stated by the owner, 2026-11-24), sliced and fitted to the texture size by tools/sfh_art.py; some labels use the 3x5 pixel font drawn for that tool
 - `owner-line-art`: the project owner's own DualSense line drawing (stated by the owner, 2026-11-24), cut out and scaled by tools/qb_controller_art.py
+- `owner-ds3-art`: the project owner's own DualShock 3 drawings, two light line-art panels and one photographic panel (own work of the plugin author, the user, 2026-11-24; no third-party licence; the Sony marks are theirs), cropped to the opaque box and scaled to each pad texture by hand-run PIL (LANCZOS, premultiplied), no script kept

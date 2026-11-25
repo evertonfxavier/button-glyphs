@@ -16,4 +16,5 @@ CODES = (
     "unsupported_build",  # args: detail
     "start_game_once",
     "original_kept",
+    "foreign_file",       # args: file (a file with the overlay's name that this plugin did not write)
 )

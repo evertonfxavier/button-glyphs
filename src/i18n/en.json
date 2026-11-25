@@ -61,5 +61,6 @@
   "code.cannot_read": "Cannot read {file}: {reason}",
   "code.unsupported_build": "This game version is not supported: {detail}",
   "code.start_game_once": "Start the game once to enable",
-  "code.original_kept": "Original: the game's own setting"
+  "code.original_kept": "Original: the game's own setting",
+  "code.foreign_file": "A file named {file} is in the game folder but this plugin did not write it. Nothing was changed"
 }

@@ -6,6 +6,8 @@
 
 <dir> holds real copies of what the profile touches (the same layout tools/clone_validate.py expects):
 
+  overlay  (add-file)     the game's root `.gro` archives (the profile's mount folder, e.g. Content/SeriousSamHD, or its
+                          contents directly). The profile ADDS a file; the probes prove no game file is ever written.
   files    (loose files)  the files at their install-relative paths, or the folder the profile calls
                           its own (e.g. Songs for a Hero: the Content folder itself). Everything else in
                           the folder is copied too, so "the untouched files stay identical" is proven.
@@ -20,7 +22,7 @@ Everything runs on a clone in a temp folder (never on <dir>), through a fake Ste
 Engine, the REAL profile and its REAL bundled art. Exit status 0 only if every probe passes. A probe that does
 not apply to a kind says SKIP and why; it never passes silently. Probes (in this order):
 
-  probe             what it proves                                                    files regions entries il config
+  probe             what it proves                                          files regions entries il config overlay
   pinned            size + SHA-256 of every copy match the profile's table              x     x      check  check  x
   cycle             ps, ps (no-op), original, ps, xbox, ps, original: WHOLE-tree map    x     x      x      x      x
                     after each step; original = the start; only the profile's units
@@ -71,7 +73,7 @@ sys.path.insert(0, str(TOOLS))
 
 import clone_validate  # noqa: E402
 import verify_worlds as vw  # noqa: E402
-from button_glyphs import files_patch, image  # noqa: E402
+from button_glyphs import files_patch, image, overlay_patch  # noqa: E402
 
 PASS, FAIL, SKIP = "PASS", "FAIL", "SKIP"
 PROBES = ["pinned", "cycle", "revision-upgrade", "running", "steam-verify", "new-build", "unknown-build",
@@ -127,16 +129,21 @@ class Ctx:
         self.kind = vw.KINDS[vw.kind_name(self.raw_profile)](self.raw_profile, args)
         self.kind.resolve(src_dir)
         self.src_dir = Path(src_dir)
-        self.use_cache = not args.no_render_cache and hasattr(self.raw_profile, "render")
+        overlay = getattr(self.raw_profile, "overlay_level", False)
+        self.use_cache = not args.no_render_cache and (hasattr(self.raw_profile, "render") or (
+            overlay and not getattr(args, "thorough", False)))
         self.profile = vw.CachedProfile(self.raw_profile) if self.use_cache else self.raw_profile
         self.installdir = args.installdir
         self.buildid = getattr(self.kind, "build", None) or "1000001"
         self.styles = list(args.styles) if args.styles else clone_validate.profile_styles(self.raw_profile)
         if not self.styles:
             raise vw.SourceError("profile has no patch style")
-        self.native = getattr(self.raw_profile, "native_style", None) if self.kind.name in ("files", "regions") else None
+        self.native = getattr(self.raw_profile, "native_style", None) if self.kind.name in ("files", "regions", "overlay") else None
         self._refs = {}
         self.worlds = []
+        self.current_probe = None
+        self.verified_probes = set()                 # probes whose end-of-probe byte comparison was done (overlay kind)
+        self.integrity = []                          # what that comparison / the write spy found
 
     # ---- worlds
     def world(self, name, **kw):
@@ -145,6 +152,7 @@ class Ctx:
         return w
 
     def drop(self, w):
+        self.kind.world_dropped(w, self)
         shutil.rmtree(w.root, ignore_errors=True)
         if w in self.worlds:
             self.worlds.remove(w)
@@ -152,6 +160,23 @@ class Ctx:
     def drop_all(self):
         for w in list(self.worlds):
             self.drop(w)
+
+    def memo_file(self):
+        """The harness's build memo as a pickle in the work folder (rewritten when it grew), for the hard-crash children."""
+        import pickle
+        size = (len(vw.HARNESS_MEMO["outputs"]), len(vw.HARNESS_MEMO["preflight"]))
+        path = self.work / "memo.pkl"
+        if getattr(self, "_memo_size", None) != size or not path.exists():
+            with open(path, "wb") as f:
+                pickle.dump({"outputs": vw.HARNESS_MEMO["outputs"], "preflight": vw.HARNESS_MEMO["preflight"]}, f, protocol=4)
+            self._memo_size = size
+        return str(path)
+
+    def take_integrity(self):
+        """What the write spy and the end-of-probe comparison found since the last call (each a failed expectation)."""
+        out = [("a game file was written: " + v) for v in vw.GUARD.take()] + self.integrity
+        self.integrity = []
+        return out
 
     def effective(self, style):
         return "original" if style == "original" or style == self.native else style
@@ -239,7 +264,10 @@ def probe_cycle(ctx):
         chk.ok(not w.temps(), "%s: stray temp files %s" % (style, short(w.temps())))
         prev_style, prev_tree = style, t
     ctx.drop(w)
-    return chk, "%d steps, %d %s(s) changed, %d identical" % (len(seq), changed_n, ctx.kind.unit_noun, len(start) - changed_n)
+    # identical = the start files that the patched tree still holds byte for byte (an ADDED file is not one of the start's)
+    reference = next(iter(patched.values()), None)
+    identical = len(start) if reference is None else sum(1 for k, v in start.items() if reference.get(k) == v)
+    return chk, "%d steps, %d %s(s) changed, %d identical" % (len(seq), changed_n, ctx.kind.unit_noun, identical)
 
 
 def damage(path, mode):
@@ -321,7 +349,7 @@ def probe_revision_upgrade(ctx):
         newer = vw.fresh_profile(raw, art)
         newer.revision = raw.revision + 1
         variants.append(("revision bumped, art changed", newer))
-        if ctx.kind.name == "files":
+        if ctx.kind.name in ("files", "overlay"):
             same = vw.fresh_profile(raw, art)
             variants.append(("same revision, art changed (ledger)", same))
     else:
@@ -434,7 +462,10 @@ def backups_of(w):
     """The plugin's backed-up originals (name -> SHA-256); the ledger is rewritten on every apply and is not one."""
     if not w.backups_exist():
         return {}
-    return {k: v for k, v in vw.tree_of(w.backup_root).items() if not k.endswith("renders.log")}
+    bookkeeping = ("renders.log",)                                  # rewritten on every apply: not a backup
+    if w.kind.name == "overlay":                                      # only the overlay also keeps a build record and a journal
+        bookkeeping += ("builds.log", "dirs.log")
+    return {k: v for k, v in vw.tree_of(w.backup_root).items() if not k.endswith(bookkeeping)}
 
 
 def probe_steam_verify(ctx):
@@ -444,7 +475,7 @@ def probe_steam_verify(ctx):
     s0 = ctx.style0
     ref = ctx.ref(s0)
     w0 = ctx.world("verify-probe")
-    patched_units = sorted(ctx.kind.expected_changed(w0, ctx.effective(s0)))
+    patched_units = sorted(ctx.kind.restorable_units(w0, ctx.effective(s0)))
     ctx.drop(w0)
     if not patched_units:
         raise Skip("%s changes nothing in this profile" % s0)
@@ -481,7 +512,7 @@ def probe_new_build(ctx):
         return chk, "unpinned build refused, nothing written"
     ref = ctx.ref(s0)
     w0 = ctx.world("newbuild-probe")
-    units = sorted(ctx.kind.expected_changed(w0, ctx.effective(s0)))
+    units = sorted(ctx.kind.restorable_units(w0, ctx.effective(s0)))
     ctx.drop(w0)
     if not units:
         raise Skip("%s changes nothing in this profile" % s0)
@@ -560,7 +591,7 @@ def pick_points(n, quick):
 
 # Kinds whose watcher (`Engine.sync_all`) finishes an interrupted Original by itself: a failure to do so is a FAIL.
 # The others (config) keep only a note: their Original is finished by `_restore_pending` when a value was recorded.
-WATCHER_RESUMES_ORIGINAL = ("entries", "regions", "il", "files")
+WATCHER_RESUMES_ORIGINAL = ("entries", "regions", "il", "files", "overlay")
 
 
 def crash_case(ctx, mode, k, hard, scope, ref, chk, label):
@@ -576,6 +607,10 @@ def crash_case(ctx, mode, k, hard, scope, ref, chk, label):
         spec = {"root": str(w.root), "appid": ctx.appid, "style": style, "k": k, "roots": roots,
                 "factory": ctx.args.profiles, "arg": ctx.args.profiles_arg,
                 "sys_path": [p for p in sys.path if p and os.path.isdir(p)][:12]}
+        if getattr(ctx.raw_profile, "overlay_level", False):
+            spec["vehicle"] = ctx.raw_profile.vehicle
+            if not ctx.args.thorough:
+                spec["memo_file"] = ctx.memo_file()      # the child replays the writes with the already built bytes
         p = vw.run_child(spec)
         reached = p.returncode == 9
         if not reached and p.returncode != 0:
@@ -583,6 +618,7 @@ def crash_case(ctx, mode, k, hard, scope, ref, chk, label):
     else:
         with vw.CrashInjector(roots, k=k) as inj:
             w.set(style)
+        kind.forget_crash_notes(w)                    # a real power cut records nothing: forget what the exception left
         reached = inj.count > k
     chk.ok(reached, "%s: write event %d was never reached" % (label, k))
     mid = w.tree()
@@ -660,6 +696,8 @@ def probe_crash(ctx):
 
 
 def probe_symlinks(ctx):
+    if ctx.kind.name == "overlay":
+        return overlay_foreign(ctx)
     if ctx.kind.name != "files":
         raise Skip("only loose-file games can have a file replaced by a link")
     chk = Check()
@@ -701,7 +739,135 @@ def probe_symlinks(ctx):
     return chk, "%d cases not ours, untouched" % (len(cases) + 1)
 
 
+def overlay_foreign(ctx):
+    """A file / link / folder / oversized sparse file with the name of what the overlay adds is NOT ours: refused, never
+    read, overwritten or deleted; Original leaves it. The same for a loose file that would hide an archive entry."""
+    chk = Check()
+    s0 = ctx.style0
+    raw = ctx.raw_profile
+    active = overlay_patch.active_rels(raw)
+    other = overlay_patch.other_rels(raw)
+    cases = [("a regular file", active[0]), ("symlink to a copy", active[0]), ("directory", active[0]),
+             ("3 GB sparse file", active[0]), ("a file of the other vehicle", other[0])]
+    for i, (label, rel) in enumerate(cases):
+        w = ctx.world("foreign-%d" % i)
+        path = w.install / rel
+        path.parent.mkdir(parents=True, exist_ok=True)
+        outside = None
+        if label == "a regular file" or label.startswith("a file of the other"):
+            path.write_bytes(b"somebody else's file")
+        elif label == "symlink to a copy":
+            outside = w.root / "outside.bin"
+            outside.write_bytes(b"outside")
+            os.symlink(str(outside), str(path))
+        elif label == "directory":
+            path.mkdir()
+        else:
+            with open(path, "wb") as f:
+                f.truncate(3 << 30)
+        b4 = w.tree()
+        t0 = time.perf_counter()
+        w.set(s0)                                     # records the choice; the refusal is what we look at
+        r = w.set(s0)
+        st_msg = w.status()
+        dt = time.perf_counter() - t0
+        chk.ok(not r["ok"] and w.tree() == b4 and st_msg["state"] == "error" and not w.backups_exist(),
+               "%s: not refused cleanly (ok=%s state=%s untouched=%s backups=%s)" % (
+                   label, r["ok"], st_msg["state"], w.tree() == b4, w.backups_exist()))
+        with vw.forbidding(w) as f:
+            r2 = w.set("original")
+        chk.ok(r2["ok"] and w.tree() == b4 and f.hits == 0, "%s: Original touched it (ok=%s hits=%d)" % (label, r2["ok"], f.hits))
+        if outside is not None:
+            chk.ok(outside.read_bytes() == b"outside", "%s: the link's target was written" % label)
+        if "sparse" in label:
+            chk.ok(dt < 5, "%s: took %.1f s (it must not be read)" % (label, dt))
+        ctx.drop(w)
+    # a patched file replaced by a link afterwards: ps refused untouched, Original leaves it and restores nothing else
+    w = ctx.world("foreign-after")
+    w.set(s0)
+    victim = w.install / active[0]
+    outside = w.root / "outside.bin"
+    outside.write_bytes(victim.read_bytes())
+    victim.unlink()
+    os.symlink(str(outside), str(victim))
+    b4 = w.tree()
+    r = w.set(s0)
+    chk.ok(not r["ok"] and w.tree() == b4, "patched file replaced by a link: ps not refused untouched")
+    w.set("original")
+    chk.ok(os.path.islink(victim) and outside.exists(), "patched file replaced by a link: Original touched the link")
+    ctx.drop(w)
+    return chk, "%d cases not ours, untouched" % (len(cases) + 1)
+
+
+def overlay_ledger(ctx):
+    """Ownership without a marker: records lost or damaged are never guessed into a write or a delete."""
+    chk = Check()
+    raw, s0 = ctx.raw_profile, ctx.style0
+    bdir = lambda w: ctx.kind.backup_dir(w)       # noqa: E731
+
+    def lose_records(w):
+        """Ledger and build record gone (the folder journal stays: losing it leaves empty folders, never a game file)."""
+        for name in (files_patch.LEDGER, overlay_patch.BUILDS):
+            with contextlib.suppress(OSError):
+                os.remove(os.path.join(bdir(w), name))
+    # (a) ledger and build record lost after a patch: cheap facts cannot prove it, the next full check can
+    w = ctx.world("led-a")
+    w.set(s0)
+    ref = w.tree()
+    lose_records(w)
+    chk.ok(w.status()["state"] in ("ok", "error"), "ledger lost: status is %r" % w.status()["state"])
+    res = w.sync()
+    chk.ok(res["ok"] and w.tree() == ref and w.status()["state"] == "ok",
+           "ledger lost: a file equal to today's output was not adopted (ok=%s state=%s)" % (res["ok"], w.status()["state"]))
+    r = w.set("original")
+    chk.ok(r["ok"] and w.tree() == w.start, "ledger lost then adopted: Original not exact")
+    ctx.drop(w)
+    # (b) ledger lost under Original: our file equals today's output, so it is still removed exactly
+    w = ctx.world("led-b")
+    w.set(s0)
+    lose_records(w)
+    r = w.set("original")
+    chk.ok(r["ok"] and w.tree() == w.start, "ledger lost under Original: not exact (%s)" % short(diff(w.tree(), w.start)))
+    ctx.drop(w)
+    # (c) an older drawing and a lost ledger: refused (not ours), nothing written; Steam verify then lets the new one in
+    art = ctx.work / "art-led"
+    vw.copy_art(raw, art)
+    vw.tweak_png(art / (vw.victim_art(raw) + ".png"))
+    p2 = vw.fresh_profile(raw, art)
+    p2.revision = raw.revision + 1
+    w = ctx.world("led-c")
+    w.set(s0)
+    eng2 = w.engine(profile=p2)
+    lose_records(w)
+    b4 = w.tree()
+    with vw.forbidding(w) as f:
+        r = w.set(s0, eng=eng2)
+    st = w.status(eng2)
+    chk.ok(not r["ok"] and w.tree() == b4 and f.hits == 0 and st["state"] == "error",
+           "older drawing + lost ledger: ok=%s hits=%d state=%s" % (r["ok"], f.hits, st["state"]))
+    for unit in ctx.units:
+        ctx.kind.restore_unit(w, unit)
+    r = w.set(s0, eng=eng2)
+    chk.ok(r["ok"] and w.status(eng2)["state"] == "ok", "after Steam verify the new drawing was not applied")
+    ctx.drop(w)
+    shutil.rmtree(art, ignore_errors=True)
+    # (d) the build record lost: stale until a full check heals it; the file itself is not rewritten
+    w = ctx.world("led-d")
+    w.set(s0)
+    ref = w.tree()
+    rec = os.path.join(bdir(w), overlay_patch.BUILDS)
+    os.remove(rec)
+    pend = w.status()
+    r = w.sync()
+    chk.ok(pend["state"] == "pending" and r["ok"] and not r["changed"] and w.tree() == ref and w.status()["state"] == "ok",
+           "build record lost: state %s, changed=%s, healed=%s" % (pend["state"], r.get("changed"), w.status()["state"]))
+    ctx.drop(w)
+    return chk, "4 ownership cases, 0 guessed writes"
+
+
 def probe_ledger(ctx):
+    if ctx.kind.name == "overlay":
+        return overlay_ledger(ctx)
     if ctx.kind.name != "files":
         raise Skip("only loose-file games keep an ownership ledger")
     chk = Check()
@@ -825,6 +991,12 @@ def fmt_ms(ms):
 def decode_unit(ctx, unit, data):
     """(rgba, w, h) of a unit's pixels from its bytes, or None when this kind has no decoder here."""
     kind = ctx.kind
+    if kind.name == "overlay":
+        from button_glyphs import croteam_tex
+        try:
+            return croteam_tex.decode(data)
+        except croteam_tex.TexError:
+            return None
     if kind.name == "files":
         from button_glyphs import xnb
         e = kind.entry(unit)
@@ -846,7 +1018,7 @@ def probe_visual(ctx):
     sheet = ctx.args.sheet
     if not sheet:
         raise Skip("no --sheet folder given")
-    if ctx.kind.name not in ("files", "regions"):
+    if ctx.kind.name not in ("files", "regions", "overlay"):
         raise Skip("%s games draw no pixels of their own" % ctx.kind.name)
     try:
         from PIL import Image
@@ -857,16 +1029,22 @@ def probe_visual(ctx):
     w = ctx.world("visual")
     w.set(s0)
     out = []
-    for unit in ctx.units[:12]:
-        if ctx.kind.name == "files":
-            before = vw.read_bytes(ctx.kind.files[unit])
-            after = vw.read_bytes(w.install / unit)
-        else:
-            r = ctx.kind.region(unit)
-            before = vw.read_bytes(ctx.kind.files[unit])
-            with open(ctx.kind.archive(w), "rb") as f:
-                f.seek(r["offset"])
-                after = f.read(r["size"])
+    if ctx.kind.name == "overlay":
+        pairs = ctx.kind.visual_pairs(w)
+    else:
+        pairs = []
+        for unit in ctx.units[:12]:
+            if ctx.kind.name == "files":
+                before = vw.read_bytes(ctx.kind.files[unit])
+                after = vw.read_bytes(w.install / unit)
+            else:
+                r = ctx.kind.region(unit)
+                before = vw.read_bytes(ctx.kind.files[unit])
+                with open(ctx.kind.archive(w), "rb") as f:
+                    f.seek(r["offset"])
+                    after = f.read(r["size"])
+            pairs.append((unit, before, after))
+    for unit, before, after in pairs[:12]:
         a, b = decode_unit(ctx, unit, before), decode_unit(ctx, unit, after)
         if not a or not b:
             continue
@@ -932,66 +1110,121 @@ FUNCS = {"pinned": probe_pinned, "cycle": probe_cycle, "revision-upgrade": probe
 def make_args(**kw):
     ns = argparse.Namespace(styles=None, json=None, only=None, keep=False, quick=False, sheet=None,
                             archive_size=None, buildid="0", installdir="Game \u00dcnicode", profiles=None,
-                            profiles_arg=None, no_render_cache=False, timings_n=None)
+                            profiles_arg=None, no_render_cache=False, timings_n=None, thorough=False, vehicles=None,
+                            jobs=1)
     for k, v in kw.items():
         setattr(ns, k, v)
     return ns
 
 
+# probes whose result depends on HOW the overlay is delivered (our archive or loose files); the others are run once
+VEHICLE_PROBES = ("cycle", "steam-verify", "unknown-build", "crash", "symlinks", "ledger")
+
+
+def with_vehicle(profile, vehicle):
+    """A copy of an overlay profile that delivers its entries the other way (`gro` | `loose`)."""
+    p = copy.copy(profile)
+    p.vehicle = vehicle
+    p._memo = {}
+    return p
+
+
+def run_probe(ctx, name, stop, log, suffix=""):
+    """One probe -> its report entry. The write spy and the end-of-probe byte comparison are part of every probe."""
+    entry = {"name": name + suffix, "status": PASS, "number": "", "seconds": 0.0, "details": [], "data": {}}
+    t0 = time.perf_counter()
+    ctx.current_probe = name + suffix
+    vw.GUARD.take()                                   # what an earlier probe left is not this one's
+    if stop:
+        entry.update(status=SKIP, number="", details=[stop])
+    else:
+        fails = []
+        try:
+            chk, number = FUNCS[name](ctx)
+            entry["number"] = number
+            fails = list(chk.fails)
+            entry["details"] = chk.fails[:8] + ["note: " + n for n in chk.notes[:8]]
+            entry["data"] = getattr(chk, "data", {})
+            ctx.drop_all()                            # the end-of-probe comparison of the worlds the probe left
+            extra = ctx.take_integrity()
+            if extra:
+                fails += extra
+                entry["details"] = (extra + entry["details"])[:8]
+            if fails:
+                entry["status"] = FAIL
+        except Skip as exc:
+            entry.update(status=SKIP, details=[str(exc)])
+        except Exception as exc:                      # a probe that crashes is a failed probe, never a pass
+            entry.update(status=FAIL, number="error",
+                         details=["%s: %s" % (type(exc).__name__, exc)] + traceback.format_exc().strip().splitlines()[-3:])
+        finally:
+            ctx.drop_all()
+            ctx.integrity = []
+    entry["seconds"] = round(time.perf_counter() - t0, 2)
+    log("%-17s %-5s %-34s %6.1fs" % (entry["name"], entry["status"], entry["number"][:34], entry["seconds"]))
+    for d in entry["details"][:6] if entry["status"] != PASS else []:
+        log("    - " + d)
+    return entry
+
+
 def run(appid, src_dir, profiles=None, args=None, log=print):
-    """Run the probes; returns the report dict ({ok, probes: [...], ...}). Never writes outside a temp folder."""
+    """Run the probes; returns the report dict ({ok, probes: [...], ...}). Never writes outside a temp folder.
+
+    Fast mode (default) memoises the in-memory build and the art preflight across worlds (the write sequence is still
+    replayed for every world and every power cut) and compares the game archives by snapshot plus a write spy on the lowest
+    primitives, with a byte-for-byte comparison at the end of each probe; `--thorough` hashes everything at every step and
+    builds every time (the final gate of a profile).
+    """
     args = args or make_args()
     profiles = profiles or clone_validate.PROFILES
     report = {"appid": appid, "ok": False, "probes": [], "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-              "kept": None}
+              "kept": None, "mode": "thorough" if args.thorough else "fast"}
     if appid not in profiles:
         report["error"] = "appid %s has no registered profile" % appid
         return report
     work = vw.new_tempdir()
     report["kept"] = str(work) if args.keep else None
+    vw.FAST_BUILD[0] = not args.thorough
+    vw.HARNESS_MEMO["outputs"].clear()
+    vw.HARNESS_MEMO["preflight"].clear()
+    vw.OverlayKind.SOURCE_HASH.clear()
+    vw.GUARD.paths.clear()
+    vw.GUARD.take()
     try:
-        try:
-            ctx = Ctx(appid, src_dir, profiles, args, work)
-        except vw.SourceError as exc:
-            report["error"] = str(exc)
-            return report
-        report.update(kind=ctx.kind.name, name=ctx.raw_profile.name, revision=ctx.raw_profile.revision,
-                      styles=ctx.styles)
-        wanted = [p for p in PROBES if not args.only or p in args.only]
-        unknown = [p for p in (args.only or []) if p not in PROBES]
-        if unknown:
-            report["error"] = "unknown probe(s): %s (known: %s)" % (", ".join(unknown), ", ".join(PROBES))
-            return report
-        stop = None
-        for name in wanted:
-            entry = {"name": name, "status": PASS, "number": "", "seconds": 0.0, "details": [], "data": {}}
-            t0 = time.perf_counter()
-            if stop:
-                entry.update(status=SKIP, number="", details=[stop])
-            else:
-                try:
-                    chk, number = FUNCS[name](ctx)
-                    entry["number"] = number
-                    entry["details"] = chk.fails[:8] + ["note: " + n for n in chk.notes[:8]]
-                    entry["data"] = getattr(chk, "data", {})
-                    if chk.fails:
-                        entry["status"] = FAIL
-                except Skip as exc:
-                    entry.update(status=SKIP, details=[str(exc)])
-                except Exception as exc:                      # a probe that crashes is a failed probe, never a pass
-                    entry.update(status=FAIL, number="error",
-                                 details=["%s: %s" % (type(exc).__name__, exc)] + traceback.format_exc().strip().splitlines()[-3:])
-                finally:
-                    ctx.drop_all()
-            entry["seconds"] = round(time.perf_counter() - t0, 2)
-            if name == "pinned" and entry["status"] == FAIL:
-                stop = "skipped: the copies do not match the pinned table"
-            report["probes"].append(entry)
-            log("%-17s %-5s %-34s %6.1fs" % (name, entry["status"], entry["number"][:34], entry["seconds"]))
-            for d in entry["details"][:6] if entry["status"] != PASS else []:
-                log("    - " + d)
-        report["ok"] = all(e["status"] != FAIL for e in report["probes"]) and any(e["status"] == PASS for e in report["probes"])
+        with vw.GUARD:
+            try:
+                ctx = Ctx(appid, src_dir, profiles, args, work)
+            except vw.SourceError as exc:
+                report["error"] = str(exc)
+                return report
+            report.update(kind=ctx.kind.name, name=ctx.raw_profile.name, revision=ctx.raw_profile.revision,
+                          styles=ctx.styles)
+            wanted = [p for p in PROBES if not args.only or p in args.only]
+            unknown = [p for p in (args.only or []) if p not in PROBES]
+            if unknown:
+                report["error"] = "unknown probe(s): %s (known: %s)" % (", ".join(unknown), ", ".join(PROBES))
+                return report
+            vehicles = list(args.vehicles or [])
+            overlay = ctx.kind.name == "overlay"
+            if vehicles and not overlay:
+                report["error"] = "--vehicles only applies to add-file overlay profiles"
+                return report
+            if overlay and vehicles:
+                ctx = Ctx(appid, src_dir, {appid: with_vehicle(ctx.raw_profile, vehicles[0])}, args, work)
+                report["vehicles"] = vehicles
+            stop = None
+            for name in wanted:
+                entry = run_probe(ctx, name, stop, log)
+                if name == "pinned" and entry["status"] == FAIL:
+                    stop = "skipped: the copies do not match the pinned table"
+                report["probes"].append(entry)
+            for v in vehicles[1:]:                    # the vehicle-independent probes ran once above
+                ctx_v = Ctx(appid, src_dir, {appid: with_vehicle(ctx.raw_profile, v)}, args, work)
+                for name in [n for n in wanted if n in VEHICLE_PROBES]:
+                    report["probes"].append(run_probe(ctx_v, name, stop, log, suffix="[%s]" % v))
+            report["ok"] = all(e["status"] != FAIL for e in report["probes"]) and any(e["status"] == PASS for e in report["probes"])
     finally:
+        vw.FAST_BUILD[0] = False
         if not args.keep:
             shutil.rmtree(work, ignore_errors=True)
     return report

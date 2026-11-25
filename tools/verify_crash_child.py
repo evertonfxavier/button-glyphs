@@ -24,6 +24,19 @@ def main(argv):
     import verify_worlds as vw
     from button_glyphs import engine
     profile = vw.load_profiles(spec.get("factory"), spec.get("arg"))[spec["appid"]]
+    if spec.get("vehicle") and getattr(profile, "overlay_level", False) and profile.vehicle != spec["vehicle"]:
+        import copy
+        profile = copy.copy(profile)
+        profile.vehicle = spec["vehicle"]
+        profile._memo = {}
+    if spec.get("memo_file"):                     # fast mode: the parent already built the overlay; replay only the writes
+        import pickle
+        with open(spec["memo_file"], "rb") as f:
+            memo = pickle.load(f)
+        vw.FAST_BUILD[0] = True
+        vw.HARNESS_MEMO["outputs"].update(memo["outputs"])
+        vw.HARNESS_MEMO["preflight"].update(memo["preflight"])
+        profile = vw.CachedProfile(profile)
     root = spec["root"]
     eng = engine.Engine(root, os.path.join(root, "settings"), os.path.join(root, "runtime"), str(vw.GLYPHS),
                         profiles={spec["appid"]: profile}, proc_root=os.path.join(root, "proc"))

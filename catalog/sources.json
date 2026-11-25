@@ -129,9 +129,12 @@
   "our-drawing": "drawn by this project: PIL shapes rendered by tools/qb_build.py (render_masks)",
   "montserrat-ofl": "label text set in Montserrat Bold (SIL OFL 1.1, py_modules/button_glyphs/masks/OFL-Montserrat.txt) by tools/qb_build.py",
   "owner-pixel-art": "the project owner's own PlayStation pixel art (stated by the owner, 2026-11-24), sliced and fitted to the texture size by tools/sfh_art.py; some labels use the 3x5 pixel font drawn for that tool",
-  "owner-line-art": "the project owner's own DualSense line drawing (stated by the owner, 2026-11-24), cut out and scaled by tools/qb_controller_art.py"
+  "owner-line-art": "the project owner's own DualSense line drawing (stated by the owner, 2026-11-24), cut out and scaled by tools/qb_controller_art.py",
+  "owner-ds3-art": "the project owner's own DualShock 3 drawings, two light line-art panels and one photographic panel (own work of the plugin author, the user, 2026-11-24; no third-party licence; the Sony marks are theirs), cropped to the opaque box and scaled to each pad texture by hand-run PIL (LANCZOS, premultiplied), no script kept"
  },
  "art_rules": [
+  {"match": "py_modules/button_glyphs/masks/serious/ds3-hd-*.png", "kind": "picture", "origin": "owner-ds3-art", "tags": {"style": "ps", "shape": "picture", "shading": "line-art", "label": "word", "colour": "mono-light", "background": "transparent"}},
+  {"match": "py_modules/button_glyphs/masks/serious/ds3-sam2-*.png", "kind": "picture", "origin": "owner-ds3-art", "tags": {"style": "ps", "shape": "picture", "shading": "unknown", "label": "word", "colour": "mono-dark", "background": "transparent"}},
   {"match": "py_modules/button_glyphs/masks/controller_dualsense.png", "kind": "picture", "origin": "owner-line-art", "tags": {"style": "ps", "shape": "picture", "shading": "line-art", "label": "none", "colour": "mono-light", "background": "transparent"}},
   {"match": "py_modules/button_glyphs/masks/sfh/*.png", "kind": "pixel", "origin": "owner-pixel-art", "tags": {"style": "ps", "shading": "pixel-bevel", "background": "dark", "colour": "mono-light"}, "role_tags": {"a,b,x,y": {"colour": "ps-symbol-colours"}}},
   {"match": "py_modules/button_glyphs/masks/[LR][12].png", "kind": "mask", "origin": "montserrat-ofl", "tags": {"style": "ps", "shape": "glyph", "shading": "flat", "label": "word", "colour": "mono-white-mask", "background": "transparent"}},
@@ -190,7 +193,11 @@
   {"match": "^xbox/menu$", "role": "start", "detail": "three lines in a disc"},
   {"match": "^xbox/view$", "role": "select", "detail": "two overlapping windows in a disc"}
  ],
- "art_roles": {},
+ "art_roles": {
+  "py_modules/button_glyphs/masks/serious/ds3-hd-fe-512.png": "controller",
+  "py_modules/button_glyphs/masks/serious/ds3-hd-tse-512.png": "controller",
+  "py_modules/button_glyphs/masks/serious/ds3-sam2-1024.png": "controller"
+ },
  "games": {
   "15100": {
    "short": "AC1",

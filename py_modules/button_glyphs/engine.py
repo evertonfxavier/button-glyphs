@@ -17,6 +17,7 @@ from . import image, ingame, steam
 from . import entries
 from . import region_patch
 from . import files_patch
+from . import overlay_patch
 from .trailer import TRAILER_MAGIC, read_trailer, write_trailer  # noqa: F401  (re-exported)
 from .profiles import PROFILES
 from .profiles.config_value import MAX_FILE as MAX_SAVE, ConfigValueError
@@ -25,6 +26,7 @@ CONFIG_VERSION = 1
 STYLES = ("original", "ps", "xbox")
 STYLE_LABEL = {"original": "Original", "ps": "PlayStation", "xbox": "Xbox"}
 TMP_SUFFIX = ".button-glyphs.tmp"
+OVERLAY_RETRY_SECONDS = 600     # after a failed build the watcher waits this long (an explicit choice retries at once)
 
 
 def sha256_file(path, chunk=1 << 20):
@@ -163,6 +165,8 @@ class Engine:
             return self._status_regions(app, profile, cfg, cmdlines)
         if getattr(profile, "files_level", False):
             return self._status_files(app, profile, cfg, cmdlines)
+        if getattr(profile, "overlay_level", False):
+            return self._status_overlay(app, profile, cfg, cmdlines)
         if getattr(profile, "config_level", False):
             return self._status_config(app, profile, cfg, cmdlines)
         gcfg = cfg["games"].get(app["appid"], {})
@@ -233,6 +237,7 @@ class Engine:
                 if appid in self.profiles and (gcfg.get("style", "original") != "original"
                                                or self._restore_pending(appid, gcfg)
                                                or self._files_restore_pending(appid)
+                                               or self._overlay_restore_pending(appid)
                                                or self._marker_restore_pending(appid)):
                     results.append(self.sync(appid, reason=reason))
         return results
@@ -280,6 +285,8 @@ class Engine:
             return self._sync_regions(app, profile, gcfg, reason, logs)
         if getattr(profile, "files_level", False):
             return self._sync_files(app, profile, gcfg, reason, logs)
+        if getattr(profile, "overlay_level", False):
+            return self._sync_overlay(app, profile, gcfg, reason, logs)
         if getattr(profile, "config_level", False):
             return self._sync_config(app, profile, gcfg, reason, logs)
         if getattr(profile, "entry_level", False):
@@ -521,7 +528,8 @@ class Engine:
         finishes the restore. Reacts only to states we wrote (entries patched/half/partial, regions
         patched/writing, our trailer); unknown, strange or missing files never trigger a sync."""
         profile = self.profiles[appid]
-        if getattr(profile, "files_level", False) or getattr(profile, "config_level", False):
+        if (getattr(profile, "files_level", False) or getattr(profile, "config_level", False)
+                or getattr(profile, "overlay_level", False)):
             return False
         app = steam.installed_apps(self.home).get(appid)
         if not app or not steam.is_ready(app):
@@ -606,6 +614,174 @@ class Engine:
             logs.append(gcfg["last_event"])
         self._info("%s: %s applied to %d file(s) (%s)", appid, desired,
                    sum(1 for r in rows if not files_patch.is_ok(r, want)), reason)
+        return True
+
+    # ------------------------------------------------------------------ overlay-level strategy
+
+    def _overlay_backup_dir(self, appid):
+        return os.path.join(self.backup_root, appid, "overlay")
+
+    def _status_overlay(self, app, profile, cfg, cmdlines):
+        gcfg = cfg["games"].get(app["appid"], {})
+        desired = gcfg.get("style", "original")
+        want = self._effective(profile, desired)
+        backup_dir = self._overlay_backup_dir(app["appid"])
+        out = {
+            "style": desired,
+            "applied": desired,
+            "has_backup": os.path.isdir(backup_dir),
+            "last_event": gcfg.get("last_event", ""),
+            "roles": [label for _, label in profile.roles],
+            "original_hint": getattr(profile, "original_hint", ""),
+        }
+        try:
+            plan = overlay_patch.plan(profile, app["install_path"], backup_dir, want)
+        except Exception as exc:                   # one game's trouble must never fail the whole listing
+            if self.log:
+                self.log.exception("status of %s: cannot read its files", app["appid"])
+            out.update(state="error", message="cannot read %s: %s" % (profile.file, exc),
+                       code="cannot_read", args={"file": profile.file, "reason": str(exc)})
+            return out
+        out["applied"] = overlay_patch.applied_style(plan, profile.native_style, profile.patch_styles[0])
+        refusal = overlay_patch.check(plan, want)
+        notice = overlay_patch.notice(plan) if want == "original" else None
+        todo = overlay_patch.todo(plan, want)
+        stray = want == "original" and bool(plan.stray_dirs)
+        if steam.is_running(app, cmdlines):
+            out.update(state="running", message="Game is running; changes apply when it closes",
+                       code="running")
+        elif not steam.is_ready(app):
+            out.update(state="updating", message="Steam is updating this game", code="updating")
+        elif gcfg.get("error"):                    # an error outranks "pending" (else it hides forever)
+            out.update(state="error", message=gcfg["error"])
+        elif refusal:
+            out.update(state="error", message=refusal.message)
+            if refusal.code == "foreign_file":
+                out.update(code="foreign_file", args={"file": refusal.args["file"]})
+            elif refusal.code == "cannot_read":
+                out.update(code="cannot_read", args={"file": refusal.args["file"], "reason": refusal.args["reason"]})
+            elif refusal.code == "unsupported_build":
+                out.update(code="unsupported_build", args={"detail": refusal.args["detail"]})
+        elif notice:                               # a file with our name that is not ours: left alone, said so
+            out.update(state="ok", message=notice.message, code="foreign_file", args={"file": notice.args["file"]})
+        elif (todo or stray) and want == "original":
+            out.update(state="pending", message="%s will be restored"
+                       % ("Original" if desired == "original" else STYLE_LABEL[desired] + " glyphs"),
+                       code="will_restore", args={"style": desired})
+        elif todo and all(r.state == overlay_patch.STALE for r in todo):
+            out.update(state="pending", message="Improved %s glyphs will be applied" % STYLE_LABEL[desired],
+                       code="will_improve", args={"style": desired})
+        elif todo:
+            out.update(state="pending", message="%s will be applied" % STYLE_LABEL[desired],
+                       code="will_apply", args={"style": desired})
+        else:
+            out.update(state="ok", message="%s glyphs active" % STYLE_LABEL[desired],
+                       code="active", args={"style": desired})
+        return out
+
+    def _overlay_restore_pending(self, appid):
+        """An overlay game set to Original whose added file(s) are still there (the game was running when Original
+        was chosen, or a power cut stopped the removal): the watcher finishes it. Reacts only to files WE wrote
+        (their hash is in the ledger); a file that is not ours never triggers a sync."""
+        profile = self.profiles[appid]
+        if not getattr(profile, "overlay_level", False):
+            return False
+        app = steam.installed_apps(self.home).get(appid)
+        if not app or not steam.is_ready(app):
+            return False
+        try:
+            plan = overlay_patch.plan(profile, app["install_path"], self._overlay_backup_dir(appid), "original")
+        except Exception:                          # the watcher must go on with the other games
+            if self.log:
+                self.log.exception("watcher: cannot read the files of %s", appid)
+            return False
+        return overlay_patch.removable(plan)
+
+    def _sync_overlay(self, app, profile, gcfg, reason, logs):
+        """Bring the game to the chosen style by adding (or removing) our overlay file(s).
+
+        Order: clean temps -> plan (reads the game's own entries, checks every pin, builds and proves every output in
+        memory; an unknown build or a file that is not ours refuses with nothing written) -> preflight of the art ->
+        ledger -> atomic writes. Original deletes what is ours; the game's own files are never opened for writing.
+        """
+        appid = app["appid"]
+        desired = gcfg.get("style", "original")
+        want = self._effective(profile, desired)
+        install = app["install_path"]
+        backup_dir = self._overlay_backup_dir(appid)
+        overlay_patch.clean_temps(profile, install, backup_dir)
+        plan = overlay_patch.plan(profile, install, backup_dir, want)      # cheap facts only
+        if want != "original" and plan.problems:
+            # the game is not the build the pins describe (an update), or cannot be read. A file of ours that is PROVEN ours
+            # (ledger / build record) was built from the OLD originals and, loaded last, would keep overriding the new
+            # ones: remove it (the Original path: hashes re-checked, reverse order), then say so. Never a file we cannot
+            # prove ours, never on a plain read failure.
+            problem = plan.problems[0]
+            if problem.code == "unsupported_build" and overlay_patch.removable(plan):
+                overlay_patch.revert(profile, install, backup_dir, plan)
+                gcfg["last_event"] = "Overlay removed: the game files changed"
+                logs.append("overlay removed: the game is not the supported build")
+                self._info("%s: overlay removed, the game is not the supported build", appid)
+                raise RuntimeError("%s The overlay added by this plugin was removed, so the game shows its own prompts."
+                                   % problem.message)
+            raise RuntimeError(problem.message)
+        if overlay_patch.needs_adoption(plan) and (reason == "user" or not gcfg.get("error")):
+            # a file with our name that no record explains: it is ours only if it equals today's output (full build).
+            # The watcher tries this once, not every minute (a failed try leaves the error that stops it).
+            overlay_patch.build_plan(profile, install, backup_dir, plan,
+                                     [want] if want != "original" else list(profile.patch_styles))
+        if overlay_patch.idle(plan, want):
+            if plan.built.get(want):                # adopted: the files are today's output, only the records were lost
+                plan.fps = overlay_patch._fingerprints(profile, profile.patch_styles)
+                overlay_patch.apply(profile, install, backup_dir, plan, want)
+            logs.append("%s already applied" % STYLE_LABEL[desired])
+            return False
+
+        refusal = overlay_patch.check(plan, want)
+        if refusal:
+            raise RuntimeError(refusal.message)
+        if want == "original":
+            overlay_patch.revert(profile, install, backup_dir, plan)
+            gcfg["last_event"] = "Original restored"
+            logs.append("original restored")
+            gcfg["applied_buildid"] = app["buildid"]
+            return True
+
+        if reason != "user" and gcfg.get("overlay_retry_after", 0) > time.time():
+            raise RuntimeError(gcfg.get("error") or "the last try failed; the watcher waits before trying again")
+        try:                                       # the heavy part (drawing, DXT encoding) and the write: never every minute
+            overlay_patch.check_room(profile, install)      # cheap, from the pinned sizes, BEFORE anything is built
+            preflight = getattr(profile, "preflight", None)
+            if preflight:                          # bundled art unusable -> fail before anything is built or written
+                preflight()
+            plan.fps = overlay_patch._fingerprints(profile, profile.patch_styles)
+            overlay_patch.build_plan(profile, install, backup_dir, plan, [want])
+            refusal = overlay_patch.check(plan, want)
+            if refusal:
+                raise RuntimeError(refusal.message)
+            if overlay_patch.idle(plan, want):     # the files are today's output; only the records were missing
+                overlay_patch.apply(profile, install, backup_dir, plan, want)
+                gcfg.pop("overlay_retry_after", None)
+                logs.append("%s already applied" % STYLE_LABEL[desired])
+                return False
+            overlay_patch.apply(profile, install, backup_dir, plan, want)
+        except Exception:                          # ANY failure (build, full disk, OSError): the watcher waits, a user choice retries
+            gcfg["overlay_retry_after"] = time.time() + OVERLAY_RETRY_SECONDS
+            raise
+        gcfg.pop("overlay_retry_after", None)
+
+        previous = gcfg.get("applied_buildid")
+        gcfg["applied_buildid"] = app["buildid"]
+        if reason == "user":
+            gcfg["last_event"] = "%s applied" % STYLE_LABEL[desired]
+            logs.append("%s applied" % STYLE_LABEL[desired])
+        else:
+            note = ("build %s -> %s" % (previous, app["buildid"])
+                    if previous and previous != app["buildid"] else "build %s" % app["buildid"])
+            gcfg["last_event"] = "%s re-applied (%s)" % (STYLE_LABEL[desired], note)
+            logs.append(gcfg["last_event"])
+        self._info("%s: %s applied (%s file(s)) (%s)", appid, desired,
+                   len(overlay_patch.todo(plan, want)), reason)
         return True
 
     # ------------------------------------------------------------------ entry-level strategy

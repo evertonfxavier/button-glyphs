@@ -7,6 +7,26 @@ Add your line under **Unreleased** in the pull request; maintainers move it into
 
 ## [Unreleased]
 
+### Added
+- Serious Sam 2 (PlayStation style, offline-verified, not yet confirmed in the game): the A / B / X / Y prompts become the PlayStation
+  cross, circle, square and triangle (round, in their colours) and the black / white buttons become R1 / L1. It works by adding one
+  small file (`zz_ButtonGlyphs.gro`) to the game folder; no game file is modified and **Original** deletes it. The controller
+  screen keeps the Xbox pad picture for now.
+- Serious Sam HD The First Encounter and The Second Encounter (PlayStation style, offline-verified, not yet confirmed in the game):
+  A / B / X / Y (and, in The Second Encounter, START, BACK, L1 / R1, L2 / R2, L3 / R3) become PlayStation symbols, and the controls screen
+  shows a DualShock 3 picture. These games' archives are signed, so the game may ignore the added archive; the profile can switch to
+  loose files with one line, and the first install will tell. The pad screen's arrows are expected to be misplaced on the DualShock picture.
+- Serious Sam 2 now shows the DualShock 3 picture on its controller screen (its arrows, stick glow and leader lines still follow the Xbox
+  pad) and uses solid L1 / R1 shapes.
+- Added-archive games: if the game is updated while our file is on disk, the plugin removes its file (it was built from the old files and
+  would override the new ones) and says so; a file with the same name that the plugin did not write is still never touched. Files and
+  folders the plugin creates are given to the game folder's owner (Decky runs as root); the running-game check also recognises Windows-style
+  paths with any drive letter (`S:\steamapps\common\<game>\...`).
+- Faster status for the added-archive games: the panel and the watcher answer from the archives' directory (sizes and CRC-32) and the
+  recorded build of our file, and only build the pictures when something has to be written.
+- A new "add-file overlay" way of supporting games: a file the game loads last wins, so nothing of the game has to be changed. A file
+  with the same name that the plugin did not write is never touched or deleted (the status says so).
+
 ## [0.3.12] - 2026-11-24
 
 ## [0.3.11] - 2026-11-24

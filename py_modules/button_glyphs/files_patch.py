@@ -110,11 +110,13 @@ def read_file(path, size):
         return f.read(size + 1)
 
 
-def write_atomic(path, data):
+def write_atomic(path, data, prepare=None):
     """Create or replace `path` with `data` so that a crash leaves the old or the new file, whole.
 
     The temp file lives in the same folder (a rename stays on one filesystem) and is removed on any
-    error; the folder is flushed afterwards so the rename survives a power cut.
+    error; the folder is flushed afterwards so the rename survives a power cut. `prepare(tmp)` (optional, the overlay
+    strategy's ownership fix when running as root) runs on the temp file AFTER its data is flushed and BEFORE the rename,
+    so no crash window leaves a final file that was never prepared.
     """
     tmp = path + TMP_SUFFIX
     try:
@@ -126,6 +128,8 @@ def write_atomic(path, data):
             os.chmod(tmp, stat.S_IMODE(os.stat(path).st_mode))     # keep the permissions of the file
         except OSError:
             pass
+        if prepare is not None:
+            prepare(tmp)
         os.replace(tmp, path)
     finally:
         if os.path.exists(tmp):

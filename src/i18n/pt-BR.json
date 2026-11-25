@@ -61,5 +61,6 @@
   "code.cannot_read": "Não foi possível ler {file}: {reason}",
   "code.unsupported_build": "Esta versão do jogo não tem suporte: {detail}",
   "code.start_game_once": "Abra o jogo uma vez para ativar",
-  "code.original_kept": "Original: a configuração do próprio jogo"
+  "code.original_kept": "Original: a configuração do próprio jogo",
+  "code.foreign_file": "Há um arquivo chamado {file} na pasta do jogo, mas este plugin não o criou. Nada foi alterado"
 }

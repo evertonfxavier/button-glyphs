@@ -202,5 +202,73 @@ class AccentTest(GuardCase):
         self.assertTrue(steam.is_running(self.app, steam.running_install_paths(proc)))
 
 
+class DriveLetterTest(GuardCase):
+    """Proton logs the install folder as `<drive>:\\steamapps\\common\\<dir>\\...` (the library is mapped to its own
+    letter: the verifier saw `S:\\steamapps\\common\\Serious Sam HD ...\\Bin\\SamHD.exe`): any letter, either slash, any case."""
+
+    def cmd(self, text):
+        return ["wine %s" % text]
+
+    def test_the_form_the_verifier_found(self):
+        self.assertTrue(steam.is_running(self.app, self.cmd("S:\\steamapps\\common\\%s\\Bin\\SamHD.exe" % INSTALLDIR)))
+
+    def test_every_drive_letter_either_case(self):
+        for letter in "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz":
+            self.assertTrue(steam.is_running(self.app, self.cmd("%s:\\steamapps\\common\\%s\\Bin\\x.exe" % (letter, INSTALLDIR))),
+                            letter)
+
+    def test_either_slash_and_repeated_slashes(self):
+        for text in ("S:/steamapps/common/%s/Bin/x.exe", "S:\\steamapps/common\\%s/Bin/x.exe",
+                     "S:\\\\steamapps\\\\common\\\\%s\\\\Bin\\\\x.exe", "s:/steamapps\\common/%s\\x.exe"):
+            self.assertTrue(steam.is_running(self.app, self.cmd(text % INSTALLDIR)), text)
+
+    def test_case_does_not_matter_in_the_windows_forms(self):
+        for text in ("S:\\STEAMAPPS\\COMMON\\%s\\Bin\\x.exe", "S:\\SteamApps\\Common\\%s\\x.exe"):
+            self.assertTrue(steam.is_running(self.app, self.cmd(text % INSTALLDIR)), text)
+        self.assertTrue(steam.is_running(self.app, self.cmd("S:\\steamapps\\common\\%s\\x.exe" % INSTALLDIR.upper())))
+        self.assertTrue(steam.is_running(self.app, self.cmd("S:\\steamapps\\common\\%s\\x.exe" % INSTALLDIR.lower())))
+
+    def test_quoted_and_inside_a_longer_command_line(self):
+        self.assertTrue(steam.is_running(self.app, ['"C:\\windows\\system32\\start.exe" /exec "S:\\steamapps\\common\\%s\\Bin\\x.exe" -x'
+                                                    % INSTALLDIR]))
+
+    def test_the_sd_card_aliases_with_any_letter(self):
+        app = {"appid": APPID, "install_path": os.path.join(self.common, INSTALLDIR)}
+        for folder in (os.path.join(self.real_mount, "steamapps", "common", INSTALLDIR),
+                       self.via_alias()):
+            win = folder.replace("/", "\\")
+            for letter in "DYz":
+                self.assertTrue(steam.is_running(app, self.cmd("%s:%s\\Bin\\x.exe" % (letter, win))), (letter, folder))
+        # and the library-relative form on the card
+        self.assertTrue(steam.is_running(app, self.cmd("D:\\steamapps\\common\\%s\\Bin\\x.exe" % INSTALLDIR)))
+
+    def test_the_old_z_forms_and_every_older_match_are_kept(self):
+        for cmd in (posix_cmd(self.app["install_path"]), windows_cmd(self.app["install_path"]),
+                    posix_cmd(self.via_alias()), windows_cmd(self.via_alias()),
+                    ["reaper SteamLaunch AppId=%s -- /bin/true" % APPID]):
+            self.assertTrue(steam.is_running(self.app, cmd), cmd)
+
+    def test_other_games_longer_names_and_junk_are_not_matched(self):
+        no = ("S:\\steamapps\\common\\Another Game\\Bin\\x.exe",
+              "S:\\steamapps\\common\\%s Two\\Bin\\x.exe" % INSTALLDIR,
+              "S:\\steamapps\\common\\Two %s\\x.exe" % INSTALLDIR,
+              "S:\\steamapps\\common\\%s" % INSTALLDIR,                   # no separator after the folder name
+              "1:\\steamapps\\common\\%s\\x.exe" % INSTALLDIR,           # not a drive letter
+              "steamapps\\common\\%s\\x.exe" % INSTALLDIR,                # no drive at all
+              "S:\\steamapps\\downloading\\%s\\x.exe" % INSTALLDIR,
+              "S:\\other\\common\\%s\\x.exe" % INSTALLDIR)
+        for text in no:
+            self.assertFalse(steam.is_running(self.app, self.cmd(text)), text)
+
+    def test_a_game_without_steamapps_in_its_path_only_matches_its_own_full_path(self):
+        app = {"appid": APPID, "install_path": "/games/%s" % INSTALLDIR}
+        self.assertTrue(steam.is_running(app, self.cmd("Y:\\games\\%s\\x.exe" % INSTALLDIR)))
+        self.assertFalse(steam.is_running(app, self.cmd("Y:\\steamapps\\common\\%s\\x.exe" % INSTALLDIR)))
+
+    def test_accents_survive(self):
+        self.assertTrue(steam.is_running(self.app, self.cmd("S:\\steamapps\\common\\%s\\x.exe" % INSTALLDIR)))
+        self.assertTrue(any(ord(c) > 127 for c in INSTALLDIR))
+
+
 if __name__ == "__main__":
     unittest.main()
